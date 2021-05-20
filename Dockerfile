@@ -1,10 +1,14 @@
 FROM ubuntu:bionic
 
-RUN echo "deb http://downloads.skewed.de/apt bionic main" >> /etc/apt/sources.list \
-        && apt-get update \
+# tzdata asks questions
+ENV DEBIAN_FRONTEND="noninteractive"
+ENV TZ="America/New_York"
+
+RUN echo "deb [trusted=yes] http://downloads.skewed.de/apt bionic main" >> /etc/apt/sources.list \
+        && apt-get --allow-unauthenticated update \
         && apt-get install -y python3-pip \
-        && apt-get install -y python3-graph-tool \
-        && cd /usr/loca/bin \
+        && apt-get --allow-unauthenticated install -y python3-graph-tool \
+        && cd /usr/local/bin \
         && ln -s /usr/bin/python3 python \
         && pip3 install --upgrade pip
 
