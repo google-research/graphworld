@@ -1,9 +1,6 @@
 FROM ubuntu:bionic
 
-# Use virtualenv to avoid installing/running python as root
-ENV VIRTUAL_ENV=/opt/venv
-
-# tzdata asks questions
+# tzdata asks questions.
 ENV DEBIAN_FRONTEND="noninteractive"
 ENV TZ="America/New_York"
 
@@ -13,7 +10,7 @@ RUN echo "deb [trusted=yes] http://downloads.skewed.de/apt bionic main" >> /etc/
         && apt-get install -y python3-venv \
         && apt-get --allow-unauthenticated install -y python3-graph-tool 
 
-# Set up venv to avoid root installing/running python
+# Set up venv to avoid root installing/running python.
 ENV VIRTUAL_ENV=/opt/venv
 RUN python3 -m venv ${VIRTUAL_ENV}
 ENV PATH="${VIRTUAL_ENV}/bin:$PATH"
