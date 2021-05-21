@@ -1,3 +1,3 @@
 #!/bin/bash
 
-docker run -it --entrypoint /bin/bash research-graph-synthetic
+docker-compose run --entrypoint /bin/bash research-graph-synthetic

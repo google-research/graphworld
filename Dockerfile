@@ -19,7 +19,7 @@ RUN echo "deb [trusted=yes] http://downloads.skewed.de/apt bionic main" >> /etc/
 # Set up venv to avoid root installing/running python.
 ENV VIRTUAL_ENV=/opt/venv
 RUN python3 -m venv --system-site-packages ${VIRTUAL_ENV}
-ENV PATH="${VIRTUAL_ENV}/bin:$PATH"
+ENV PATH="${VIRTUAL_ENV}/bin:/app:$PATH"
 
 RUN pip3 install --upgrade pip
 
