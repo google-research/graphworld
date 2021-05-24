@@ -1,4 +1,0 @@
-# this might take some time.
-torch 
-torch-geometric
-
