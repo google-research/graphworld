@@ -1,7 +1,5 @@
 FROM ubuntu:bionic
-
-# Installing apache beam + GPU
-# https://cloud.google.com/dataflow/docs/guides/using-gpus#installing_gpu_drivers
+# FROM apache/beam_python3.8_sdk:2.25.0
 
 # tzdata asks questions.
 ENV DEBIAN_FRONTEND="noninteractive"
@@ -19,8 +17,6 @@ RUN echo "deb [trusted=yes] http://downloads.skewed.de/apt bionic main" >> /etc/
         && apt-get --allow-unauthenticated install -y python3-graph-tool 
 
 
-
-
 # Set up venv to avoid root installing/running python.
 ENV VIRTUAL_ENV=/opt/venv
 RUN python3 -m venv --system-site-packages ${VIRTUAL_ENV}
@@ -35,4 +31,5 @@ COPY ./src /app
 RUN pip3 install --no-cache-dir -r /app/requirements.txt
 
 CMD ["python3", "/app/test_graph_tool.py"]
+
 
