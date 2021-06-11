@@ -1,5 +1,7 @@
 # this might take some time.
+dataclasses # Incase we're not use py3.7
 absl-py
-torch 
-torch-geometric
+gin-config
+# torch 
+# torch-geometric
 
