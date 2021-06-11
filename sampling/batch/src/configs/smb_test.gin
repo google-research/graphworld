@@ -1,2 +1,7 @@
 SamplerConfig.generator_name="StochasticBlockModel"
-SamplerConfig.generator_config={"num_verticies": 10, "num_edges": 100} 
+SamplerConfig.generator_config={
+        "num_verticies": 10,
+        "num_edges": 100,
+        "feature_dim": 16,
+        "edge_center_distance": 2.0,
+        "edge_feature_dim": 4}
