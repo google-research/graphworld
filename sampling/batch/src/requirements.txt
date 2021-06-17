@@ -2,6 +2,7 @@
 dataclasses # Incase we're not use py3.7
 absl-py
 gin-config
+apache-beam[gcp]
 # torch 
 # torch-geometric
 
