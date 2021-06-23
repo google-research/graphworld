@@ -7,7 +7,7 @@ services:
     stdin_open: true
     tty: true
     image:
-      research-graph-synthetic
+      research-graph-synthetic:latest
     volumes:
       # Map src -> app for code updates.
       - ${PWD}/src:/app

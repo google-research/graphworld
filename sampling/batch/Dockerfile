@@ -20,21 +20,13 @@ RUN echo "deb [ arch=amd64 ] http://downloads.skewed.de/apt bionic main" >> /etc
         && apt-get install -y python3-decorator \ 
         && apt-get install -y python3-graph-tool
 
-# RUN echo "deb [trusted=yes] http://downloads.skewed.de/apt bionic main" >> /etc/apt/sources.list \
-#         && apt-get --allow-unauthenticated update \
-#         && apt-get install -y python3-pip \
-#         && apt-get install -y python3-venv \
-#         && apt-get install -y python3-cairo \
-#         && apt-get install -y python3-matplotlib \
-#         && apt-get install -y python3-decorator \ 
-#         && apt-get --allow-unauthenticated install -y python3-graph-tool 
-
 
 # # Set up venv to avoid root installing/running python.
 ENV VIRTUAL_ENV=/opt/venv
 RUN python3 -m venv --system-site-packages ${VIRTUAL_ENV}
 # RUN source ${VIRTUAL_ENV}/bin/activate
 ENV PATH="${VIRTUAL_ENV}/bin:/app:$PATH"
+ENV PYTHONPATH="/app:$PYTHONPATH"
 
 RUN pip3 install --upgrade pip
 
@@ -44,6 +36,11 @@ COPY ./src /app
 # Otherwise the install failed on my local machine.
 RUN pip3 install --no-cache-dir -r /app/requirements.txt
 
-CMD ["python3", "/app/test_graph_tool.py"]
+# CMD ["python3", "/app/test_graph_tool.py"]
 
+# Install apache beam sdk
+# Example: https://github.com/GoogleCloudPlatform/python-docs-samples/blob/master/dataflow/gpu-workers/Dockerfile
+COPY --from=apache/beam_python3.6_sdk /opt/apache/beam /opt/apache/beam
 
+# Set the entrypoint to Apache Beam SDK worker launcher.
+ENTRYPOINT [ "/opt/apache/beam/boot" ]
