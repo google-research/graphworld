@@ -1,4 +1,5 @@
 FROM ubuntu:bionic
+# FROM nvidia/cuda:11.3.1-cudnn8-runtime-ubuntu18.04 
 
 # tzdata asks questions.
 ENV DEBIAN_FRONTEND="noninteractive"
@@ -6,37 +7,38 @@ ENV TZ="America/New_York"
 
 # && apt-get install -y nvidia-container-runtime \
 
-# Needed at add graphtool key
-RUN apt-get -y update
-RUN apt-get install -y apt-transport-https gnupg ca-certificates
+# Need this to add graph tool pubkey
+# RUN apt-get -y update && apt-get install -y apt-transport-https gnupg ca-certificates
 
-RUN echo "deb [ arch=amd64 ] http://downloads.skewed.de/apt bionic main" >> /etc/apt/sources.list \
+RUN apt-get -y update \
+        && apt-get install -y apt-transport-https gnupg ca-certificates \
+        && echo "deb [ arch=amd64 ] http://downloads.skewed.de/apt bionic main" >> /etc/apt/sources.list \
         && apt-key adv --keyserver keys.openpgp.org --recv-key 612DEFB798507F25 \
         && apt-get -y update \
-        && apt-get install -y python3-pip \
-        && apt-get install -y python3-venv \
-        && apt-get install -y python3-cairo \
-        && apt-get install -y python3-matplotlib \
-        && apt-get install -y python3-decorator \ 
-        && apt-get install -y python3-graph-tool
+        && apt-get install -y --no-install-recommends \
+        python3-pip \
+        python3-venv \
+        python3-decorator \ 
+        python3-graph-tool
 
 
 # # Set up venv to avoid root installing/running python.
 ENV VIRTUAL_ENV=/opt/venv
 RUN python3 -m venv --system-site-packages ${VIRTUAL_ENV}
-# RUN source ${VIRTUAL_ENV}/bin/activate
 ENV PATH="${VIRTUAL_ENV}/bin:/app:$PATH"
-ENV PYTHONPATH="/app:$PYTHONPATH"
-
-RUN pip3 install --upgrade pip
+ENV PYTHONPATH "/app:$PYTHONPATH"
 
 COPY ./src /app
 
 # Used --no-cache-dir to save resources when using Docker Desktop on OSX.
 # Otherwise the install failed on my local machine.
-RUN pip3 install --no-cache-dir -r /app/requirements.txt
-
-# CMD ["python3", "/app/test_graph_tool.py"]
+# torch MUST be installed prior to installing torch-geometric
+        # && pip3 install --no-cache-dir torch-sparse -f https://pytorch-geometric.com/whl/torch-1.9.0+cu111.html \
+        # && pip3 install --no-cache-dir torch==1.9.0+cu111 -f https://download.pytorch.org/whl/torch_stable.html \
+RUN pip3 install --upgrade pip \
+        && pip install torch-sparse -f https://pytorch-geometric.com/whl/torch-1.9.0+cpu.html \
+        && pip3 install --no-cache-dir -r /app/requirements.txt \
+        && pip3 cache purge
 
 # Install apache beam sdk
 # Example: https://github.com/GoogleCloudPlatform/python-docs-samples/blob/master/dataflow/gpu-workers/Dockerfile

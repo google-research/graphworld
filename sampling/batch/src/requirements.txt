@@ -1,9 +1,14 @@
-# this might take some time.
-dataclasses # Incase we're not use py3.7
+dataclasses # Incase we're not use py >=3.7
 numpy
 absl-py
 gin-config
 apache-beam[gcp]
-# torch 
-# torch-geometric
+
+# Assumes torch is installed on system, to side-step 
+# that torch and extensions cannot be installed with the same pip command
+torch-geometric
+networkx
+
+
+
 

@@ -16,6 +16,7 @@ from apache_beam.options.pipeline_options import SetupOptions
 
 import numpy as np
 
+
 class SampleSbmDoFn(beam.DoFn):
 
     def process(self, element):
@@ -26,7 +27,7 @@ class SampleSbmDoFn(beam.DoFn):
         # a custom container. The import will execute once then the sys.modeules
         # will be referenced to further calls.
         import numpy as np
-        from graph_tool.all import *
+        from sbm.sbm_simulator import StochasticBlockModel
 
         # Parameterize me...
         nvertex_min = 5
@@ -54,6 +55,16 @@ class SampleSbmDoFn(beam.DoFn):
             'edge_center_distance': edge_center_distance,
             'edge_feature_dim': edge_feature_dim
         }
+
+        data = GenerateStochasticBlockModelWithFeatures(
+            num_verticies = generator_config['num_verticies'],
+            num_edges = generator_config['num_edges'],
+            pi = np.array([0.25, 0.25, 0.25, 0.25]),
+            prop_mat = np.ones((4, 4)) + 9.0 * np.diag([1,1,1,1]),
+            feature_center_distance = generator_config['feature_center_distance'],
+            edge_center_distance = generator_config['edge_center_distance'],
+            ege_feature_dim = generator_config['edge_feature_dim']
+        )
 
         yield generator_config
 
