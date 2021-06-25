@@ -1,10 +1,12 @@
 #!/bin/bash
+#
+# Utilize docker-compose to run beam-pipeline locally in the same environment
+# as the remote workers.
+#
 
-docker-compose run research-graph-synthetic python3 /app/beam_sbm.py \
-  --output /app/data/beam_sbm \
-  --runner=DirectRunner 
-  # --job_endpoint=embed \
-  # --environment_type=DOCKER \
-  # --environment_config=gcr.io/research-graph/synthetic
+docker-compose run \
+  --entrypoint "python3 /app/beam_sbm.py --output /app/data/beam_sbm --runner=DirectRunner" \
+  research-graph-synthetic 
+
 
 

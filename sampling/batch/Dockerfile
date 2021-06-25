@@ -32,9 +32,10 @@ COPY ./src /app
 
 # Used --no-cache-dir to save resources when using Docker Desktop on OSX.
 # Otherwise the install failed on my local machine.
-# torch MUST be installed prior to installing torch-geometric
+# torch MUST be installed prior to installing torch-geometric.
+# Image size was causing download timeouts when using cuda versions of torch+sparse+geometric
+# Switched to CPU, need to re-think this if GPU is needed.
         # && pip3 install --no-cache-dir torch-sparse -f https://pytorch-geometric.com/whl/torch-1.9.0+cu111.html \
-        # && pip3 install --no-cache-dir torch==1.9.0+cu111 -f https://download.pytorch.org/whl/torch_stable.html \
 RUN pip3 install --upgrade pip \
         && pip install torch-sparse -f https://pytorch-geometric.com/whl/torch-1.9.0+cpu.html \
         && pip3 install --no-cache-dir -r /app/requirements.txt \

@@ -10,6 +10,8 @@ import dataclasses
 import graph_tool
 import numpy as np
 
+from graph_tool.all import *
+
 
 class MatchType(enum.Enum):
   """Indicates type of feature/graph membership matching to do.
