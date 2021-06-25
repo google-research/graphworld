@@ -1,8 +1,0 @@
-# this might take some time.
-wheel
-absl-py
-apache-beam[gcp]
-gin-config
-# torch 
-# torch-geometric
-
