@@ -12,27 +12,18 @@ from apache_beam.io import ReadFromText
 from apache_beam.options.pipeline_options import PipelineOptions
 from apache_beam.options.pipeline_options import SetupOptions
 
-import numpy as np
-
 
 class SampleSbmDoFn(beam.DoFn):
 
-    def __init__(self, output_path):
-        self.output_path_ = output_path
-
-    def process(self, element):
+    def process(self, sample_id):
         """Sample and save SMB outputs given a configuration filepath.
         """
         # Avoid save_main_session in Pipeline args so the controller doesn't
         # have to import the same libraries as the workers which may be using
         # a custom container. The import will execute once then the sys.modeules
         # will be referenced to further calls.
-        import os
-
         import numpy as np
-
         from sbm.sbm_simulator import GenerateStochasticBlockModelWithFeatures
-        import apache_beam
 
         # Parameterize me...
         nvertex_min = 5
@@ -69,14 +60,71 @@ class SampleSbmDoFn(beam.DoFn):
             edge_feature_dim = generator_config['edge_feature_dim']
         )
 
-        config_object_name = os.path.join(self.output_path_, 'config_{0:05}.json'.format(element))
-        with apache_beam.io.filesystems.FileSystems.create(config_object_name, "text/plain") as f:
-            buf = bytes(json.dumps(generator_config), 'utf-8')
+        yield {'sample_id': sample_id,
+               'generator_config': generator_config,
+               'data': data}
+
+class WriteSbmDoFn(beam.DoFn):
+
+    def __init__(self, output_path):
+        self.output_path_ = output_path
+
+    def process(self, element):
+        import apache_beam
+        import numpy as np
+
+        sample_id = element['sample_id']
+        config = element['generator_config']
+        data = element['data']
+
+        text_mime = 'text/plain'
+        prefix = '{0:05}'.format(sample_id)
+        config_object_name = os.path.join(self.output_path_, prefix + '_config.txt')
+        with apache_beam.io.filesystems.FileSystems.create(config_object_name, text_mime) as f:
+            buf = bytes(json.dumps(config), 'utf-8')
             f.write(buf)
             f.close()
 
+        graph_object_name = os.path.join(self.output_path_, prefix + '_graph.gt')
+        with apache_beam.io.filesystems.FileSystems.create(graph_object_name) as f:
+            data.graph.save(f)
+            f.close()
 
-        yield generator_config
+        graph_memberships_object_name = os.path.join(
+            self.output_path_, prefix + '_graph_memberships.txt')
+        with apache_beam.io.filesystems.FileSystems.create(graph_memberships_object_name, text_mime) as f:
+            np.savetxt(f, data.graph_memberships)
+            f.close()
+
+
+        node_features_object_name = os.path.join(
+            self.output_path_, prefix + '_node_features.txt')
+        with apache_beam.io.filesystems.FileSystems.create(node_features_object_name, text_mime) as f:
+            np.savetxt(f, data.node_features)
+            f.close()
+
+        feature_memberships_object_name = os.path.join(
+            self.output_path_, prefix + '_feature_membership.txt')
+        with apache_beam.io.filesystems.FileSystems.create(feature_memberships_object_name, text_mime) as f:
+            np.savetxt(f, data.feature_memberships)
+            f.close()
+
+        edge_features_object_name = os.path.join(
+            self.output_path_, prefix + '_edge_features.txt')
+        with apache_beam.io.filesystems.FileSystems.create(edge_features_object_name, text_mime) as f:
+            for edge_tuple, features in data.edge_features.items():
+                buf = bytes('{0},{1},{2}'.format(edge_tuple[0], edge_tuple[1], features), 'utf-8')
+                f.write(buf)
+            f.close()
+
+
+class ConvertToTorchGeoDataParDo(beam.DoFn):
+    def process(self, element):
+        sample_id = element['sample_id']
+        data = element['data']
+        from sbm.utils import sbm_data_to_torchgeo_data
+        yield sample_id, sbm_data_to_torchgeo_data(data)
+
 
 def main(argv=None):
     parser = argparse.ArgumentParser()
@@ -103,14 +151,16 @@ def main(argv=None):
 
     with beam.Pipeline(options=pipeline_options) as p:
 
-        results = (
+        graph_samples = (
             p
-            | 'Create Inputs' >> beam.Create(range(args.nsamples))
-            | 'Sample Graphs' >> beam.ParDo(SampleSbmDoFn(args.output))
+            | 'Create Sample Ids' >> beam.Create(range(args.nsamples))
+            | 'Sample Graphs' >> beam.ParDo(SampleSbmDoFn())
         )
 
+        (graph_samples | 'Write Sampled Graph' >> beam.ParDo(WriteSbmDoFn(args.output)))
+
+        torchgeo_data = (graph_samples | 'Convert to torchgeo data.' >> beam.ParDo(ConvertToTorchGeoDataParDo()))
+
+
 if __name__ == '__main__':
-    # flags.mark_flag_as_required('input_collection')
-    # flags.mark_flag_as_required('output_path')
-    # app.run(main)
     main(None)
