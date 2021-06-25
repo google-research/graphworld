@@ -17,6 +17,9 @@ import numpy as np
 
 class SampleSbmDoFn(beam.DoFn):
 
+    def __init__(self, output_path):
+        self.output_path_ = output_path
+
     def process(self, element):
         """Sample and save SMB outputs given a configuration filepath.
         """
@@ -24,8 +27,12 @@ class SampleSbmDoFn(beam.DoFn):
         # have to import the same libraries as the workers which may be using
         # a custom container. The import will execute once then the sys.modeules
         # will be referenced to further calls.
+        import os
+
         import numpy as np
+
         from sbm.sbm_simulator import GenerateStochasticBlockModelWithFeatures
+        import apache_beam
 
         # Parameterize me...
         nvertex_min = 5
@@ -62,6 +69,13 @@ class SampleSbmDoFn(beam.DoFn):
             edge_feature_dim = generator_config['edge_feature_dim']
         )
 
+        config_object_name = os.path.join(self.output_path_, 'config_{0:05}.json'.format(element))
+        with apache_beam.io.filesystems.FileSystems.create(config_object_name, "text/plain") as f:
+            buf = bytes(json.dumps(generator_config), 'utf-8')
+            f.write(buf)
+            f.close()
+
+
         yield generator_config
 
 def main(argv=None):
@@ -71,6 +85,12 @@ def main(argv=None):
                         dest='output',
                         default='/tmp/graph_configs.json',
                         help='Location to write output files.')
+
+    parser.add_argument('--nsamples',
+                        dest='nsamples',
+                        type=int,
+                        default=100,
+                        help='The number of graph samples.')
 
     args, pipeline_args = parser.parse_known_args(argv)
 
@@ -85,9 +105,8 @@ def main(argv=None):
 
         results = (
             p
-            | 'Create Inputs' >> beam.Create(range(100))
-            | 'Sample Graphs' >> beam.ParDo(SampleSbmDoFn())
-            | 'Write Configs' >> beam.io.WriteToText(args.output)
+            | 'Create Inputs' >> beam.Create(range(args.nsamples))
+            | 'Sample Graphs' >> beam.ParDo(SampleSbmDoFn(args.output))
         )
 
 if __name__ == '__main__':

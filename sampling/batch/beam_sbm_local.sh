@@ -5,7 +5,7 @@
 #
 
 docker-compose run \
-  --entrypoint "python3 /app/beam_sbm.py --output /app/data/beam_sbm --runner=DirectRunner" \
+  --entrypoint "python3 /app/beam_sbm.py --output /app/data/beam_sbm --nsamples 5 --runner=DirectRunner" \
   research-graph-synthetic 
 
 
