@@ -16,10 +16,10 @@ from apache_beam.options.pipeline_options import SetupOptions
 class SampleSbmDoFn(beam.DoFn):
 
     def __init__(self, nvertex_min, nvertex_max, nedges_min, nedges_max):
-        self.nvertex_min_ = nvertex_min
-        self.nvertex_max_ = nvertex_max
-        self.nedges_min_ = nedges_min
-        self.nedges_max_ = nedges_max
+        self._nvertex_min = nvertex_min
+        self._nvertex_max = nvertex_max
+        self._nedges_min = nedges_min
+        self._nedges_max = nedges_max
 
     def process(self, sample_id):
         """Sample and save SMB outputs given a configuration filepath.
@@ -38,8 +38,8 @@ class SampleSbmDoFn(beam.DoFn):
         edge_center_distance = 2.0
         edge_feature_dim = 4
 
-        num_vertices = np.random.randint(self.nvertex_min_, self.nvertex_max_)
-        num_edges = np.random.randint(self.nedges_min_, self.nedges_max_)
+        num_vertices = np.random.randint(self._nvertex_min, self._nvertex_max)
+        num_edges = np.random.randint(self._nedges_min, self._nedges_max)
 
         generator_config = {
             'generator_name': 'StochasticBlockModel',
@@ -69,7 +69,7 @@ class SampleSbmDoFn(beam.DoFn):
 class WriteSbmDoFn(beam.DoFn):
 
     def __init__(self, output_path):
-        self.output_path_ = output_path
+        self._output_path = output_path
 
     def process(self, element):
         import apache_beam
@@ -83,38 +83,38 @@ class WriteSbmDoFn(beam.DoFn):
 
         text_mime = 'text/plain'
         prefix = '{0:05}'.format(sample_id)
-        config_object_name = os.path.join(self.output_path_, prefix + '_config.txt')
+        config_object_name = os.path.join(self._output_path, prefix + '_config.txt')
         with apache_beam.io.filesystems.FileSystems.create(config_object_name, text_mime) as f:
             buf = bytes(json.dumps(config), 'utf-8')
             f.write(buf)
             f.close()
 
-        graph_object_name = os.path.join(self.output_path_, prefix + '_graph.gt')
+        graph_object_name = os.path.join(self._output_path, prefix + '_graph.gt')
         with apache_beam.io.filesystems.FileSystems.create(graph_object_name) as f:
             data.graph.save(f)
             f.close()
 
         graph_memberships_object_name = os.path.join(
-            self.output_path_, prefix + '_graph_memberships.txt')
+            self._output_path, prefix + '_graph_memberships.txt')
         with apache_beam.io.filesystems.FileSystems.create(graph_memberships_object_name, text_mime) as f:
             np.savetxt(f, data.graph_memberships)
             f.close()
 
 
         node_features_object_name = os.path.join(
-            self.output_path_, prefix + '_node_features.txt')
+            self._output_path, prefix + '_node_features.txt')
         with apache_beam.io.filesystems.FileSystems.create(node_features_object_name, text_mime) as f:
             np.savetxt(f, data.node_features)
             f.close()
 
         feature_memberships_object_name = os.path.join(
-            self.output_path_, prefix + '_feature_membership.txt')
+            self._output_path, prefix + '_feature_membership.txt')
         with apache_beam.io.filesystems.FileSystems.create(feature_memberships_object_name, text_mime) as f:
             np.savetxt(f, data.feature_memberships)
             f.close()
 
         edge_features_object_name = os.path.join(
-            self.output_path_, prefix + '_edge_features.txt')
+            self._output_path, prefix + '_edge_features.txt')
         with apache_beam.io.filesystems.FileSystems.create(edge_features_object_name, text_mime) as f:
             for edge_tuple, features in data.edge_features.items():
                 buf = bytes('{0},{1},{2}'.format(edge_tuple[0], edge_tuple[1], features), 'utf-8')
@@ -124,7 +124,7 @@ class WriteSbmDoFn(beam.DoFn):
 
 class ConvertToTorchGeoDataParDo(beam.DoFn):
     def __init__(self, output_path):
-        self.output_path_ = output_path
+        self._output_path = output_path
 
     def process(self, element):
         import numpy as np
@@ -144,13 +144,13 @@ class ConvertToTorchGeoDataParDo(beam.DoFn):
             # 'undirected': bool(torchgeo_data.is_undirected())
         }
 
-        stats_object_name = os.path.join(self.output_path_, '{0:05}_torchgeo_stats.txt'.format(sample_id))
+        stats_object_name = os.path.join(self._output_path, '{0:05}_torchgeo_stats.txt'.format(sample_id))
         with apache_beam.io.filesystems.FileSystems.create(stats_object_name, 'text/plain') as f:
             buf = bytes(json.dumps(torchgeo_stats), 'utf-8')
             f.write(buf)
             f.close()
 
-        masks_object_name = os.path.join(self.output_path_, '{0:05}_masks.txt'.format(sample_id))
+        masks_object_name = os.path.join(self._output_path, '{0:05}_masks.txt'.format(sample_id))
         with apache_beam.io.filesystems.FileSystems.create(masks_object_name, 'text/plain') as f:
             for mask in masks:
                 np.savetxt(f, np.atleast_2d(mask.numpy()), fmt='%i', delimiter=' ')
@@ -163,14 +163,45 @@ class ConvertToTorchGeoDataParDo(beam.DoFn):
         yield out
 
 
-class BenchmarkGCNParDo(beam.DoFn):
-    def __init__(self, output_path):
-        self.output_path_ = output_path
+class BenchmarkLinearGCNParDo(beam.DoFn):
+    def __init__(self, output_path, num_features, num_classes, hidden_channels, epochs):
+        self._output_path = output_path
+        self._num_features = num_features
+        self._num_classes = num_classes
+        self._hidden_channels = hidden_channels
+        self._epochs = epochs
 
     def process(self, element):
+        import apache_beam
+        from sbm.models import LinearGCN
         sample_id = element['sample_id']
         torch_data = element['torch_data']
         masks = element['masks']
+
+        train_mask, val_mask, test_mask = masks
+        linear_model = LinearGCN(
+            self._num_features,
+            self._num_classes,
+            self._hidden_channels,
+            train_mask,
+            val_mask,
+            test_mask)
+
+        losses = linear_model.train(self._epochs, torch_data)
+        test_accuracy = linear_model.test(torch_data)
+
+        results = {
+            'losses': losses,
+            'test_accuracy': test_accuracy
+        }
+
+        print(f'results: {results}')
+
+        results_object_name = os.path.join(self._output_path, '{0:05}_results.txt'.format(sample_id))
+        with apache_beam.io.filesystems.FileSystems.create(results_object_name, 'text/plain') as f:
+            buf = bytes(json.dumps(results), 'utf-8')
+            f.write(buf)
+            f.close()
 
 
 def main(argv=None):
@@ -218,6 +249,12 @@ def main(argv=None):
     pipeline_options = PipelineOptions(pipeline_args)
     pipeline_options.view_as(SetupOptions).save_main_session = False
 
+    # Parameterize
+    num_features = 16
+    num_classes = 4
+    hidden_channels = 8
+    epochs = 256
+
     with beam.Pipeline(options=pipeline_options) as p:
 
         graph_samples = (
@@ -230,7 +267,9 @@ def main(argv=None):
 
         (graph_samples | 'Write Sampled Graph' >> beam.ParDo(WriteSbmDoFn(args.output)))
 
-        torchgeo_data = (graph_samples | 'Convert to torchgeo data.' >> beam.ParDo(ConvertToTorchGeoDataParDo(args.output)))
+        (graph_samples
+            | 'Convert to torchgeo data.' >> beam.ParDo(ConvertToTorchGeoDataParDo(args.output))
+            | 'Benchmark Linear GCN.' >> beam.ParDo(BenchmarkLinearGCNParDo(args.output, num_features, num_classes, hidden_channels, epochs)))
 
 
 if __name__ == '__main__':

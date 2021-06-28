@@ -1,5 +1,6 @@
 dataclasses # Incase we're not use py >=3.7
-numpy
+numpy==1.19.0
+scipy==1.4.0
 absl-py
 gin-config
 apache-beam[gcp]
