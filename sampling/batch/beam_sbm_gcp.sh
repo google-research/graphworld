@@ -1,7 +1,7 @@
 #!/bin/bash
 
 TEMP_LOCATION="gs://research-graph-synthetic/temp"
-OUTPUT_PATH="gs://research-graph-synthetic/sampling"
+OUTPUT_PATH="gs://research-graph-synthetic/${USER}/sampling"
 
 gsutil -m rm -r "${OUTPUT_PATH}"
 
