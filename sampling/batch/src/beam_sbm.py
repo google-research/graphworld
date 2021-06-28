@@ -195,8 +195,6 @@ class BenchmarkLinearGCNParDo(beam.DoFn):
             'test_accuracy': test_accuracy
         }
 
-        print(f'results: {results}')
-
         results_object_name = os.path.join(self._output_path, '{0:05}_results.txt'.format(sample_id))
         with apache_beam.io.filesystems.FileSystems.create(results_object_name, 'text/plain') as f:
             buf = bytes(json.dumps(results), 'utf-8')
