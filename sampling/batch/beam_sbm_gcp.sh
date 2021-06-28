@@ -3,7 +3,7 @@
 TEMP_LOCATION="gs://research-graph-synthetic/temp"
 OUTPUT_PATH="gs://research-graph-synthetic/sampling"
 
-gsutil rm -r "${OUTPUT_PATH}"
+gsutil -m rm -r "${OUTPUT_PATH}"
 
 python3 ./src/beam_sbm.py \
   --runner=DataflowRunner \

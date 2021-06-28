@@ -5,7 +5,7 @@ import os
 import json
 import setuptools
 
-from absl import logging
+# from absl import logging
 
 import apache_beam as beam
 from apache_beam.io import ReadFromText
@@ -14,6 +14,12 @@ from apache_beam.options.pipeline_options import SetupOptions
 
 
 class SampleSbmDoFn(beam.DoFn):
+
+    def __init__(self, nvertex_min, nvertex_max, nedges_min, nedges_max):
+        self.nvertex_min_ = nvertex_min
+        self.nvertex_max_ = nvertex_max
+        self.nedges_min_ = nedges_min
+        self.nedges_max_ = nedges_max
 
     def process(self, sample_id):
         """Sample and save SMB outputs given a configuration filepath.
@@ -26,18 +32,14 @@ class SampleSbmDoFn(beam.DoFn):
         from sbm.sbm_simulator import GenerateStochasticBlockModelWithFeatures
 
         # Parameterize me...
-        nvertex_min = 5
-        nvertex_max = 50
-        nedges_min = 10
-        nedges_max = 100
         edge_center_distance_min = 1.0
         edge_center_distance_max = 10.0
-
-        num_vertices = np.random.randint(nvertex_min, nvertex_max+1)
-        num_edges = np.random.randint(nedges_min, nedges_max+1)
         feature_dim = 16
         edge_center_distance = 2.0
         edge_feature_dim = 4
+
+        num_vertices = np.random.randint(self.nvertex_min_, self.nvertex_max_)
+        num_edges = np.random.randint(self.nedges_min_, self.nedges_max_)
 
         generator_config = {
             'generator_name': 'StochasticBlockModel',
@@ -50,8 +52,8 @@ class SampleSbmDoFn(beam.DoFn):
         }
 
         data = GenerateStochasticBlockModelWithFeatures(
-            num_vertices = generator_config['num_verticies'],
-            num_edges = generator_config['num_edges'],
+            num_vertices = num_vertices,
+            num_edges = num_edges,
             pi = np.array([0.25, 0.25, 0.25, 0.25]),
             prop_mat = np.ones((4, 4)) + 9.0 * np.diag([1,1,1,1]),
             feature_center_distance = generator_config['feature_center_distance'],
@@ -76,6 +78,8 @@ class WriteSbmDoFn(beam.DoFn):
         sample_id = element['sample_id']
         config = element['generator_config']
         data = element['data']
+
+        # print(f'data.graph_memberships: {data.graph_memberships}')
 
         text_mime = 'text/plain'
         prefix = '{0:05}'.format(sample_id)
@@ -119,11 +123,40 @@ class WriteSbmDoFn(beam.DoFn):
 
 
 class ConvertToTorchGeoDataParDo(beam.DoFn):
+    def __init__(self, output_path):
+        self.output_path_ = output_path
+
     def process(self, element):
+        import apache_beam
+        from sbm.utils import sbm_data_to_torchgeo_data, get_kclass_masks
         sample_id = element['sample_id']
-        data = element['data']
-        from sbm.utils import sbm_data_to_torchgeo_data
-        yield sample_id, sbm_data_to_torchgeo_data(data)
+        sbm_data = element['data']
+        # print(f'data: {data}')
+        # print(f'data.graph_memberships: {data.graph_memberships}')
+
+        torchgeo_data = sbm_data_to_torchgeo_data(sbm_data)
+        masks = get_kclass_masks(sbm_data)
+        print(f'masks: {masks}')
+        torchgeo_stats = {
+            'nodes': torchgeo_data.num_nodes,
+            'edges': torchgeo_data.num_edges,
+            'average_node_degree': torchgeo_data.num_edges / torchgeo_data.num_nodes,
+            'contains_isolated_nodes': torchgeo_data.contains_isolated_nodes(),
+            'contains_self_loops': torchgeo_data.contains_self_loops(),
+            'undirected': bool(torchgeo_data.is_undirected())
+        }
+
+        stats_object_name = os.path.join(self.output_path_, '{0:05}_torchgeo_stats.txt'.format(sample_id))
+        with apache_beam.io.filesystems.FileSystems.create(stats_object_name, 'text/plain') as f:
+            buf = bytes(json.dumps(torchgeo_stats), 'utf-8')
+            f.write(buf)
+            f.close()
+
+        out = {'sample_id': sample_id,
+               'torchgeo_data': torchgeo_data,
+               'kclass_masks': masks}
+
+        yield out
 
 
 def main(argv=None):
@@ -140,10 +173,32 @@ def main(argv=None):
                         default=100,
                         help='The number of graph samples.')
 
+    parser.add_argument('--nvertex_min',
+                        dest='nvertex_min',
+                        type=int,
+                        default=5,
+                        help='Minimum number of nodes in graph samples.')
+
+    parser.add_argument('--nvertex_max',
+                        dest='nvertex_max',
+                        type=int,
+                        default=50,
+                        help='Maximum number of nodes in the graph samples.')
+
+    parser.add_argument('--nedges_min',
+                        dest='nedges_min',
+                        type=int,
+                        default=10,
+                        help='Minimum number of edges in the graph samples.')
+
+    parser.add_argument('--nedges_max',
+                        dest='nedges_max',
+                        type=int,
+                        default=100,
+                        help='Maximum number of edges in the graph samples.')
+
     args, pipeline_args = parser.parse_known_args(argv)
 
-    logging.info(f'output: {args.output}')
-    logging.info(f'Pipeline Aargs: {pipeline_args}')
     print(f'Pipeline Args: {pipeline_args}')
 
     pipeline_options = PipelineOptions(pipeline_args)
@@ -154,12 +209,14 @@ def main(argv=None):
         graph_samples = (
             p
             | 'Create Sample Ids' >> beam.Create(range(args.nsamples))
-            | 'Sample Graphs' >> beam.ParDo(SampleSbmDoFn())
+            | 'Sample Graphs' >> beam.ParDo(
+                SampleSbmDoFn(args.nvertex_min, args.nvertex_max,
+                              args.nedges_min, args.nedges_max))
         )
 
         (graph_samples | 'Write Sampled Graph' >> beam.ParDo(WriteSbmDoFn(args.output)))
 
-        torchgeo_data = (graph_samples | 'Convert to torchgeo data.' >> beam.ParDo(ConvertToTorchGeoDataParDo()))
+        torchgeo_data = (graph_samples | 'Convert to torchgeo data.' >> beam.ParDo(ConvertToTorchGeoDataParDo(args.output)))
 
 
 if __name__ == '__main__':

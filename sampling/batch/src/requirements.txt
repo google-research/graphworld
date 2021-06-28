@@ -3,10 +3,6 @@ numpy
 absl-py
 gin-config
 apache-beam[gcp]
-
-# Assumes torch is installed on system, to side-step 
-# that torch and extensions cannot be installed with the same pip command
-torch-geometric
 networkx
 
 

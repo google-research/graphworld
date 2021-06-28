@@ -11,3 +11,4 @@ services:
     volumes:
       # Map src -> app for code updates.
       - ${PWD}/src:/app
+      - /tmp:/tmp

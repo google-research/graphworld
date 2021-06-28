@@ -37,9 +37,12 @@ COPY ./src /app
 # Switched to CPU, need to re-think this if GPU is needed.
         # && pip3 install --no-cache-dir torch-sparse -f https://pytorch-geometric.com/whl/torch-1.9.0+cu111.html \
         # && pip3 install --no-cache-dir torch-sparse -f https://pytorch-geometric.com/whl/torch-1.9.0+cpu.html \
+# Note, torch-geometric and it's deps can't be installed in the same
+# pip command...
 RUN pip3 install --upgrade pip \
-        && pip3 install torch \
-        && pip3 install torch-sparse https://pytorch-geometric.com/whl/torch-1.9.0+cpu.html \
+        && pip install --no-cache-dir torch==1.9.0+cpu -f https://download.pytorch.org/whl/torch_stable.html \
+        && pip3 install --no-index --no-cache-dir torch-sparse torch-scatter -f https://pytorch-geometric.com/whl/torch-1.9.0+cpu.html \
+        && pip3 install --no-cache-dir torch-geometric \
         && pip3 install --no-cache-dir -r /app/requirements.txt \
         && pip3 cache purge
 
