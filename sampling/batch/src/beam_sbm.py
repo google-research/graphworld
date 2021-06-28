@@ -127,23 +127,21 @@ class ConvertToTorchGeoDataParDo(beam.DoFn):
         self.output_path_ = output_path
 
     def process(self, element):
+        import numpy as np
         import apache_beam
         from sbm.utils import sbm_data_to_torchgeo_data, get_kclass_masks
         sample_id = element['sample_id']
         sbm_data = element['data']
-        # print(f'data: {data}')
-        # print(f'data.graph_memberships: {data.graph_memberships}')
 
         torchgeo_data = sbm_data_to_torchgeo_data(sbm_data)
         masks = get_kclass_masks(sbm_data)
-        print(f'masks: {masks}')
         torchgeo_stats = {
             'nodes': torchgeo_data.num_nodes,
             'edges': torchgeo_data.num_edges,
             'average_node_degree': torchgeo_data.num_edges / torchgeo_data.num_nodes,
-            'contains_isolated_nodes': torchgeo_data.contains_isolated_nodes(),
-            'contains_self_loops': torchgeo_data.contains_self_loops(),
-            'undirected': bool(torchgeo_data.is_undirected())
+            # 'contains_isolated_nodes': torchgeo_data.contains_isolated_nodes(),
+            # 'contains_self_loops': torchgeo_data.contains_self_loops(),
+            # 'undirected': bool(torchgeo_data.is_undirected())
         }
 
         stats_object_name = os.path.join(self.output_path_, '{0:05}_torchgeo_stats.txt'.format(sample_id))
@@ -152,11 +150,27 @@ class ConvertToTorchGeoDataParDo(beam.DoFn):
             f.write(buf)
             f.close()
 
+        masks_object_name = os.path.join(self.output_path_, '{0:05}_masks.txt'.format(sample_id))
+        with apache_beam.io.filesystems.FileSystems.create(masks_object_name, 'text/plain') as f:
+            for mask in masks:
+                np.savetxt(f, np.atleast_2d(mask.numpy()), fmt='%i', delimiter=' ')
+            f.close()
+
         out = {'sample_id': sample_id,
-               'torchgeo_data': torchgeo_data,
-               'kclass_masks': masks}
+               'torch_data': torchgeo_data,
+               'masks': masks}
 
         yield out
+
+
+class BenchmarkGCNParDo(beam.DoFn):
+    def __init__(self, output_path):
+        self.output_path_ = output_path
+
+    def process(self, element):
+        sample_id = element['sample_id']
+        torch_data = element['torch_data']
+        masks = element['masks']
 
 
 def main(argv=None):

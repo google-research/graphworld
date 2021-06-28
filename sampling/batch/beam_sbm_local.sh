@@ -4,11 +4,14 @@
 # as the remote workers.
 #
 
-# rm  ./src/data/beam_sbm/*
+
+OUTPUT_PATH="/tmp/sbm"
+
+rm -rf "${OUTPUT_PATH}"
 
 docker-compose run \
   --entrypoint "python3 /app/beam_sbm.py \
-  --output /tmp/sbm \
+  --output ${OUTPUT_PATH} \
   --nsamples 5 \
   --nvertex_min 10 --nvertex_max 15 \
   --nedges_min 5 --nedges_max 10 \
