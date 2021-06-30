@@ -1,14 +1,12 @@
 """Beam pipeline for generating random graph samples.
 """
 import argparse
-import os
 import json
+import logging
+import os
 import setuptools
 
-# from absl import logging
-
 import apache_beam as beam
-from apache_beam.io import ReadFromText
 from apache_beam.options.pipeline_options import PipelineOptions
 from apache_beam.options.pipeline_options import SetupOptions
 
@@ -79,8 +77,6 @@ class WriteSbmDoFn(beam.DoFn):
         config = element['generator_config']
         data = element['data']
 
-        # print(f'data.graph_memberships: {data.graph_memberships}')
-
         text_mime = 'text/plain'
         prefix = '{0:05}'.format(sample_id)
         config_object_name = os.path.join(self._output_path, prefix + '_config.txt')
@@ -127,43 +123,61 @@ class ConvertToTorchGeoDataParDo(beam.DoFn):
         self._output_path = output_path
 
     def process(self, element):
-        import numpy as np
+        import logging
         import apache_beam
+        import numpy as np
         from sbm.utils import sbm_data_to_torchgeo_data, get_kclass_masks
         sample_id = element['sample_id']
         sbm_data = element['data']
 
-        torchgeo_data = sbm_data_to_torchgeo_data(sbm_data)
-        masks = get_kclass_masks(sbm_data)
-        torchgeo_stats = {
-            'nodes': torchgeo_data.num_nodes,
-            'edges': torchgeo_data.num_edges,
-            'average_node_degree': torchgeo_data.num_edges / torchgeo_data.num_nodes,
-            # 'contains_isolated_nodes': torchgeo_data.contains_isolated_nodes(),
-            # 'contains_self_loops': torchgeo_data.contains_self_loops(),
-            # 'undirected': bool(torchgeo_data.is_undirected())
+        out = {
+            'sample_id': sample_id,
+            'torch_data': None,
+            'masks': None,
+            'skipped': False
         }
 
-        stats_object_name = os.path.join(self._output_path, '{0:05}_torchgeo_stats.txt'.format(sample_id))
-        with apache_beam.io.filesystems.FileSystems.create(stats_object_name, 'text/plain') as f:
-            buf = bytes(json.dumps(torchgeo_stats), 'utf-8')
-            f.write(buf)
-            f.close()
+        try:
+            torch_data = sbm_data_to_torchgeo_data(sbm_data)
+            out['torch_data'] = sbm_data_to_torchgeo_data(sbm_data)
 
-        masks_object_name = os.path.join(self._output_path, '{0:05}_masks.txt'.format(sample_id))
-        with apache_beam.io.filesystems.FileSystems.create(masks_object_name, 'text/plain') as f:
-            for mask in masks:
-                np.savetxt(f, np.atleast_2d(mask.numpy()), fmt='%i', delimiter=' ')
-            f.close()
+            torchgeo_stats = {
+                'nodes': torch_data.num_nodes,
+                'edges': torch_data.num_edges,
+                'average_node_degree': torch_data.num_edges / torch_data.num_nodes,
+                # 'contains_isolated_nodes': torchgeo_data.contains_isolated_nodes(),
+                # 'contains_self_loops': torchgeo_data.contains_self_loops(),
+                # 'undirected': bool(torchgeo_data.is_undirected())
+            }
+            stats_object_name = os.path.join(self._output_path, '{0:05}_torch_stats.txt'.format(sample_id))
+            with apache_beam.io.filesystems.FileSystems.create(stats_object_name, 'text/plain') as f:
+                buf = bytes(json.dumps(torchgeo_stats), 'utf-8')
+                f.write(buf)
+                f.close()
+        except:
+            out['skipped'] = True
+            print(f'faied convert {sample_id}')
+            logging.info(f'Failed to convert sbm_data to torchgeo for sample id {sample_id}')
+            yield out
 
-        out = {'sample_id': sample_id,
-               'torch_data': torchgeo_data,
-               'masks': masks}
+        try:
+            out['masks'] = get_kclass_masks(sbm_data)
+
+            masks_object_name = os.path.join(self._output_path, '{0:05}_masks.txt'.format(sample_id))
+            with apache_beam.io.filesystems.FileSystems.create(masks_object_name, 'text/plain') as f:
+                for mask in out['masks']:
+                    np.savetxt(f, np.atleast_2d(mask.numpy()), fmt='%i', delimiter=' ')
+                f.close()
+        except:
+            out['skipped'] = True
+            print(f'failed masks {sample_id}')
+            logging.info(f'Failed to sample masks for sample id {sample_id}')
+            yield out
 
         yield out
 
 
-class BenchmarkLinearGCNParDo(beam.DoFn):
+class BenchmarkSimpleGCNParDo(beam.DoFn):
     def __init__(self, output_path, num_features, num_classes, hidden_channels, epochs):
         self._output_path = output_path
         self._num_features = num_features
@@ -172,11 +186,22 @@ class BenchmarkLinearGCNParDo(beam.DoFn):
         self._epochs = epochs
 
     def process(self, element):
+        import logging
         import apache_beam
         from sbm.models import LinearGCN
         sample_id = element['sample_id']
         torch_data = element['torch_data']
         masks = element['masks']
+        skipped = element['skipped']
+
+        out = {
+            'skipped': skipped,
+            'results': None
+        }
+
+        if skipped:
+            logging.info(f'Skipping benchmark for sample id {sample_id}')
+            return
 
         train_mask, val_mask, test_mask = masks
         linear_model = LinearGCN(
@@ -188,9 +213,15 @@ class BenchmarkLinearGCNParDo(beam.DoFn):
             test_mask)
 
         losses = linear_model.train(self._epochs, torch_data)
-        test_accuracy = linear_model.test(torch_data)
+        test_accuracy = None
+        try:
+            # Divide by zero somesimtes happens with the ksample masks.
+            test_accuracy = linear_model.test(torch_data)
+        except:
+            logging.info(f'Failed to compute test accuracy for sample id {sample_id}')
 
         results = {
+            'sample_id': sample_id,
             'losses': losses,
             'test_accuracy': test_accuracy
         }
@@ -200,6 +231,9 @@ class BenchmarkLinearGCNParDo(beam.DoFn):
             buf = bytes(json.dumps(results), 'utf-8')
             f.write(buf)
             f.close()
+
+        yield results
+
 
 
 def main(argv=None):
@@ -263,11 +297,22 @@ def main(argv=None):
                               args.nedges_min, args.nedges_max))
         )
 
-        (graph_samples | 'Write Sampled Graph' >> beam.ParDo(WriteSbmDoFn(args.output)))
+        graph_samples | 'Write Sampled Graph' >> beam.ParDo(WriteSbmDoFn(args.output))
 
-        (graph_samples
-            | 'Convert to torchgeo data.' >> beam.ParDo(ConvertToTorchGeoDataParDo(args.output))
-            | 'Benchmark Linear GCN.' >> beam.ParDo(BenchmarkLinearGCNParDo(args.output, num_features, num_classes, hidden_channels, epochs)))
+        torch_data = (
+            graph_samples | 'Convert to torchgeo data.' >> beam.ParDo(ConvertToTorchGeoDataParDo(args.output)))
+
+
+        (torch_data | 'Filter skipped conversions' >> beam.Filter(lambda el: el['skipped'])
+                    | 'Extract skipped sample ids' >> beam.FlatMap(lambda el: el['sample_id'])
+                    | 'Write skipped text file' >> beam.io.WriteToText(os.path.join(args.output, 'skipped.txt')))
+
+        torch_data | 'Benchmark Simple GCN.' >> beam.ParDo(BenchmarkSimpleGCNParDo(
+                args.output, num_features, num_classes, hidden_channels, epochs))
+
+
+
+
 
 
 if __name__ == '__main__':
