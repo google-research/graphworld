@@ -276,7 +276,7 @@ def main(argv=None):
 
     args, pipeline_args = parser.parse_known_args(argv)
 
-    print(f'Pipeline Args: {pipeline_args}')
+    logging.info(f'Pipeline Args: {pipeline_args}')
 
     pipeline_options = PipelineOptions(pipeline_args)
     pipeline_options.view_as(SetupOptions).save_main_session = False
