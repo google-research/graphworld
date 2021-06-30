@@ -304,7 +304,7 @@ def main(argv=None):
 
 
         (torch_data | 'Filter skipped conversions' >> beam.Filter(lambda el: el['skipped'])
-                    | 'Extract skipped sample ids' >> beam.FlatMap(lambda el: el['sample_id'])
+                    | 'Extract skipped sample ids' >> beam.Map(lambda el: el['sample_id'])
                     | 'Write skipped text file' >> beam.io.WriteToText(os.path.join(args.output, 'skipped.txt')))
 
         torch_data | 'Benchmark Simple GCN.' >> beam.ParDo(BenchmarkSimpleGCNParDo(
