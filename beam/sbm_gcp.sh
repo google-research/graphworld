@@ -1,15 +1,13 @@
 #!/bin/bash
 
-TEMP_LOCATION="gs://research-graph-synthetic/temp"
-
-
 OUTPUT_PATH="gs://research-graph-synthetic/${USER}/sampling/$(date +"%Y-%m-%d_%H-%M-%S")"
+TEMP_LOCATION="${OUTPUT_PATH}/temp"
 echo "OUTPUT_PATH: ${OUTPUT_PATH}"
 
 NSAMPLES="${1:-10000}"
 echo "NSAMPLES: ${NSAMPLES}"
 
-python3 ./src/beam_sbm.py \
+ENTRYPOINT="python3 /app/beam_sbm.py \
   --runner=DataflowRunner \
   --project=research-graph \
   --region=us-east1 \
@@ -19,4 +17,10 @@ python3 ./src/beam_sbm.py \
   --experiments=use_monitoring_state_manager \
   --experiments=enable_execution_details_collection \
   --experiment=use_runner_v2 \
-  --worker_harness_container_image=gcr.io/research-graph/research-graph-synthetic:latest
+  --worker_harness_container_image=gcr.io/research-graph/research-graph-synthetic:latest"
+
+echo "entrypoint: ${ENTRYPOINT}"
+
+docker-compose run --entrypoint "${ENTRYPOINT}" research-graph-synthetic
+  
+  

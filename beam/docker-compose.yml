@@ -6,9 +6,16 @@ services:
       context: .
     stdin_open: true
     tty: true
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/root/.config/gcloud/application_default_credentials.json
     image:
       research-graph-synthetic:latest
     volumes:
       # Map src -> app for code updates.
       - ${PWD}/src:/app
+      
+      # Map /tmp -> /tmp to output data for local testing
       - /tmp:/tmp
+      
+      # Mount config on host to access gcloud credentials.
+      - ~/.config/gcloud:/root/.config/gcloud
