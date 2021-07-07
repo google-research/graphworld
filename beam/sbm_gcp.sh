@@ -11,6 +11,7 @@ ENTRYPOINT="python3 /app/beam_sbm.py \
   --runner=DataflowRunner \
   --project=research-graph \
   --region=us-east1 \
+  --max_num_workers=256 \
   --temp_location="${TEMP_LOCATION}" \
   --output="${OUTPUT_PATH}" \
   --nsamples="${NSAMPLES}" \
