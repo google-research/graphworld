@@ -3,7 +3,7 @@ numpy==1.19.0
 scipy==1.4.0
 absl-py
 gin-config
-apache-beam[gcp]
+apache-beam[gcp]==2.30.0
 networkx
 
 
