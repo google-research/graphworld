@@ -8,7 +8,7 @@ echo "OUTPUT_PATH: ${OUTPUT_PATH}"
 NSAMPLES="${1:-10000}"
 echo "NSAMPLES: ${NSAMPLES}"
 
-JOB_NAME="${USER}-${TIMESTAMP}"
+JOB_NAME=$(echo "${USER}-${TIMESTAMP}" | tr '_' '-')
 
 ENTRYPOINT="python3 /app/beam_sbm.py \
   --runner=DataflowRunner \
