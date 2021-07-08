@@ -1,11 +1,14 @@
 #!/bin/bash
 
-OUTPUT_PATH="gs://research-graph-synthetic/${USER}/sampling/$(date +"%Y-%m-%d_%H-%M-%S")"
+TIMESTAMP="$(date +"%Y-%m-%d-%H-%M-%S")"
+OUTPUT_PATH="gs://research-graph-synthetic/${USER}/sampling/${TIMESTAMP}"
 TEMP_LOCATION="${OUTPUT_PATH}/temp"
 echo "OUTPUT_PATH: ${OUTPUT_PATH}"
 
 NSAMPLES="${1:-10000}"
 echo "NSAMPLES: ${NSAMPLES}"
+
+JOB_NAME="${USER}-${TIMESTAMP}"
 
 ENTRYPOINT="python3 /app/beam_sbm.py \
   --runner=DataflowRunner \
@@ -15,6 +18,7 @@ ENTRYPOINT="python3 /app/beam_sbm.py \
   --temp_location="${TEMP_LOCATION}" \
   --output="${OUTPUT_PATH}" \
   --nsamples="${NSAMPLES}" \
+  --job_name="${JOB_NAME}" \
   --experiments=use_monitoring_state_manager \
   --experiments=enable_execution_details_collection \
   --experiment=use_runner_v2 \
