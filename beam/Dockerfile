@@ -16,10 +16,14 @@ RUN apt-get -y update \
         && apt-key adv --keyserver keys.openpgp.org --recv-key 612DEFB798507F25 \
         && apt-get -y update \
         && apt-get install -y --no-install-recommends \
+        build-essential \
+        python3.6-dev \
         python3-pip \
         python3-venv \
-        python3-decorator \ 
-        python3-graph-tool
+        python3-decorator \
+        libcairo2-dev \
+        python3-graph-tool 
+
 
 
 # # Set up venv to avoid root installing/running python.
@@ -51,4 +55,4 @@ RUN pip3 install --upgrade pip \
 COPY --from=apache/beam_python3.6_sdk /opt/apache/beam /opt/apache/beam
 
 # Set the entrypoint to Apache Beam SDK worker launcher.
-ENTRYPOINT [ "/opt/apache/beam/boot" ]
+CMD [ "/opt/apache/beam/boot" ]

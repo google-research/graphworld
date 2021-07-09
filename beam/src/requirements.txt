@@ -5,6 +5,10 @@ absl-py
 gin-config
 apache-beam[gcp]==2.30.0
 networkx
+notebook
+matplotlib
+pycairo
+
 
 
 

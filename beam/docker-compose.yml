@@ -10,6 +10,8 @@ services:
       - GOOGLE_APPLICATION_CREDENTIALS=/root/.config/gcloud/application_default_credentials.json
     image:
       research-graph-synthetic:latest
+    ports:
+      - "8888:8888"
     volumes:
       # Map src -> app for code updates.
       - ${PWD}/src:/app

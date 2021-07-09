@@ -2,7 +2,7 @@
 
 TIMESTAMP="$(date +"%Y-%m-%d-%H-%M-%S")"
 OUTPUT_PATH="gs://research-graph-synthetic/${USER}/sampling/${TIMESTAMP}"
-TEMP_LOCATION="${OUTPUT_PATH}/temp"
+TEMP_LOCATION="gs://research-graph-synthetic/temp"
 echo "OUTPUT_PATH: ${OUTPUT_PATH}"
 
 NSAMPLES="${1:-10000}"
