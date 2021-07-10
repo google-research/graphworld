@@ -17,11 +17,13 @@ RUN apt-get -y update \
         && apt-get -y update \
         && apt-get install -y --no-install-recommends \
         build-essential \
+        pkg-config \
+        libcairo2-dev \
         python3.6-dev \
         python3-pip \
         python3-venv \
         python3-decorator \
-        libcairo2-dev \
+        python3-cairo \
         python3-graph-tool 
 
 
