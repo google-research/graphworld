@@ -8,6 +8,7 @@
 OUTPUT_PATH="/tmp/sbm"
 
 rm -rf "${OUTPUT_PATH}"
+mkdir -p ${OUTPUT_PATH}
 
 docker-compose run \
   --entrypoint "python3 /app/beam_sbm.py \
