@@ -57,4 +57,4 @@ RUN pip3 install --upgrade pip \
 COPY --from=apache/beam_python3.6_sdk /opt/apache/beam /opt/apache/beam
 
 # Set the entrypoint to Apache Beam SDK worker launcher.
-CMD [ "/opt/apache/beam/boot" ]
+ENTRYPOINT [ "/opt/apache/beam/boot" ]
