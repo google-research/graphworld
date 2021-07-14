@@ -13,11 +13,13 @@ from apache_beam.options.pipeline_options import SetupOptions
 
 class SampleSbmDoFn(beam.DoFn):
 
-    def __init__(self, nvertex_min, nvertex_max, nedges_min, nedges_max):
+    def __init__(self, nvertex_min, nvertex_max, nedges_min, nedges_max,
+                 feature_center_distance_max):
         self._nvertex_min = nvertex_min
         self._nvertex_max = nvertex_max
         self._nedges_min = nedges_min
         self._nedges_max = nedges_max
+        self._feature_center_distance_max = feature_center_distance_max
 
     def process(self, sample_id):
         """Sample and save SMB outputs given a configuration filepath.
@@ -38,6 +40,8 @@ class SampleSbmDoFn(beam.DoFn):
 
         num_vertices = np.random.randint(self._nvertex_min, self._nvertex_max)
         num_edges = np.random.randint(self._nedges_min, self._nedges_max)
+        feature_center_distance = np.random.uniform(
+                0.0, self._feature_center_distance_max)
 
         generator_config = {
             'generator_name': 'StochasticBlockModel',
@@ -274,6 +278,13 @@ def main(argv=None):
                         default=100,
                         help='Maximum number of edges in the graph samples.')
 
+    parser.add_argument('--feature_center_distance_max',
+                        dest='feature_center_distance_max',
+                        type=float,
+                        default=10.0,
+                        help=('Maximum cluster mean feature distance in the'
+                              'graph samples.'))
+
     args, pipeline_args = parser.parse_known_args(argv)
 
     logging.info(f'Pipeline Args: {pipeline_args}')
@@ -294,7 +305,8 @@ def main(argv=None):
             | 'Create Sample Ids' >> beam.Create(range(args.nsamples))
             | 'Sample Graphs' >> beam.ParDo(
                 SampleSbmDoFn(args.nvertex_min, args.nvertex_max,
-                              args.nedges_min, args.nedges_max))
+                              args.nedges_min, args.nedges_max,
+                              args.feature_center_distance_max))
         )
 
         graph_samples | 'Write Sampled Graph' >> beam.ParDo(WriteSbmDoFn(args.output))
