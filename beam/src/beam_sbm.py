@@ -48,7 +48,7 @@ class SampleSbmDoFn(beam.DoFn):
 
         generator_config = {
             'generator_name': 'StochasticBlockModel',
-            'num_verticies': num_vertices,
+            'num_vertices': num_vertices,
             'num_edges': num_edges,
             'feature_dim': feature_dim,
             'feature_center_distance': 2.0,
