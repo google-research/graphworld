@@ -11,6 +11,8 @@ from apache_beam.options.pipeline_options import PipelineOptions
 from apache_beam.options.pipeline_options import SetupOptions
 from apache_beam.dataframe.convert import to_dataframe
 
+# Change the name of this...
+from sbm.models import LinearGCN
 
 class SampleSbmDoFn(beam.DoFn):
 
@@ -192,9 +194,6 @@ class BenchmarkSimpleGCNParDo(beam.DoFn):
         self._epochs = epochs
 
     def process(self, element):
-        import logging
-        import apache_beam
-        from sbm.models import LinearGCN
         sample_id = element['sample_id']
         torch_data = element['torch_data']
         masks = element['masks']
@@ -234,7 +233,7 @@ class BenchmarkSimpleGCNParDo(beam.DoFn):
         }
 
         results_object_name = os.path.join(self._output_path, '{0:05}_results.txt'.format(sample_id))
-        with apache_beam.io.filesystems.FileSystems.create(results_object_name, 'text/plain') as f:
+        with beam.io.filesystems.FileSystems.create(results_object_name, 'text/plain') as f:
             buf = bytes(json.dumps(results), 'utf-8')
             f.write(buf)
             f.close()
@@ -293,7 +292,7 @@ def main(argv=None):
     logging.info(f'Pipeline Args: {pipeline_args}')
 
     pipeline_options = PipelineOptions(pipeline_args)
-    pipeline_options.view_as(SetupOptions).save_main_session = False
+    pipeline_options.view_as(SetupOptions).save_main_session = True
 
     # Parameterize
     num_features = 16
