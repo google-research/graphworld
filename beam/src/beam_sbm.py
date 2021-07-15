@@ -301,10 +301,16 @@ def main(argv=None):
     hidden_channels = 8
     epochs = 256
 
-    def ConvertToRowDict(benchmark_result):
-        row_dict = {'test_accuracy': benchmark_result['test_accuracy']}
-        row_dict.update(benchmark_result['generator_config'])
-        return row_dict
+    def ConvertToRow(benchmark_result):
+        return beam.Row(
+                test_accuracy=benchmark_result['test_accuracy'],
+                num_vertices=benchmark_result['generator_config']['num_vertices'],
+                num_edges=benchmark_result['generator_config']['num_edges'],
+                feature_dim=benchmark_result['generator_config']['feature_dim'],
+                feature_center_distance=benchmark_result['generator_config']['feature_center_distance'],
+                edge_center_distance=benchmark_result['generator_config']['edge_center_distance'],
+                edge_feature_dim=benchmark_result['generator_config']['edge_feature_dim']
+        )
 
     with beam.Pipeline(options=pipeline_options) as p:
 
@@ -330,8 +336,7 @@ def main(argv=None):
         dataframe_rows = (
             torch_data | 'Benchmark Simple GCN.' >> beam.ParDo(BenchmarkSimpleGCNParDo(
                 args.output, num_features, num_classes, hidden_channels, epochs))
-                       | 'Convert to dataframe rows.' >> beam.Map(
-                            lambda result: beam.Row(test_accuracy=result["test_accuracy"])))
+                       | 'Convert to dataframe rows.' >> beam.Map(ConvertToRow))
 
         to_dataframe(dataframe_rows).to_csv(os.path.join(args.output, 'results_df.csv'))
 
