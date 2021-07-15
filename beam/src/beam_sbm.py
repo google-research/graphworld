@@ -9,6 +9,7 @@ import setuptools
 import apache_beam as beam
 from apache_beam.options.pipeline_options import PipelineOptions
 from apache_beam.options.pipeline_options import SetupOptions
+from apache_beam.dataframe.convert import to_dataframe
 
 # Change the name of this...
 from sbm.models import LinearGCN
@@ -146,6 +147,7 @@ class ConvertToTorchGeoDataParDo(beam.DoFn):
         try:
             torch_data = sbm_data_to_torchgeo_data(sbm_data)
             out['torch_data'] = sbm_data_to_torchgeo_data(sbm_data)
+            out['generator_config'] = element['generator_config']
 
             torchgeo_stats = {
                 'nodes': torch_data.num_nodes,
@@ -226,7 +228,8 @@ class BenchmarkSimpleGCNParDo(beam.DoFn):
         results = {
             'sample_id': sample_id,
             'losses': losses,
-            'test_accuracy': test_accuracy
+            'test_accuracy': test_accuracy,
+            'generator_config': element['generator_config']
         }
 
         results_object_name = os.path.join(self._output_path, '{0:05}_results.txt'.format(sample_id))
@@ -297,6 +300,11 @@ def main(argv=None):
     hidden_channels = 8
     epochs = 256
 
+    def ConvertToRowDict(benchmark_result):
+        row_dict = {'test_accuracy': benchmark_result['test_accuracy']}
+        row_dict.update(benchmark_result['generator_config'])
+        return row_dict
+
     with beam.Pipeline(options=pipeline_options) as p:
 
         graph_samples = (
@@ -318,8 +326,14 @@ def main(argv=None):
                     | 'Extract skipped sample ids' >> beam.Map(lambda el: el['sample_id'])
                     | 'Write skipped text file' >> beam.io.WriteToText(os.path.join(args.output, 'skipped.txt')))
 
-        torch_data | 'Benchmark Simple GCN.' >> beam.ParDo(BenchmarkSimpleGCNParDo(
+        dataframe_rows = (
+            torch_data | 'Benchmark Simple GCN.' >> beam.ParDo(BenchmarkSimpleGCNParDo(
                 args.output, num_features, num_classes, hidden_channels, epochs))
+                       | 'Convert to dataframe rows.' >> beam.Map(
+                            lambda result: beam.Row(test_accuracy=result["test_accuracy"])))
+
+        to_dataframe(dataframe_rows).to_csv(os.path.join(args.output, 'results_df.csv'))
+
 
 
 
