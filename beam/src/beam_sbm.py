@@ -51,7 +51,7 @@ class SampleSbmDoFn(beam.DoFn):
             'num_vertices': num_vertices,
             'num_edges': num_edges,
             'feature_dim': feature_dim,
-            'feature_center_distance': 2.0,
+            'feature_center_distance': feature_center_distance,
             'edge_center_distance': edge_center_distance,
             'edge_feature_dim': 4
         }
@@ -301,8 +301,10 @@ def main(argv=None):
     epochs = 256
 
     def ConvertToRow(benchmark_result):
+        test_accuracy = (0.0 if benchmark_result['test_accuracy'] is None else
+                         benchmark_result['test_accuracy'])
         return beam.Row(
-                test_accuracy=benchmark_result['test_accuracy'],
+                test_accuracy=test_accuracy,
                 num_vertices=benchmark_result['generator_config']['num_vertices'],
                 num_edges=benchmark_result['generator_config']['num_edges'],
                 feature_dim=benchmark_result['generator_config']['feature_dim'],
