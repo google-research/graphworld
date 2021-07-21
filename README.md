@@ -1,6 +1,10 @@
 # Research Graph Synthetic Project
 
-go/research-graph-beam-dataflow
+Sample all the graphs and train all the models!
 
-Sample all the graphs and run benchmarks.
+go/research-graph-beam-dataflow
+go/research-graph-beam-dataflow-slides
+go/gm-synthetic-benchmark-planning
+
+
 
