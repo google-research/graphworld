@@ -16,6 +16,7 @@
 
 docker run -p 8888:8888 \
   -v ${PWD}/src:/app \
+  -v /tmp:/tmp \
   --entrypoint /opt/venv/bin/jupyter \
   research-graph-synthetic:latest \
   notebook --allow-root --no-browser --port=8888 \
