@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#@title Internal code for SBM generator class
+# @title Internal code for SBM generator class
 # pasted from https://github.com/google-research/google-research/blob/master/graph_embedding/simulations/sbm_simulator.py
 import collections
 import enum
@@ -91,8 +91,8 @@ def _GetNestingMap(large_k, small_k):
 
 def _GenerateFeatureMemberships(
     graph_memberships,
-    num_groups = None,
-    match_type = MatchType.RANDOM):
+    num_groups=None,
+    match_type=MatchType.RANDOM):
   """Generates a feature membership assignment.
   Args:
     graph_memberships: (list) the integer memberships for the graph SBM
@@ -114,7 +114,7 @@ def _GenerateFeatureMemberships(
   if match_type == MatchType.GROUPED:
     if num_groups > graph_num_groups:
       raise ValueError(
-          "for match type GROUPED, must have num_groups <= graph_num_groups")
+        "for match type GROUPED, must have num_groups <= graph_num_groups")
     nesting_map = _GetNestingMap(graph_num_groups, num_groups)
     # Creates deterministic map from (smaller) graph clusters to (larger)
     # feature clusters.
@@ -127,7 +127,7 @@ def _GenerateFeatureMemberships(
   elif match_type == MatchType.NESTED:
     if num_groups < graph_num_groups:
       raise ValueError(
-          "for match type NESTED, must have num_groups >= graph_num_groups")
+        "for match type NESTED, must have num_groups >= graph_num_groups")
     nesting_map = _GetNestingMap(num_groups, graph_num_groups)
     # Creates deterministic map from (smaller) feature clusters to (larger)
     # graph clusters.
@@ -136,7 +136,7 @@ def _GenerateFeatureMemberships(
       num_feature_groups = len(sorted_feature_cluster_ids)
       feature_pi = np.ones(num_feature_groups) / num_feature_groups
       num_graph_cluster_nodes = np.sum(
-          [i == graph_cluster_id for i in graph_memberships])
+        [i == graph_cluster_id for i in graph_memberships])
       sub_memberships = _GenerateNodeMemberships(num_graph_cluster_nodes,
                                                  feature_pi)
       sub_memberships = [sorted_feature_cluster_ids[i] for i in sub_memberships]
@@ -160,9 +160,9 @@ def _ComputeExpectedEdgeCounts(num_edges, num_vertices,
   Returns:
     symmetric matrix with shape prop_mat.shape giving expected edge counts.
   """
-  scale = np.matmul(pi, np.matmul(prop_mat, pi)) * num_vertices**2
+  scale = np.matmul(pi, np.matmul(prop_mat, pi)) * num_vertices ** 2
   prob_mat = prop_mat * num_edges / scale
-  return np.outer(pi, pi) * prob_mat * num_vertices**2
+  return np.outer(pi, pi) * prob_mat * num_vertices ** 2
 
 
 def _ComputeCommunitySizes(num_vertices, pi):
@@ -213,7 +213,7 @@ def SimulateSbm(sbm_data,
                 num_edges,
                 pi,
                 prop_mat,
-                out_degs = None):
+                out_degs=None):
   """Generates a stochastic block model, storing data in sbm_data.graph.
   This function uses graph_tool.generate_sbm. Refer to that
   documentation for more information on the model and parameters.
@@ -236,7 +236,7 @@ def SimulateSbm(sbm_data,
   edge_counts = _ComputeExpectedEdgeCounts(num_edges, num_vertices, pi,
                                            prop_mat)
   sbm_data.graph = graph_tool.generation.generate_sbm(
-      sbm_data.graph_memberships, edge_counts, out_degs)
+    sbm_data.graph_memberships, edge_counts, out_degs)
   graph_tool.stats.remove_self_loops(sbm_data.graph)
   graph_tool.stats.remove_parallel_edges(sbm_data.graph)
   sbm_data.graph.reindex_edges()
@@ -246,8 +246,8 @@ def SimulateFeatures(sbm_data,
                      center_var,
                      feature_dim,
                      num_groups,
-                     match_type = MatchType.RANDOM,
-                     cluster_var = 1.0):
+                     match_type=MatchType.RANDOM,
+                     cluster_var=1.0):
   """Generates node features using multivate normal mixture model.
   This function does nothing and throws a warning if
   sbm_data.graph_memberships is empty. Run SimulateSbm to fill that field.
@@ -270,9 +270,9 @@ def SimulateFeatures(sbm_data,
 
   # Get memberships
   sbm_data.feature_memberships = _GenerateFeatureMemberships(
-      graph_memberships=sbm_data.graph_memberships,
-      num_groups=num_groups,
-      match_type=match_type)
+    graph_memberships=sbm_data.graph_memberships,
+    num_groups=num_groups,
+    match_type=match_type)
 
   # Get centers
   centers = []
@@ -280,7 +280,7 @@ def SimulateFeatures(sbm_data,
   cluster_cov = np.identity(feature_dim) * cluster_var
   for _ in range(num_groups):
     center = np.random.multivariate_normal(
-        np.zeros(feature_dim), center_cov, 1)[0]
+      np.zeros(feature_dim), center_cov, 1)[0]
     centers.append(center)
   features = []
   for cluster_index in sbm_data.feature_memberships:
@@ -292,8 +292,8 @@ def SimulateFeatures(sbm_data,
 
 def SimulateEdgeFeatures(sbm_data,
                          feature_dim,
-                         center_distance = 0.0,
-                         cluster_variance = 1.0):
+                         center_distance=0.0,
+                         cluster_variance=1.0):
   """Generates edge feature distribution via inter-class vs intra-class.
   Edge feature data is stored as an sbm_data attribute named `edge_feature`, a
   dict from 2-tuples of node IDs to numpy vectors.
@@ -333,22 +333,23 @@ def SimulateEdgeFeatures(sbm_data,
     else:
       center = center0
     sbm_data.edge_features[edge_tuple] = np.random.multivariate_normal(
-        center, covariance, 1)[0]
+      center, covariance, 1)[0]
+
 
 def GenerateStochasticBlockModelWithFeatures(
     num_vertices,
     num_edges,
     pi,
     prop_mat,
-    out_degs = None,
-    feature_center_distance = 0.0,
-    feature_dim = 0,
-    num_feature_groups = 1,
-    feature_group_match_type = MatchType.RANDOM,
-    feature_cluster_variance = 1.0,
-    edge_feature_dim = 0,
-    edge_center_distance = 0.0,
-    edge_cluster_variance = 1.0):
+    out_degs=None,
+    feature_center_distance=0.0,
+    feature_dim=0,
+    num_feature_groups=1,
+    feature_group_match_type=MatchType.RANDOM,
+    feature_cluster_variance=1.0,
+    edge_feature_dim=0,
+    edge_center_distance=0.0,
+    edge_cluster_variance=1.0):
   """Generates stochastic block model (SBM) with node features.
   Args:
     num_vertices: number of nodes in the graph.

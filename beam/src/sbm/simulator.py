@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#@title Wrapper code for SBM generator class
+# @title Wrapper code for SBM generator class
 # pasted from https://github.com/google-research/google-research/blob/master/graph_embedding/simulations/simulations.py
 import typing
 
@@ -23,20 +23,21 @@ from smb.smb_simulator import SimulateEdgeFeatures
 # Types
 List = typing.List
 
+
 def GenerateStochasticBlockModelWithFeatures(
     num_vertices,
     num_edges,
     pi,
     prop_mat,
-    out_degs = None,
-    feature_center_distance = 0.0,
-    feature_dim = 0,
-    num_feature_groups = 1,
-    feature_group_match_type = MatchType.RANDOM,
-    feature_cluster_variance = 1.0,
-    edge_feature_dim = 0,
-    edge_center_distance = 0.0,
-    edge_cluster_variance = 1.0):
+    out_degs=None,
+    feature_center_distance=0.0,
+    feature_dim=0,
+    num_feature_groups=1,
+    feature_group_match_type=MatchType.RANDOM,
+    feature_cluster_variance=1.0,
+    edge_feature_dim=0,
+    edge_center_distance=0.0,
+    edge_cluster_variance=1.0):
   """Generates stochastic block model (SBM) with node features.
   Args:
     num_vertices: number of nodes in the graph.

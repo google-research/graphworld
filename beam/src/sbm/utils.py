@@ -27,6 +27,7 @@ import networkx as nx
 
 from sbm.sbm_simulator import StochasticBlockModel
 
+
 def sbm_data_to_torchgeo_data(sbm_data: StochasticBlockModel) -> Data:
   nx_graph = nx.Graph()
   edge_tuples = []
@@ -47,10 +48,10 @@ def sbm_data_to_torchgeo_data(sbm_data: StochasticBlockModel) -> Data:
   return Data(x=node_features, edge_index=edge_index.t().contiguous(),
               edge_attr=edge_attr, y=labels)
 
+
 def sample_kclass_train_sets(example_indices: List[int],
                              k_train: int, k_val: int) -> \
-  Tuple[List[int], List[int], List[int]]:
-
+    Tuple[List[int], List[int], List[int]]:
   # Helper function
   def get_num_train_val(n_elements, p_train):
     num_train = round(n_elements * p_train)
@@ -93,9 +94,10 @@ def sample_kclass_train_sets(example_indices: List[int],
           random_indices[num_train:(num_train + num_val)],
           random_indices[(num_train + num_val):])
 
+
 def get_kclass_masks(sbm_data: StochasticBlockModel,
                      k_train: int = 30, k_val: int = 20) -> \
-  Tuple[List[int], List[int], List[int]]:
+    Tuple[List[int], List[int], List[int]]:
   # Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
   # Get graph ground-truth clusters.
   clusters = collections.defaultdict(list)
