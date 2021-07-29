@@ -1,8 +1,10 @@
 import logging
+import json
+import os
 
 import apache_beam as beam
 
-import models.wrappers
+from models.wrappers import LinearGCN
 
 class BenchmarkGNNParDo(beam.DoFn):
   def __init__(self, output_path, num_features, num_classes, hidden_channels, epochs):
@@ -28,7 +30,7 @@ class BenchmarkGNNParDo(beam.DoFn):
       return
 
     train_mask, val_mask, test_mask = masks
-    linear_model = wrappers.LinearGCN(
+    linear_model = LinearGCN(
       self._num_features,
       self._num_classes,
       self._hidden_channels,
