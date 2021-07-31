@@ -10,6 +10,7 @@ from apache_beam.options.pipeline_options import PipelineOptions
 from apache_beam.options.pipeline_options import SetupOptions
 from apache_beam.dataframe.convert import to_dataframe
 import numpy as np
+import gin
 
 # Change the name of this...
 from generator_beam_handler import GeneratorBeamHandler
@@ -178,9 +179,10 @@ class ConvertToTorchGeoDataParDo(beam.DoFn):
 
     yield out
 
-
+@gin.configurable
 class SbmBeamHandler(GeneratorBeamHandler):
 
+  @gin.configurable
   def __init__(self, output_path, nvertex_min, nvertex_max, nedges_min, nedges_max,
                feature_center_distance_max, num_features, num_classes, hidden_channels, epochs):
     self._sample_do_fn = SampleSbmDoFn(nvertex_min, nvertex_max, nedges_min, nedges_max,

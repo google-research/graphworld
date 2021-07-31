@@ -25,8 +25,10 @@ from apache_beam.options.pipeline_options import PipelineOptions
 from apache_beam.options.pipeline_options import SetupOptions
 from apache_beam.dataframe.convert import to_dataframe
 import numpy as np
+import gin
 
 from sbm.beam_handler import SbmBeamHandler
+from generator_beam_handler import GeneratorBeamHandlerWrapper
 
 
 def main(argv=None):
@@ -37,42 +39,8 @@ def main(argv=None):
                       default='/tmp/graph_configs.json',
                       help='Location to write output files.')
 
-  parser.add_argument('--nsamples',
-                      dest='nsamples',
-                      type=int,
-                      default=100,
-                      help='The number of graph samples.')
-
-  parser.add_argument('--nvertex_min',
-                      dest='nvertex_min',
-                      type=int,
-                      default=5,
-                      help='Minimum number of nodes in graph samples.')
-
-  parser.add_argument('--nvertex_max',
-                      dest='nvertex_max',
-                      type=int,
-                      default=50,
-                      help='Maximum number of nodes in the graph samples.')
-
-  parser.add_argument('--nedges_min',
-                      dest='nedges_min',
-                      type=int,
-                      default=10,
-                      help='Minimum number of edges in the graph samples.')
-
-  parser.add_argument('--nedges_max',
-                      dest='nedges_max',
-                      type=int,
-                      default=100,
-                      help='Maximum number of edges in the graph samples.')
-
-  parser.add_argument('--feature_center_distance_max',
-                      dest='feature_center_distance_max',
-                      type=float,
-                      default=10.0,
-                      help=('Maximum cluster mean feature distance in the'
-                            'graph samples.'))
+  print(os.listdir('/home/palowitch/Documents/projects/graph-world/beam'))
+  gin.parse_config_file("src/sbm_config.gin")
 
   # Have gin specify 'generator_handler' as one of the derived GeneratorBeamHandler classes.
 
@@ -83,15 +51,10 @@ def main(argv=None):
   pipeline_options = PipelineOptions(pipeline_args)
   pipeline_options.view_as(SetupOptions).save_main_session = True
 
-  # Parameterize
-  num_features = 16
-  num_classes = 4
-  hidden_channels = 8
-  epochs = 256
-
-  generator_handler = SbmBeamHandler(
-    args.output, args.nvertex_min, args.nvertex_max, args.nedges_min, args.nedges_max, args.feature_center_distance_max,
-    num_features, num_classes, hidden_channels, epochs)
+  gen_handler_wrapper = GeneratorBeamHandlerWrapper(output_path=args.output)
+  # generator_handler = SbmBeamHandler(
+  #   args.output, args.nvertex_min, args.nvertex_max, args.nedges_min, args.nedges_max, args.feature_center_distance_max,
+  #   num_features, num_classes, hidden_channels, epochs)
 
   def ConvertToRow(benchmark_result):
     test_accuracy = (0.0 if benchmark_result['test_accuracy'] is None else
@@ -110,20 +73,23 @@ def main(argv=None):
     graph_samples = (
         p
         | 'Create Sample Ids' >> beam.Create(range(args.nsamples))
-        | 'Sample Graphs' >> beam.ParDo(generator_handler.GetSampleDoFn())
+        | 'Sample Graphs' >> beam.ParDo(gen_handler_wrapper.handler.GetSampleDoFn())
     )
 
-    graph_samples | 'Write Sampled Graph' >> beam.ParDo(generator_handler.GetWriteDoFn())
+    graph_samples | 'Write Sampled Graph' >> beam.ParDo(
+      gen_handler_wrapper.handler.GetWriteDoFn())
 
     torch_data = (
-        graph_samples | 'Convert to torchgeo data.' >> beam.ParDo(generator_handler.GetConvertParDo()))
+        graph_samples | 'Convert to torchgeo data.' >> beam.ParDo(
+      gen_handler_wrapper.handler.GetConvertParDo()))
 
     (torch_data | 'Filter skipped conversions' >> beam.Filter(lambda el: el['skipped'])
      | 'Extract skipped sample ids' >> beam.Map(lambda el: el['sample_id'])
      | 'Write skipped text file' >> beam.io.WriteToText(os.path.join(args.output, 'skipped.txt')))
 
     dataframe_rows = (
-        torch_data | 'Benchmark Simple GCN.' >> beam.ParDo(generator_handler.GetBenchmarkParDo())
+        torch_data | 'Benchmark Simple GCN.' >> beam.ParDo(
+      gen_handler_wrapper.handler.GetBenchmarkParDo())
         | 'Convert to dataframe rows.' >> beam.Map(ConvertToRow))
 
     to_dataframe(dataframe_rows).to_csv(os.path.join(args.output, 'results_df.csv'))
