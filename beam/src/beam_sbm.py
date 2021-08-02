@@ -39,8 +39,7 @@ def main(argv=None):
                       default='/tmp/graph_configs.json',
                       help='Location to write output files.')
 
-  print(os.listdir('/home/palowitch/Documents/projects/graph-world/beam'))
-  gin.parse_config_file("src/sbm_config.gin")
+  gin.parse_config_file("/app/configs/sbm_config.gin")
 
   # Have gin specify 'generator_handler' as one of the derived GeneratorBeamHandler classes.
 

@@ -1,4 +1,4 @@
-GenerateBeamHandlerWrapper.handler = @SbmBeamHandler()
+GeneratorBeamHandlerWrapper.handler = @SbmBeamHandler()
 
 SbmBeamHandler.nsamples = 5
 SbmBeamHandler.nvertex_min = 5
