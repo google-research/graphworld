@@ -3,6 +3,7 @@ import json
 import os
 
 import apache_beam as beam
+import pandas as pd
 
 from models.wrappers import LinearGCN
 
@@ -48,7 +49,7 @@ class BenchmarkGNNParDo(beam.DoFn):
     except:
       logging.info(f'Failed to compute test accuracy for sample id {sample_id}')
 
-    results = {
+    benchmark_result = {
       'sample_id': sample_id,
       'losses': losses,
       'test_accuracy': test_accuracy,
@@ -57,8 +58,21 @@ class BenchmarkGNNParDo(beam.DoFn):
 
     results_object_name = os.path.join(self._output_path, '{0:05}_results.txt'.format(sample_id))
     with beam.io.filesystems.FileSystems.create(results_object_name, 'text/plain') as f:
-      buf = bytes(json.dumps(results), 'utf-8')
+      buf = bytes(json.dumps(benchmark_result), 'utf-8')
       f.write(buf)
       f.close()
 
-    yield results
+    test_accuracy = (0.0 if benchmark_result['test_accuracy'] is None else
+                     benchmark_result['test_accuracy'])
+    yield pd.DataFrame(
+      data={
+        "test_accuracy": test_accuracy,
+        "num_vertices": benchmark_result['generator_config']['num_vertices'],
+        "num_edges": benchmark_result['generator_config']['num_edges'],
+        "feature_dim": benchmark_result['generator_config']['feature_dim'],
+        "feature_center_distance": benchmark_result['generator_config']['feature_center_distance'],
+        "edge_center_distance": benchmark_result['generator_config']['edge_center_distance'],
+        "edge_feature_dim": benchmark_result['generator_config']['edge_feature_dim']
+      },
+      index=[sample_id]
+    )

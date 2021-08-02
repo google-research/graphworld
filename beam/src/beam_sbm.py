@@ -23,13 +23,18 @@ import setuptools
 import apache_beam as beam
 from apache_beam.options.pipeline_options import PipelineOptions
 from apache_beam.options.pipeline_options import SetupOptions
-from apache_beam.dataframe.convert import to_dataframe
 import numpy as np
+import pandas as pd
 import gin
 
 from sbm.beam_handler import SbmBeamHandler
 from generator_beam_handler import GeneratorBeamHandlerWrapper
 
+def CombineDataframes(dfs):
+  return pd.concat(dfs or [pd.DataFrame()])
+
+def WriteDataFrame(df, output_path):
+  df.to_csv(os.path.join(output_path, "results_df.csv"))
 
 def main(argv=None):
   parser = argparse.ArgumentParser()
@@ -52,22 +57,6 @@ def main(argv=None):
 
   gen_handler_wrapper = GeneratorBeamHandlerWrapper()
   gen_handler_wrapper.SetOutputPath(args.output)
-  # generator_handler = SbmBeamHandler(
-  #   args.output, args.nvertex_min, args.nvertex_max, args.nedges_min, args.nedges_max, args.feature_center_distance_max,
-  #   num_features, num_classes, hidden_channels, epochs)
-
-  def ConvertToRow(benchmark_result):
-    test_accuracy = (0.0 if benchmark_result['test_accuracy'] is None else
-                     benchmark_result['test_accuracy'])
-    return beam.Row(
-      test_accuracy=test_accuracy,
-      num_vertices=benchmark_result['generator_config']['num_vertices'],
-      num_edges=benchmark_result['generator_config']['num_edges'],
-      feature_dim=benchmark_result['generator_config']['feature_dim'],
-      feature_center_distance=benchmark_result['generator_config']['feature_center_distance'],
-      edge_center_distance=benchmark_result['generator_config']['edge_center_distance'],
-      edge_feature_dim=benchmark_result['generator_config']['edge_feature_dim']
-    )
 
   with beam.Pipeline(options=pipeline_options) as p:
     graph_samples = (
@@ -89,10 +78,10 @@ def main(argv=None):
 
     dataframe_rows = (
         torch_data | 'Benchmark Simple GCN.' >> beam.ParDo(
-      gen_handler_wrapper.handler.GetBenchmarkParDo())
-        | 'Convert to dataframe rows.' >> beam.Map(ConvertToRow))
+      gen_handler_wrapper.handler.GetBenchmarkParDo()))
 
-    to_dataframe(dataframe_rows).to_csv(os.path.join(args.output, 'results_df.csv'))
+    (dataframe_rows | 'Combine into single dataframe.' >> beam.CombineGlobally(CombineDataframes)
+                    | 'Write dataframe.' >> beam.Map(WriteDataFrame, args.output))
 
 
 if __name__ == '__main__':
