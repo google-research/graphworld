@@ -1,10 +1,10 @@
 GeneratorBeamHandlerWrapper.handler = @SbmBeamHandler()
-GeneratorBeamHandlerWrapper.nsamples = 10000
+GeneratorBeamHandlerWrapper.nsamples = 5
 
-SbmBeamHandler.nvertex_min = 64
-SbmBeamHandler.nvertex_max = 512
-SbmBeamHandler.nedges_min = 128
-SbmBeamHandler.nedges_max = 4096
+SbmBeamHandler.nvertex_min = 5
+SbmBeamHandler.nvertex_max = 50
+SbmBeamHandler.nedges_min = 10
+SbmBeamHandler.nedges_max = 100
 SbmBeamHandler.feature_center_distance_max = 10.0
 SbmBeamHandler.num_features = 16
 SbmBeamHandler.num_classes = 4

@@ -27,6 +27,7 @@ mkdir -p ${OUTPUT_PATH}
 docker-compose run \
   --entrypoint "python3 /app/beam_sbm.py \
   --output ${OUTPUT_PATH} \
+  --gin_config=/app/configs/sbm_config_test.gin \
   --runner=DirectRunner" \
   research-graph-synthetic 
 

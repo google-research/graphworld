@@ -2,7 +2,9 @@ dataclasses # Incase we're not use py >=3.7
 numpy==1.19.0
 scipy==1.4.0
 absl-py
+gcsfs
 gin-config
+fsspec
 apache-beam[gcp]==2.31.0
 networkx
 notebook

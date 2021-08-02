@@ -44,14 +44,14 @@ def main(argv=None):
                       default='/tmp/graph_configs.json',
                       help='Location to write output files.')
 
-  gin.parse_config_file("/app/configs/sbm_config.gin")
-
-  # Have gin specify 'generator_handler' as one of the derived GeneratorBeamHandler classes.
+  parser.add_argument('--gin_config',
+                      dest='gin_config',
+                      default='',
+                      help='Location of gin config (/app/configs = /src/configs).')
 
   args, pipeline_args = parser.parse_known_args(argv)
-
   logging.info(f'Pipeline Args: {pipeline_args}')
-
+  gin.parse_config_file(args.gin_config)
   pipeline_options = PipelineOptions(pipeline_args)
   pipeline_options.view_as(SetupOptions).save_main_session = True
 

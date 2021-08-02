@@ -19,9 +19,6 @@ OUTPUT_PATH="gs://research-graph-synthetic/${USER}/sampling/${TIMESTAMP}"
 TEMP_LOCATION="gs://research-graph-synthetic/temp"
 echo "OUTPUT_PATH: ${OUTPUT_PATH}"
 
-NSAMPLES="${1:-10000}"
-echo "NSAMPLES: ${NSAMPLES}"
-
 JOB_NAME=$(echo "${USER}-${TIMESTAMP}" | tr '_' '-')
 
 ENTRYPOINT="python3 /app/beam_sbm.py \
@@ -30,8 +27,8 @@ ENTRYPOINT="python3 /app/beam_sbm.py \
   --region=us-east1 \
   --max_num_workers=256 \
   --temp_location="${TEMP_LOCATION}" \
+  --gin_config=/app/configs/sbm_config.gin \
   --output="${OUTPUT_PATH}" \
-  --nsamples="${NSAMPLES}" \
   --job_name="${JOB_NAME}" \
   --experiments=use_monitoring_state_manager \
   --experiments=enable_execution_details_collection \
