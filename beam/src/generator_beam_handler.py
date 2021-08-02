@@ -22,10 +22,18 @@ class GeneratorBeamHandler(ABC):
   def GetBenchmarkParDo(self):
     pass
 
+  @abstractmethod
+  def SetOutputPath(self, output_path):
+    pass
+
 @gin.configurable
 class GeneratorBeamHandlerWrapper:
 
   @gin.configurable
-  def __init__(self, handler, output_path, nsamples):
+  def __init__(self, handler, nsamples):
     self.nsamples = nsamples
-    self.handler = handler(output_path=output_path)
+    self.handler = handler
+
+  def SetOutputPath(self, output_path):
+    self.output_path = output_path
+    self.handler.SetOutputPath(output_path)

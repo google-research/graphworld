@@ -7,12 +7,14 @@ import apache_beam as beam
 from models.wrappers import LinearGCN
 
 class BenchmarkGNNParDo(beam.DoFn):
-  def __init__(self, output_path, num_features, num_classes, hidden_channels, epochs):
-    self._output_path = output_path
+  def __init__(self, num_features, num_classes, hidden_channels, epochs):
     self._num_features = num_features
     self._num_classes = num_classes
     self._hidden_channels = hidden_channels
     self._epochs = epochs
+
+  def SetOutputPath(self, output_path):
+    self._output_path = output_path
 
   def process(self, element):
     sample_id = element['sample_id']

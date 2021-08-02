@@ -183,13 +183,11 @@ class ConvertToTorchGeoDataParDo(beam.DoFn):
 class SbmBeamHandler(GeneratorBeamHandler):
 
   @gin.configurable
-  def __init__(self, output_path, nvertex_min, nvertex_max, nedges_min, nedges_max,
+  def __init__(self, nvertex_min, nvertex_max, nedges_min, nedges_max,
                feature_center_distance_max, num_features, num_classes, hidden_channels, epochs):
     self._sample_do_fn = SampleSbmDoFn(nvertex_min, nvertex_max, nedges_min, nedges_max,
                                        feature_center_distance_max)
-    self._write_do_fn = WriteSbmDoFn(output_path)
-    self._convert_par_do = ConvertToTorchGeoDataParDo(output_path)
-    self._benchmark_par_do = BenchmarkGNNParDo(output_path, num_features, num_classes, hidden_channels, epochs)
+    self._benchmark_par_do = BenchmarkGNNParDo(num_features, num_classes, hidden_channels, epochs)
 
   def GetSampleDoFn(self):
     return self._sample_do_fn
@@ -202,3 +200,9 @@ class SbmBeamHandler(GeneratorBeamHandler):
 
   def GetBenchmarkParDo(self):
     return self._benchmark_par_do
+
+  def SetOutputPath(self, output_path):
+    self._output_path = output_path
+    self._write_do_fn = WriteSbmDoFn(output_path)
+    self._convert_par_do = ConvertToTorchGeoDataParDo(output_path)
+    self._benchmark_par_do.SetOutputPath(output_path)

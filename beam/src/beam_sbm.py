@@ -50,7 +50,8 @@ def main(argv=None):
   pipeline_options = PipelineOptions(pipeline_args)
   pipeline_options.view_as(SetupOptions).save_main_session = True
 
-  gen_handler_wrapper = GeneratorBeamHandlerWrapper(output_path=args.output)
+  gen_handler_wrapper = GeneratorBeamHandlerWrapper()
+  gen_handler_wrapper.SetOutputPath(args.output)
   # generator_handler = SbmBeamHandler(
   #   args.output, args.nvertex_min, args.nvertex_max, args.nedges_min, args.nedges_max, args.feature_center_distance_max,
   #   num_features, num_classes, hidden_channels, epochs)
