@@ -71,7 +71,7 @@ def main(argv=None):
   with beam.Pipeline(options=pipeline_options) as p:
     graph_samples = (
         p
-        | 'Create Sample Ids' >> beam.Create(range(args.nsamples))
+        | 'Create Sample Ids' >> beam.Create(range(gen_handler_wrapper.nsamples))
         | 'Sample Graphs' >> beam.ParDo(gen_handler_wrapper.handler.GetSampleDoFn())
     )
 

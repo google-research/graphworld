@@ -26,5 +26,6 @@ class GeneratorBeamHandler(ABC):
 class GeneratorBeamHandlerWrapper:
 
   @gin.configurable
-  def __init__(self, handler, output_path):
+  def __init__(self, handler, output_path, nsamples):
+    self.nsamples = nsamples
     self.handler = handler(output_path=output_path)
