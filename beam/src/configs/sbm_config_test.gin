@@ -1,11 +1,24 @@
 GeneratorBeamHandlerWrapper.handler = @SbmBeamHandler()
 GeneratorBeamHandlerWrapper.nsamples = 5
 
-SbmBeamHandler.nvertex_min = 5
-SbmBeamHandler.nvertex_max = 50
-SbmBeamHandler.nedges_min = 10
-SbmBeamHandler.nedges_max = 100
-SbmBeamHandler.feature_center_distance_max = 10.0
+SbmBeamHandler.param_sampler_specs = [
+  @nvertex/ParamSamplerSpec(),
+  @nedges/ParamSamplerSpec(),
+  @feature_center_distance/ParamSamplerSpec()
+]
+
+nvertex/ParamSamplerSpec.name = "nvertex"
+nvertex/ParamSamplerSpec.min_val = 5
+nvertex/ParamSamplerSpec.max_val = 50
+
+nedges/ParamSamplerSpec.name = "nedges"
+nedges/ParamSamplerSpec.min_val = 10
+nedges/ParamSamplerSpec.max_val = 100
+
+feature_center_distance/ParamSamplerSpec.name = "feature_center_distance"
+feature_center_distance/ParamSamplerSpec.min_val = 0.0
+feature_center_distance/ParamSamplerSpec.max_val = 10.0
+
 SbmBeamHandler.num_features = 16
 SbmBeamHandler.num_classes = 4
 SbmBeamHandler.hidden_channels = 8

@@ -14,19 +14,18 @@ import gin
 
 # Change the name of this...
 from generator_beam_handler import GeneratorBeamHandler
+from generator_config_sampler import GeneratorConfigSampler, ParamSamplerSpec
 from models.beam import BenchmarkGNNParDo
 from sbm.sbm_simulator import GenerateStochasticBlockModelWithFeatures
 from sbm.utils import sbm_data_to_torchgeo_data, get_kclass_masks
 
-class SampleSbmDoFn(beam.DoFn):
+class SampleSbmDoFn(GeneratorConfigSampler, beam.DoFn):
 
-  def __init__(self, nvertex_min, nvertex_max, nedges_min, nedges_max,
-               feature_center_distance_max):
-    self._nvertex_min = nvertex_min
-    self._nvertex_max = nvertex_max
-    self._nedges_min = nedges_min
-    self._nedges_max = nedges_max
-    self._feature_center_distance_max = feature_center_distance_max
+  def __init__(self, param_sampler_specs):
+    super(SampleSbmDoFn, self).__init__(param_sampler_specs)
+    self._AddSamplerFn('nvertex', self._SampleUniformInteger)
+    self._AddSamplerFn('nedges', self._SampleUniformFloat)
+    self._AddSamplerFn('feature_center_distance', self._SampleUniformFloat)
 
   def process(self, sample_id):
     """Sample and save SMB outputs given a configuration filepath.
@@ -43,24 +42,21 @@ class SampleSbmDoFn(beam.DoFn):
     edge_center_distance = 2.0
     edge_feature_dim = 4
 
-    num_vertices = np.random.randint(self._nvertex_min, self._nvertex_max)
-    num_edges = np.random.randint(self._nedges_min, self._nedges_max)
-    feature_center_distance = np.random.uniform(
-      0.0, self._feature_center_distance_max)
+    config = self.SampleConfig()
 
     generator_config = {
       'generator_name': 'StochasticBlockModel',
-      'num_vertices': num_vertices,
-      'num_edges': num_edges,
+      'num_vertices': config['nvertex'],
+      'num_edges': config['nedges'],
       'feature_dim': feature_dim,
-      'feature_center_distance': feature_center_distance,
+      'feature_center_distance': config['feature_center_distance'],
       'edge_center_distance': edge_center_distance,
       'edge_feature_dim': 4
     }
 
     data = GenerateStochasticBlockModelWithFeatures(
-      num_vertices=num_vertices,
-      num_edges=num_edges,
+      num_vertices=generator_config['num_vertices'],
+      num_edges=generator_config['num_edges'],
       pi=np.array([0.25, 0.25, 0.25, 0.25]),
       prop_mat=np.ones((4, 4)) + 9.0 * np.diag([1, 1, 1, 1]),
       feature_center_distance=generator_config['feature_center_distance'],
@@ -183,10 +179,9 @@ class ConvertToTorchGeoDataParDo(beam.DoFn):
 class SbmBeamHandler(GeneratorBeamHandler):
 
   @gin.configurable
-  def __init__(self, nvertex_min, nvertex_max, nedges_min, nedges_max,
-               feature_center_distance_max, num_features, num_classes, hidden_channels, epochs):
-    self._sample_do_fn = SampleSbmDoFn(nvertex_min, nvertex_max, nedges_min, nedges_max,
-                                       feature_center_distance_max)
+  def __init__(self, param_sampler_specs,
+               num_features, num_classes, hidden_channels, epochs):
+    self._sample_do_fn = SampleSbmDoFn(param_sampler_specs)
     self._benchmark_par_do = BenchmarkGNNParDo(num_features, num_classes, hidden_channels, epochs)
 
   def GetSampleDoFn(self):

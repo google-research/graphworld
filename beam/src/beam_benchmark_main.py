@@ -29,6 +29,7 @@ import gin
 
 from sbm.beam_handler import SbmBeamHandler
 from generator_beam_handler import GeneratorBeamHandlerWrapper
+from generator_config_sampler import ParamSamplerSpec
 
 def CombineDataframes(dfs):
   return pd.concat(dfs or [pd.DataFrame()])
