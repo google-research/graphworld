@@ -28,14 +28,19 @@ class GeneratorConfigSampler:
   #   param_sampler_specs: a list of ParamSamplerSpecs.
 
   def _SampleUniformInteger(self, param_sampler):
-    return np.random.randint(int(param_sampler.min_val), int(param_sampler.max_val))
+    low = int(param_sampler.min_val)
+    high = int(param_sampler.max_val)
+    if high < low:
+      raise RuntimeError(
+        "integer sampling for %s failed as high < low" % param_sampler.name)
+    return low if low == high else np.random.randint(low, high)
 
   def _SampleUniformFloat(self, param_sampler):
     return np.random.uniform(param_sampler.min_val, param_sampler.max_val)
 
   def _AddSamplerFn(self, param_name, sampler_fn):
     if param_name not in self._param_sampler_specs:
-      raise InvalidArgumentError("param %s not found in input param specs" % param_name)
+      raise RuntimeError("param %s not found in input param specs" % param_name)
     self._param_sampler_specs[param_name].sampler_fn = sampler_fn
 
   def __init__(self, param_sampler_specs):

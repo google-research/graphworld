@@ -4,7 +4,10 @@ GeneratorBeamHandlerWrapper.nsamples = 5
 SbmBeamHandler.param_sampler_specs = [
   @nvertex/ParamSamplerSpec(),
   @nedges/ParamSamplerSpec(),
-  @feature_center_distance/ParamSamplerSpec()
+  @feature_center_distance/ParamSamplerSpec(),
+  @feature_dim/ParamSamplerSpec(),
+  @edge_center_distance/ParamSamplerSpec(),
+  @edge_feature_dim/ParamSamplerSpec(),
 ]
 
 nvertex/ParamSamplerSpec.name = "nvertex"
@@ -15,9 +18,21 @@ nedges/ParamSamplerSpec.name = "nedges"
 nedges/ParamSamplerSpec.min_val = 10
 nedges/ParamSamplerSpec.max_val = 100
 
+feature_dim/ParamSamplerSpec.name = "feature_dim"
+feature_dim/ParamSamplerSpec.min_val = 16
+feature_dim/ParamSamplerSpec.max_val = 16
+
 feature_center_distance/ParamSamplerSpec.name = "feature_center_distance"
 feature_center_distance/ParamSamplerSpec.min_val = 0.0
 feature_center_distance/ParamSamplerSpec.max_val = 10.0
+
+edge_center_distance/ParamSamplerSpec.name = "edge_center_distance"
+edge_center_distance/ParamSamplerSpec.min_val = 2.0
+edge_center_distance/ParamSamplerSpec.max_val = 2.0
+
+edge_feature_dim/ParamSamplerSpec.name = "edge_feature_dim"
+edge_feature_dim/ParamSamplerSpec.min_val = 2.0
+edge_feature_dim/ParamSamplerSpec.max_val = 2.0
 
 SbmBeamHandler.num_features = 16
 SbmBeamHandler.num_classes = 4

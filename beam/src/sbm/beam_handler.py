@@ -26,6 +26,9 @@ class SampleSbmDoFn(GeneratorConfigSampler, beam.DoFn):
     self._AddSamplerFn('nvertex', self._SampleUniformInteger)
     self._AddSamplerFn('nedges', self._SampleUniformFloat)
     self._AddSamplerFn('feature_center_distance', self._SampleUniformFloat)
+    self._AddSamplerFn('feature_dim', self._SampleUniformInteger)
+    self._AddSamplerFn('edge_feature_dim', self._SampleUniformInteger)
+    self._AddSamplerFn('edge_center_distance', self._SampleUniformFloat)
 
   def process(self, sample_id):
     """Sample and save SMB outputs given a configuration filepath.
@@ -35,28 +38,12 @@ class SampleSbmDoFn(GeneratorConfigSampler, beam.DoFn):
     # a custom container. The import will execute once then the sys.modeules
     # will be referenced to further calls.
 
-    # Parameterize me...
-    edge_center_distance_min = 1.0
-    edge_center_distance_max = 10.0
-    feature_dim = 16
-    edge_center_distance = 2.0
-    edge_feature_dim = 4
-
-    config = self.SampleConfig()
-
-    generator_config = {
-      'generator_name': 'StochasticBlockModel',
-      'num_vertices': config['nvertex'],
-      'num_edges': config['nedges'],
-      'feature_dim': feature_dim,
-      'feature_center_distance': config['feature_center_distance'],
-      'edge_center_distance': edge_center_distance,
-      'edge_feature_dim': 4
-    }
+    generator_config = self.SampleConfig()
+    generator_config['generator_name'] = 'StochasticBlockModel'
 
     data = GenerateStochasticBlockModelWithFeatures(
-      num_vertices=generator_config['num_vertices'],
-      num_edges=generator_config['num_edges'],
+      num_vertices=generator_config['nvertex'],
+      num_edges=generator_config['nedges'],
       pi=np.array([0.25, 0.25, 0.25, 0.25]),
       prop_mat=np.ones((4, 4)) + 9.0 * np.diag([1, 1, 1, 1]),
       feature_center_distance=generator_config['feature_center_distance'],
