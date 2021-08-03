@@ -68,7 +68,8 @@ class BenchmarkGNNParDo(beam.DoFn):
       data={
         "test_accuracy": test_accuracy,
         "num_vertices": benchmark_result['generator_config']['nvertex'],
-        "num_edges": benchmark_result['generator_config']['nedges'],
+        "avg_degree": benchmark_result['generator_config']['avg_degree'],
+        "p_to_q_ratio": benchmark_result['generator_config']['p_to_q_ratio'],
         "feature_dim": benchmark_result['generator_config']['feature_dim'],
         "feature_center_distance": benchmark_result['generator_config']['feature_center_distance'],
         "edge_center_distance": benchmark_result['generator_config']['edge_center_distance'],
