@@ -21,7 +21,7 @@ echo "OUTPUT_PATH: ${OUTPUT_PATH}"
 
 JOB_NAME=$(echo "${USER}-${TIMESTAMP}" | tr '_' '-')
 
-ENTRYPOINT="python3 /app/beam_sbm.py \
+ENTRYPOINT="python3 /app/beam_benchmark_main.py \
   --runner=DataflowRunner \
   --project=research-graph \
   --region=us-east1 \

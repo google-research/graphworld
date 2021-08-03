@@ -25,7 +25,7 @@ rm -rf "${OUTPUT_PATH}"
 mkdir -p ${OUTPUT_PATH}
 
 docker-compose run \
-  --entrypoint "python3 /app/beam_sbm.py \
+  --entrypoint "python3 /app/beam_benchmark_main.py \
   --output ${OUTPUT_PATH} \
   --gin_config=/app/configs/sbm_config_test.gin \
   --runner=DirectRunner" \
