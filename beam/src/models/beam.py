@@ -64,16 +64,6 @@ class BenchmarkGNNParDo(beam.DoFn):
 
     test_accuracy = (0.0 if benchmark_result['test_accuracy'] is None else
                      benchmark_result['test_accuracy'])
-    yield pd.DataFrame(
-      data={
-        "test_accuracy": test_accuracy,
-        "num_vertices": benchmark_result['generator_config']['nvertex'],
-        "avg_degree": benchmark_result['generator_config']['avg_degree'],
-        "p_to_q_ratio": benchmark_result['generator_config']['p_to_q_ratio'],
-        "feature_dim": benchmark_result['generator_config']['feature_dim'],
-        "feature_center_distance": benchmark_result['generator_config']['feature_center_distance'],
-        "edge_center_distance": benchmark_result['generator_config']['edge_center_distance'],
-        "edge_feature_dim": benchmark_result['generator_config']['edge_feature_dim']
-      },
-      index=[sample_id]
-    )
+    output_data = {"test_accuracy": test_accuracy}
+    output_data.update(benchmark_result['generator_config'])
+    yield pd.DataFrame(output_data, index=[sample_id])
