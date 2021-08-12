@@ -70,8 +70,11 @@ def main(argv=None):
       gen_handler_wrapper.handler.GetWriteDoFn())
 
     torch_data = (
-        graph_samples | 'Convert to torchgeo data.' >> beam.ParDo(
-      gen_handler_wrapper.handler.GetConvertParDo()))
+        graph_samples | 'Compute graph metrics.' >> beam.ParDo(
+      gen_handler_wrapper.handler.GetGraphMetricsParDo())
+                      | 'Convert to torchgeo data.' >> beam.ParDo(
+      gen_handler_wrapper.handler.GetConvertParDo())
+    )
 
     (torch_data | 'Filter skipped conversions' >> beam.Filter(lambda el: el['skipped'])
      | 'Extract skipped sample ids' >> beam.Map(lambda el: el['sample_id'])

@@ -18,6 +18,7 @@ from generator_config_sampler import GeneratorConfigSampler, ParamSamplerSpec
 from models.beam import BenchmarkGNNParDo
 from sbm.sbm_simulator import GenerateStochasticBlockModelWithFeatures
 from sbm.utils import sbm_data_to_torchgeo_data, get_kclass_masks
+from graph_metrics import GraphMetrics
 
 class SampleSbmDoFn(GeneratorConfigSampler, beam.DoFn):
 
@@ -108,6 +109,14 @@ class WriteSbmDoFn(beam.DoFn):
       f.close()
 
 
+class ComputeSbmGraphMetrics(beam.DoFn):
+
+  def process(self, element):
+    out = element
+    out['metrics'] = GraphMetrics(element['data'].graph)
+    yield out
+
+
 class ConvertToTorchGeoDataParDo(beam.DoFn):
   def __init__(self, output_path):
     self._output_path = output_path
@@ -118,6 +127,7 @@ class ConvertToTorchGeoDataParDo(beam.DoFn):
 
     out = {
       'sample_id': sample_id,
+      'metrics' : element['metrics'],
       'torch_data': None,
       'masks': None,
       'skipped': False
@@ -163,6 +173,7 @@ class ConvertToTorchGeoDataParDo(beam.DoFn):
 
     yield out
 
+
 @gin.configurable
 class SbmBeamHandler(GeneratorBeamHandler):
 
@@ -171,6 +182,8 @@ class SbmBeamHandler(GeneratorBeamHandler):
                num_features, num_classes, hidden_channels, epochs):
     self._sample_do_fn = SampleSbmDoFn(param_sampler_specs)
     self._benchmark_par_do = BenchmarkGNNParDo(num_features, num_classes, hidden_channels, epochs)
+    self._metrics_par_do = ComputeSbmGraphMetrics()
+
 
   def GetSampleDoFn(self):
     return self._sample_do_fn
@@ -183,6 +196,9 @@ class SbmBeamHandler(GeneratorBeamHandler):
 
   def GetBenchmarkParDo(self):
     return self._benchmark_par_do
+
+  def GetGraphMetricsParDo(self):
+    return self._metrics_par_do
 
   def SetOutputPath(self, output_path):
     self._output_path = output_path

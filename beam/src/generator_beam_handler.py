@@ -23,6 +23,10 @@ class GeneratorBeamHandler(ABC):
     pass
 
   @abstractmethod
+  def GetGraphMetricsParDo(self):
+    pass
+
+  @abstractmethod
   def SetOutputPath(self, output_path):
     pass
 

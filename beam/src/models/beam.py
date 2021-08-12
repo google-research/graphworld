@@ -66,4 +66,5 @@ class BenchmarkGNNParDo(beam.DoFn):
                      benchmark_result['test_accuracy'])
     output_data = {"test_accuracy": test_accuracy}
     output_data.update(benchmark_result['generator_config'])
+    output_data.update(element['metrics'])
     yield pd.DataFrame(output_data, index=[sample_id])
