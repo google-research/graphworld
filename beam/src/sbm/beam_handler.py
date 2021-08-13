@@ -16,7 +16,7 @@ import gin
 from generator_beam_handler import GeneratorBeamHandler
 from generator_config_sampler import GeneratorConfigSampler, ParamSamplerSpec
 from models.beam import BenchmarkGNNParDo
-from sbm.sbm_simulator import GenerateStochasticBlockModelWithFeatures
+from sbm.sbm_simulator import GenerateStochasticBlockModelWithFeatures, MatchType
 from sbm.utils import sbm_data_to_torchgeo_data, get_kclass_masks
 from graph_metrics import GraphMetrics
 
@@ -48,6 +48,8 @@ class SampleSbmDoFn(GeneratorConfigSampler, beam.DoFn):
       num_edges=generator_config['nvertex'] * generator_config['avg_degree'],
       pi=np.array([0.25, 0.25, 0.25, 0.25]),
       prop_mat=np.ones((4, 4)) + generator_config['p_to_q_ratio'] * np.diag([1, 1, 1, 1]),
+      num_feature_groups=4,
+      feature_group_match_type=MatchType.GROUPED,
       feature_center_distance=generator_config['feature_center_distance'],
       feature_dim=generator_config['feature_dim'],
       edge_center_distance=generator_config['edge_center_distance'],

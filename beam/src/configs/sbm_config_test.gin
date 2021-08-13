@@ -29,7 +29,7 @@ feature_dim/ParamSamplerSpec.max_val = 16
 
 feature_center_distance/ParamSamplerSpec.name = "feature_center_distance"
 feature_center_distance/ParamSamplerSpec.min_val = 0.0
-feature_center_distance/ParamSamplerSpec.max_val = 10.0
+feature_center_distance/ParamSamplerSpec.max_val = 5.0
 
 edge_center_distance/ParamSamplerSpec.name = "edge_center_distance"
 edge_center_distance/ParamSamplerSpec.min_val = 2.0
