@@ -18,8 +18,9 @@
 # as the remote workers.
 #
 
+GENERATOR="substructure"
 
-OUTPUT_PATH="/tmp/sbm"
+OUTPUT_PATH="/tmp/${GENERATOR}"
 
 rm -rf "${OUTPUT_PATH}"
 mkdir -p ${OUTPUT_PATH}
@@ -27,7 +28,7 @@ mkdir -p ${OUTPUT_PATH}
 docker-compose run \
   --entrypoint "python3 /app/beam_benchmark_main.py \
   --output ${OUTPUT_PATH} \
-  --gin_config=/app/configs/sbm_config_test.gin \
+  --gin_config=/app/configs/${GENERATOR}_config_test.gin \
   --runner=DirectRunner" \
   research-graph-synthetic 
 

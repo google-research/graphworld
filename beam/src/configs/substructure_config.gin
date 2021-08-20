@@ -1,0 +1,33 @@
+GeneratorBeamHandlerWrapper.handler = @SubstructureBeamHandler()
+GeneratorBeamHandlerWrapper.nsamples = 10000
+SubstructureBeamHandler.substruct = %Substructure.TAILED_TRIANGLE_GRAPH
+
+SubstructureBeamHandler.param_sampler_specs = [
+  @num_graphs/ParamSamplerSpec(),
+  @num_vertices/ParamSamplerSpec(),
+  @edge_prob/ParamSamplerSpec(),
+  @train_prob/ParamSamplerSpec()
+]
+
+num_graphs/ParamSamplerSpec.name = "num_graphs"
+num_graphs/ParamSamplerSpec.min_val = 500
+num_graphs/ParamSamplerSpec.max_val = 5000
+
+num_vertices/ParamSamplerSpec.name = "num_vertices"
+num_vertices/ParamSamplerSpec.min_val = 5
+num_vertices/ParamSamplerSpec.max_val = 30
+
+edge_prob/ParamSamplerSpec.name = "edge_prob"
+edge_prob/ParamSamplerSpec.min_val = 0.1
+edge_prob/ParamSamplerSpec.max_val = 0.75
+
+train_prob/ParamSamplerSpec.name = "train_prob"
+train_prob/ParamSamplerSpec.min_val = 0.2
+train_prob/ParamSamplerSpec.max_val = 0.7
+
+
+SubstructureBeamHandler.num_features = 1
+SubstructureBeamHandler.batch_size = 64
+SubstructureBeamHandler.hidden_channels = 16
+SubstructureBeamHandler.epochs = 100
+SubstructureBeamHandler.lr = 0.0001

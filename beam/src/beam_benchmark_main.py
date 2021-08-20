@@ -27,9 +27,15 @@ import numpy as np
 import pandas as pd
 import gin
 
-from sbm.beam_handler import SbmBeamHandler
+# Generator-agnostic imports
 from generator_beam_handler import GeneratorBeamHandlerWrapper
 from generator_config_sampler import ParamSamplerSpec
+
+# Generator-specific imports
+from sbm.beam_handler import SbmBeamHandler
+from substructure.beam_handler import SubstructureBeamHandler
+from substructure.simulator import Substructure
+
 
 def CombineDataframes(dfs):
   return pd.concat(dfs or [pd.DataFrame()])

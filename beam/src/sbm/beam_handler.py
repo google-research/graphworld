@@ -13,12 +13,10 @@ import gin
 import numpy as np
 import pandas as pd
 
-from models.wrappers import LinearGCN
-
 # Change the name of this...
 from generator_beam_handler import GeneratorBeamHandler
 from generator_config_sampler import GeneratorConfigSampler, ParamSamplerSpec
-from models.beam import BenchmarkGNNParDo
+from models.wrappers import LinearGCN
 from sbm.sbm_simulator import GenerateStochasticBlockModelWithFeatures, MatchType
 from sbm.utils import sbm_data_to_torchgeo_data, get_kclass_masks
 from graph_metrics import GraphMetrics

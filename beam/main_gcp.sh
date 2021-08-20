@@ -13,13 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+GENERATOR="substructure"
 
 TIMESTAMP="$(date +"%Y-%m-%d-%H-%M-%S")"
-OUTPUT_PATH="gs://research-graph-synthetic/${USER}/sampling/${TIMESTAMP}"
+OUTPUT_PATH="gs://research-graph-synthetic/${USER}/sampling/${GENERATOR}-${TIMESTAMP}"
 TEMP_LOCATION="gs://research-graph-synthetic/temp"
 echo "OUTPUT_PATH: ${OUTPUT_PATH}"
 
-JOB_NAME=$(echo "${USER}-${TIMESTAMP}" | tr '_' '-')
+JOB_NAME=$(echo "${USER}-${GENERATOR}-${TIMESTAMP}" | tr '_' '-')
 
 ENTRYPOINT="python3 /app/beam_benchmark_main.py \
   --runner=DataflowRunner \
@@ -27,7 +28,7 @@ ENTRYPOINT="python3 /app/beam_benchmark_main.py \
   --region=us-east1 \
   --max_num_workers=256 \
   --temp_location="${TEMP_LOCATION}" \
-  --gin_config=/app/configs/sbm_config.gin \
+  --gin_config=/app/configs/${GENERATOR}_config.gin \
   --output="${OUTPUT_PATH}" \
   --job_name="${JOB_NAME}" \
   --experiments=use_monitoring_state_manager \
