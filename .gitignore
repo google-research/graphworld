@@ -1,3 +1,4 @@
 beam/src/data/
 beam/src/notebooks/.ipynb_checkpoints/
 __pycache__
+/.idea/
