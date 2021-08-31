@@ -47,11 +47,9 @@ class LinearGCN:
     return test_acc
 
   def train(self, data):
-    losses = {}
+    losses = []
     for epoch in range(self._epochs):
-      loss = self.train_step(data)
-      losses['{0:05}'.format(epoch + 1)] = '{0}'.format(loss)
-
+      losses.append(float(self.train_step(data)))
     return losses
 
 
