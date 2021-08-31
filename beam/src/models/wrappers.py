@@ -19,13 +19,14 @@ from models.models import LinearGCNModel, LinearGraphGCNModel
 
 
 class LinearGCN:
-  def __init__(self, num_features, num_classes, hidden_channels, train_mask, val_mask):
+  def __init__(self, num_features, num_classes, hidden_channels, train_mask, val_mask, epochs):
     self._model = LinearGCNModel(num_features, num_classes, hidden_channels)
     self._optimizer = torch.optim.Adam(self._model.parameters(), lr=0.01, weight_decay=5e-4)
     self._criterion = torch.nn.CrossEntropyLoss()
     self._train_mask = train_mask
     self._val_mask = val_mask
     self._test_mask = val_mask
+    self._epochs = epochs
 
   def train_step(self, data):
     self._model.train()
@@ -45,9 +46,9 @@ class LinearGCN:
     test_acc = int(test_correct.sum()) / int(self._test_mask.sum())  # Derive ratio of correct predictions.
     return test_acc
 
-  def train(self, epochs, data):
+  def train(self, data):
     losses = {}
-    for epoch in range(epochs):
+    for epoch in range(self._epochs):
       loss = self.train_step(data)
       losses['{0:05}'.format(epoch + 1)] = '{0}'.format(loss)
 

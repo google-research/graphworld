@@ -208,9 +208,10 @@ class BenchmarkGNNParDo(beam.DoFn):
       self._num_classes,
       self._hidden_channels,
       train_mask,
-      val_mask)
+      val_mask,
+      self._epochs)
 
-    losses = linear_model.train(self._epochs, torch_data)
+    losses = linear_model.train(torch_data)
     test_accuracy = None
     try:
       # Divide by zero somesimtes happens with the ksample masks.
