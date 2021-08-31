@@ -13,7 +13,7 @@ import pandas as pd
 from generator_beam_handler import GeneratorBeamHandler
 from generator_config_sampler import GeneratorConfigSampler, ParamSamplerSpec
 from models.benchmarker import Benchmarker
-from models.wrappers import LinearGCN
+from models.wrappers import LinearGCNWrapper
 from sbm.sbm_simulator import GenerateStochasticBlockModelWithFeatures, MatchType
 from sbm.utils import sbm_data_to_torchgeo_data, get_kclass_masks
 from graph_metrics import GraphMetrics
@@ -176,12 +176,8 @@ class ConvertToTorchGeoDataParDo(beam.DoFn):
 
 class BenchmarkGNNParDo(beam.DoFn):
 
-  def __init__(self, num_features, num_classes, hidden_channels, epochs):
-    # self._benchmarker = LinearGCN(num_features, num_classes, hidden_channels, epochs)
-    self._num_features = num_features
-    self._num_classes = num_classes
-    self._hidden_channels = hidden_channels
-    self._epochs = epochs
+  def __init__(self, benchmarker_wrapper_class, model_hparams):
+    self._benchmarker_wrapper = benchmarker_wrapper_class(**model_hparams)
     self._output_path = None
 
   def SetOutputPath(self, output_path):
@@ -189,11 +185,7 @@ class BenchmarkGNNParDo(beam.DoFn):
 
   def process(self, element):
     sample_id = element['sample_id']
-    benchmarker = LinearGCN(
-      self._num_features,
-      self._num_classes,
-      self._hidden_channels,
-      self._epochs)
+    benchmarker = self._benchmarker_wrapper.GetBenchmarker()
     benchmarker_out = benchmarker.Benchmark(element)
 
     # Dump benchmark results to file.
@@ -224,7 +216,14 @@ class SbmBeamHandler(GeneratorBeamHandler):
   def __init__(self, param_sampler_specs,
                num_features, num_classes, hidden_channels, epochs):
     self._sample_do_fn = SampleSbmDoFn(param_sampler_specs)
-    self._benchmark_par_do = BenchmarkGNNParDo(num_features, num_classes, hidden_channels, epochs)
+    self._benchmark_par_do = BenchmarkGNNParDo(
+      benchmarker_wrapper_class=LinearGCNWrapper,
+      model_hparams={
+        "num_features": num_features,
+        "num_classes": num_classes,
+        "hidden_channels": hidden_channels,
+        "epochs": epochs
+      })
     self._metrics_par_do = ComputeSbmGraphMetrics()
 
 

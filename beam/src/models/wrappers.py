@@ -16,7 +16,7 @@ import numpy as np
 import torch
 
 from models.models import LinearGCNModel, LinearGraphGCNModel
-from models.benchmarker import Benchmarker
+from models.benchmarker import Benchmarker, BenchmarkerWrapper
 
 class LinearGCN(Benchmarker):
   def __init__(self, num_features, num_classes, hidden_channels, epochs):
@@ -85,6 +85,20 @@ class LinearGCN(Benchmarker):
 
     return {'losses': losses,
             'test_metrics': {'test_accuracy': test_accuracy}}
+
+
+class LinearGCNWrapper(BenchmarkerWrapper):
+
+  def __init__(self, num_features, num_classes, hidden_channels, epochs):
+    self._model_hparams = {
+      "num_features": num_features,
+      "num_classes": num_classes,
+      "hidden_channels": hidden_channels,
+      "epochs": epochs
+    }
+
+  def GetBenchmarker(self):
+    return LinearGCN(**self._model_hparams)
 
 
 class LinearGraphGCN:

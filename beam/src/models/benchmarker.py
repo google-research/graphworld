@@ -17,3 +17,10 @@ class Benchmarker(ABC):
   def Benchmark(self, element):
     del element # unused
     return {'losses': [], 'test_metrics': {}}
+
+
+class BenchmarkerWrapper(ABC):
+
+  @abstractmethod
+  def GetBenchmarker(self):
+    return Benchmarker()
