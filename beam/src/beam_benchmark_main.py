@@ -30,6 +30,7 @@ import gin
 # Generator-agnostic imports
 from generator_beam_handler import GeneratorBeamHandlerWrapper
 from generator_config_sampler import ParamSamplerSpec
+from models.wrappers import LinearGCNWrapper
 
 # Generator-specific imports
 from sbm.beam_handler import SbmBeamHandler

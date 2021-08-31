@@ -13,7 +13,6 @@ import pandas as pd
 from generator_beam_handler import GeneratorBeamHandler
 from generator_config_sampler import GeneratorConfigSampler, ParamSamplerSpec
 from models.benchmarker import Benchmarker
-from models.wrappers import LinearGCNWrapper
 from sbm.sbm_simulator import GenerateStochasticBlockModelWithFeatures, MatchType
 from sbm.utils import sbm_data_to_torchgeo_data, get_kclass_masks
 from graph_metrics import GraphMetrics
@@ -176,8 +175,15 @@ class ConvertToTorchGeoDataParDo(beam.DoFn):
 
 class BenchmarkGNNParDo(beam.DoFn):
 
-  def __init__(self, benchmarker_wrapper_class, model_hparams):
-    self._benchmarker_wrapper = benchmarker_wrapper_class(**model_hparams)
+  # The commented line here, and the one in process, could be uncommented and
+  # replace the alternate code below it, if we were using Python 3.7. See:
+  #  - https://github.com/huggingface/transformers/issues/8453
+  #  - https://github.com/huggingface/transformers/issues/8212
+  def __init__(self, benchmarker_wrapper):
+    # self._benchmarker = benchmarker_wrapper().GetBenchmarker()
+    self._benchmarker_class = benchmarker_wrapper().GetBenchmarkerClass()
+    self._model_hparams = benchmarker_wrapper().GetModelHparams()
+    # /end alternate code.
     self._output_path = None
 
   def SetOutputPath(self, output_path):
@@ -185,8 +191,10 @@ class BenchmarkGNNParDo(beam.DoFn):
 
   def process(self, element):
     sample_id = element['sample_id']
-    benchmarker = self._benchmarker_wrapper.GetBenchmarker()
+    # benchmarker_out = self._benchmarker.Benchmark(element)
+    benchmarker = self._benchmarker_class(**self._model_hparams)
     benchmarker_out = benchmarker.Benchmark(element)
+    # /end alternate code.
 
     # Dump benchmark results to file.
     benchmark_result = {
@@ -213,19 +221,10 @@ class BenchmarkGNNParDo(beam.DoFn):
 class SbmBeamHandler(GeneratorBeamHandler):
 
   @gin.configurable
-  def __init__(self, param_sampler_specs,
-               num_features, num_classes, hidden_channels, epochs):
+  def __init__(self, param_sampler_specs, benchmarker_wrapper):
     self._sample_do_fn = SampleSbmDoFn(param_sampler_specs)
-    self._benchmark_par_do = BenchmarkGNNParDo(
-      benchmarker_wrapper_class=LinearGCNWrapper,
-      model_hparams={
-        "num_features": num_features,
-        "num_classes": num_classes,
-        "hidden_channels": hidden_channels,
-        "epochs": epochs
-      })
+    self._benchmark_par_do = BenchmarkGNNParDo(benchmarker_wrapper)
     self._metrics_par_do = ComputeSbmGraphMetrics()
-
 
   def GetSampleDoFn(self):
     return self._sample_do_fn

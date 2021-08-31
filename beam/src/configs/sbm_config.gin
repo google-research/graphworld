@@ -39,7 +39,8 @@ edge_feature_dim/ParamSamplerSpec.name = "edge_feature_dim"
 edge_feature_dim/ParamSamplerSpec.min_val = 2.0
 edge_feature_dim/ParamSamplerSpec.max_val = 2.0
 
-SbmBeamHandler.num_features = 16
-SbmBeamHandler.num_classes = 4
-SbmBeamHandler.hidden_channels = 8
-SbmBeamHandler.epochs = 256
+SbmBeamHandler.benchmarker_wrapper = @LinearGCNWrapper
+LinearGCNWrapper.num_features = 16
+LinearGCNWrapper.num_classes = 4
+LinearGCNWrapper.hidden_channels = 8
+LinearGCNWrapper.epochs = 256

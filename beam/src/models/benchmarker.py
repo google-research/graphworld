@@ -24,3 +24,14 @@ class BenchmarkerWrapper(ABC):
   @abstractmethod
   def GetBenchmarker(self):
     return Benchmarker()
+
+  # These two functions would be unnecessary if we were using Python 3.7. See:
+  #  - https://github.com/huggingface/transformers/issues/8453
+  #  - https://github.com/huggingface/transformers/issues/8212
+  @abstractmethod
+  def GetBenchmarkerClass(self):
+    return Benchmarker
+
+  @abstractmethod
+  def GetModelHparams(self):
+    return {}

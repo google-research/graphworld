@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import gin
 import numpy as np
 import torch
 
@@ -87,6 +88,7 @@ class LinearGCN(Benchmarker):
             'test_metrics': {'test_accuracy': test_accuracy}}
 
 
+@gin.configurable
 class LinearGCNWrapper(BenchmarkerWrapper):
 
   def __init__(self, num_features, num_classes, hidden_channels, epochs):
@@ -99,6 +101,12 @@ class LinearGCNWrapper(BenchmarkerWrapper):
 
   def GetBenchmarker(self):
     return LinearGCN(**self._model_hparams)
+
+  def GetBenchmarkerClass(self):
+    return LinearGCN
+
+  def GetModelHparams(self):
+    return self._model_hparams
 
 
 class LinearGraphGCN:
