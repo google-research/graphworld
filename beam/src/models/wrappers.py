@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import gin
+import logging
 import numpy as np
 import torch
 
@@ -20,7 +21,7 @@ from models.models import LinearGCNModel, LinearGraphGCNModel
 from models.benchmarker import Benchmarker, BenchmarkerWrapper
 
 class LinearGCN(Benchmarker):
-  def __init__(self, num_features, num_classes, hidden_channels, epochs):
+  def __init__(self, num_features, num_classes, hidden_channels, epochs, model_name):
     self._model = LinearGCNModel(num_features, num_classes, hidden_channels)
     self._optimizer = torch.optim.Adam(self._model.parameters(), lr=0.01, weight_decay=5e-4)
     self._criterion = torch.nn.CrossEntropyLoss()
@@ -28,6 +29,7 @@ class LinearGCN(Benchmarker):
     self._val_mask = None
     self._test_mask = None
     self._epochs = epochs
+    self._model_name = model_name
 
   def SetMasks(self, train_mask, val_mask):
     self._train_mask = train_mask
@@ -91,12 +93,13 @@ class LinearGCN(Benchmarker):
 @gin.configurable
 class LinearGCNWrapper(BenchmarkerWrapper):
 
-  def __init__(self, num_features, num_classes, hidden_channels, epochs):
+  def __init__(self, num_features, num_classes, hidden_channels, epochs, model_name):
     self._model_hparams = {
       "num_features": num_features,
       "num_classes": num_classes,
       "hidden_channels": hidden_channels,
-      "epochs": epochs
+      "epochs": epochs,
+      "model_name": model_name
     }
 
   def GetBenchmarker(self):

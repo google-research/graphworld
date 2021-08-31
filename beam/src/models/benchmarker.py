@@ -5,6 +5,13 @@ from abc import ABC, abstractmethod
 import apache_beam as beam
 
 class Benchmarker(ABC):
+
+  def __init__(self):
+    self._model_name = ''
+
+  def GetModelName(self):
+    return self._model_name
+
   # Train and test the model.
   # Arguments:
   #   * element: output of the 'Convert to torchgeo' beam stage.

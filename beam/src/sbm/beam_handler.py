@@ -175,14 +175,17 @@ class ConvertToTorchGeoDataParDo(beam.DoFn):
 
 class BenchmarkGNNParDo(beam.DoFn):
 
-  # The commented line here, and the one in process, could be uncommented and
+  # The commented lines here, and those in process, could be uncommented and
   # replace the alternate code below it, if we were using Python 3.7. See:
   #  - https://github.com/huggingface/transformers/issues/8453
   #  - https://github.com/huggingface/transformers/issues/8212
-  def __init__(self, benchmarker_wrapper):
-    # self._benchmarker = benchmarker_wrapper().GetBenchmarker()
-    self._benchmarker_class = benchmarker_wrapper().GetBenchmarkerClass()
-    self._model_hparams = benchmarker_wrapper().GetModelHparams()
+  def __init__(self, benchmarker_wrappers):
+    # self._benchmarkers = [benchmarker_wrapper().GetBenchmarker() for
+    #                       benchmarker_wrapper in benchmarker_wrappers]
+    self._benchmarker_classes = [benchmarker_wrapper().GetBenchmarkerClass() for
+                                 benchmarker_wrapper in benchmarker_wrappers]
+    self._model_hparams = [benchmarker_wrapper().GetModelHparams() for
+                           benchmarker_wrapper in benchmarker_wrappers]
     # /end alternate code.
     self._output_path = None
 
@@ -190,40 +193,42 @@ class BenchmarkGNNParDo(beam.DoFn):
     self._output_path = output_path
 
   def process(self, element):
-    sample_id = element['sample_id']
-    # benchmarker_out = self._benchmarker.Benchmark(element)
-    benchmarker = self._benchmarker_class(**self._model_hparams)
-    benchmarker_out = benchmarker.Benchmark(element)
-    # /end alternate code.
+    # for benchmarer in self._benchmarkers:
+    for benchmarker_class, model_hparams in zip(self._benchmarker_classes, self._model_hparams):
+      sample_id = element['sample_id']
+      # benchmarker_out = self._benchmarker.Benchmark(element)
+      benchmarker = benchmarker_class(**model_hparams)
+      benchmarker_out = benchmarker.Benchmark(element)
+      # /end alternate code.
 
-    # Dump benchmark results to file.
-    benchmark_result = {
-      'sample_id': sample_id,
-      'losses': benchmarker_out['losses'],
-      'generator_config': element['generator_config']
-    }
-    benchmark_result.update(benchmarker_out['test_metrics'])
-    results_object_name = os.path.join(self._output_path, '{0:05}_results.txt'.format(sample_id))
-    with beam.io.filesystems.FileSystems.create(results_object_name, 'text/plain') as f:
-      buf = bytes(json.dumps(benchmark_result), 'utf-8')
-      f.write(buf)
-      f.close()
+      # Dump benchmark results to file.
+      benchmark_result = {
+        'sample_id': sample_id,
+        'losses': benchmarker_out['losses'],
+        'generator_config': element['generator_config']
+      }
+      benchmark_result.update(benchmarker_out['test_metrics'])
+      results_object_name = os.path.join(self._output_path, '{0:05}_results.txt'.format(sample_id))
+      with beam.io.filesystems.FileSystems.create(results_object_name, 'text/plain') as f:
+        buf = bytes(json.dumps(benchmark_result), 'utf-8')
+        f.write(buf)
+        f.close()
 
-    # Return benchmark data for next beam stage.
-    output_data = benchmarker_out['test_metrics']
-    output_data.update(element['generator_config'])
-    output_data.update(element['metrics'])
-    output_data['model_name'] = 'LinearGCN'
-    yield pd.DataFrame(output_data, index=[sample_id])
+      # Return benchmark data for next beam stage.
+      output_data = benchmarker_out['test_metrics']
+      output_data.update(element['generator_config'])
+      output_data.update(element['metrics'])
+      output_data['model_name'] = benchmarker.GetModelName()
+      yield pd.DataFrame(output_data, index=[sample_id])
 
 
 @gin.configurable
 class SbmBeamHandler(GeneratorBeamHandler):
 
   @gin.configurable
-  def __init__(self, param_sampler_specs, benchmarker_wrapper):
+  def __init__(self, param_sampler_specs, benchmarker_wrappers):
     self._sample_do_fn = SampleSbmDoFn(param_sampler_specs)
-    self._benchmark_par_do = BenchmarkGNNParDo(benchmarker_wrapper)
+    self._benchmark_par_do = BenchmarkGNNParDo(benchmarker_wrappers)
     self._metrics_par_do = ComputeSbmGraphMetrics()
 
   def GetSampleDoFn(self):
