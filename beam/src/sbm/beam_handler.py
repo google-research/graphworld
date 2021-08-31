@@ -208,8 +208,7 @@ class BenchmarkGNNParDo(beam.DoFn):
       self._num_classes,
       self._hidden_channels,
       train_mask,
-      val_mask,
-      test_mask)
+      val_mask)
 
     losses = linear_model.train(self._epochs, torch_data)
     test_accuracy = None

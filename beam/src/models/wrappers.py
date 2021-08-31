@@ -19,7 +19,7 @@ from models.models import LinearGCNModel, LinearGraphGCNModel
 
 
 class LinearGCN:
-  def __init__(self, num_features, num_classes, hidden_channels, train_mask, val_mask, test_mask):
+  def __init__(self, num_features, num_classes, hidden_channels, train_mask, val_mask):
     self._model = LinearGCNModel(num_features, num_classes, hidden_channels)
     self._optimizer = torch.optim.Adam(self._model.parameters(), lr=0.01, weight_decay=5e-4)
     self._criterion = torch.nn.CrossEntropyLoss()
