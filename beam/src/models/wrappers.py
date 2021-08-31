@@ -16,9 +16,9 @@ import numpy as np
 import torch
 
 from models.models import LinearGCNModel, LinearGraphGCNModel
+from models.benchmarker import Benchmarker
 
-
-class LinearGCN:
+class LinearGCN(Benchmarker):
   def __init__(self, num_features, num_classes, hidden_channels, epochs):
     self._model = LinearGCNModel(num_features, num_classes, hidden_channels)
     self._optimizer = torch.optim.Adam(self._model.parameters(), lr=0.01, weight_decay=5e-4)
@@ -56,6 +56,35 @@ class LinearGCN:
     for epoch in range(self._epochs):
       losses.append(float(self.train_step(data)))
     return losses
+
+  def Benchmark(self, element):
+    torch_data = element['torch_data']
+    masks = element['masks']
+    skipped = element['skipped']
+
+    out = {
+      'skipped': skipped,
+      'results': None
+    }
+
+    if skipped:
+      logging.info(f'Skipping benchmark for sample id {sample_id}')
+      return
+
+    train_mask, val_mask, test_mask = masks
+
+    self.SetMasks(train_mask, val_mask)
+
+    losses = self.train(torch_data)
+    test_accuracy = 0.0
+    try:
+      # Divide by zero somesimtes happens with the ksample masks.
+      test_accuracy = self.test(torch_data)
+    except:
+      logging.info(f'Failed to compute test accuracy for sample id {sample_id}')
+
+    return {'losses': losses,
+            'test_metrics': {'test_accuracy': test_accuracy}}
 
 
 class LinearGraphGCN:

@@ -12,6 +12,7 @@ import pandas as pd
 # Change the name of this...
 from generator_beam_handler import GeneratorBeamHandler
 from generator_config_sampler import GeneratorConfigSampler, ParamSamplerSpec
+from models.benchmarker import Benchmarker
 from models.wrappers import LinearGCN
 from sbm.sbm_simulator import GenerateStochasticBlockModelWithFeatures, MatchType
 from sbm.utils import sbm_data_to_torchgeo_data, get_kclass_masks
@@ -174,65 +175,45 @@ class ConvertToTorchGeoDataParDo(beam.DoFn):
 
 
 class BenchmarkGNNParDo(beam.DoFn):
+
   def __init__(self, num_features, num_classes, hidden_channels, epochs):
+    # self._benchmarker = LinearGCN(num_features, num_classes, hidden_channels, epochs)
     self._num_features = num_features
     self._num_classes = num_classes
     self._hidden_channels = hidden_channels
     self._epochs = epochs
+    self._output_path = None
 
   def SetOutputPath(self, output_path):
     self._output_path = output_path
 
   def process(self, element):
     sample_id = element['sample_id']
-    torch_data = element['torch_data']
-    masks = element['masks']
-    skipped = element['skipped']
-
-    out = {
-      'skipped': skipped,
-      'results': None
-    }
-
-    if skipped:
-      logging.info(f'Skipping benchmark for sample id {sample_id}')
-      return
-
-    train_mask, val_mask, test_mask = masks
-    linear_model = LinearGCN(
+    benchmarker = LinearGCN(
       self._num_features,
       self._num_classes,
       self._hidden_channels,
       self._epochs)
+    benchmarker_out = benchmarker.Benchmark(element)
 
-    linear_model.SetMasks(train_mask, val_mask)
-
-    losses = linear_model.train(torch_data)
-    test_accuracy = None
-    try:
-      # Divide by zero somesimtes happens with the ksample masks.
-      test_accuracy = linear_model.test(torch_data)
-    except:
-      logging.info(f'Failed to compute test accuracy for sample id {sample_id}')
-
+    # Dump benchmark results to file.
     benchmark_result = {
       'sample_id': sample_id,
-      'losses': losses,
-      'test_accuracy': test_accuracy,
+      'losses': benchmarker_out['losses'],
       'generator_config': element['generator_config']
     }
-
+    benchmark_result.update(benchmarker_out['test_metrics'])
     results_object_name = os.path.join(self._output_path, '{0:05}_results.txt'.format(sample_id))
     with beam.io.filesystems.FileSystems.create(results_object_name, 'text/plain') as f:
       buf = bytes(json.dumps(benchmark_result), 'utf-8')
       f.write(buf)
       f.close()
 
-    test_accuracy = (0.0 if benchmark_result['test_accuracy'] is None else
-                     benchmark_result['test_accuracy'])
-    output_data = {"test_accuracy": test_accuracy}
-    output_data.update(benchmark_result['generator_config'])
+    # Return benchmark data for next beam stage.
+    output_data = benchmarker_out['test_metrics']
+    output_data.update(element['generator_config'])
     output_data.update(element['metrics'])
+    output_data['model_name'] = 'LinearGCN'
     yield pd.DataFrame(output_data, index=[sample_id])
 
 
