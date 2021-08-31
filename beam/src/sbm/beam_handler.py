@@ -3,12 +3,8 @@ import argparse
 import json
 import logging
 import os
-import setuptools
 
 import apache_beam as beam
-from apache_beam.options.pipeline_options import PipelineOptions
-from apache_beam.options.pipeline_options import SetupOptions
-from apache_beam.dataframe.convert import to_dataframe
 import gin
 import numpy as np
 import pandas as pd
