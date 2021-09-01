@@ -25,9 +25,13 @@ train_prob/ParamSamplerSpec.name = "train_prob"
 train_prob/ParamSamplerSpec.min_val = 0.2
 train_prob/ParamSamplerSpec.max_val = 0.7
 
-
-SubstructureBeamHandler.num_features = 1
 SubstructureBeamHandler.batch_size = 64
-SubstructureBeamHandler.hidden_channels = 16
-SubstructureBeamHandler.epochs = 100
-SubstructureBeamHandler.lr = 0.0001
+SubstructureBeamHandler.benchmarker_wrappers = [
+  @BasicLinearGraphGCN/LinearGraphGCNWrapper,
+]
+
+BasicLinearGraphGCN/LinearGraphGCNWrapper.model_name = "BasicLinearGraphGCN"
+BasicLinearGraphGCN/LinearGraphGCNWrapper.num_features = 1
+BasicLinearGraphGCN/LinearGraphGCNWrapper.hidden_channels = 16
+BasicLinearGraphGCN/LinearGraphGCNWrapper.epochs = 100
+BasicLinearGraphGCN/LinearGraphGCNWrapper.lr = 0.0001

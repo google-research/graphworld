@@ -112,13 +112,14 @@ class LinearGCNWrapper(BenchmarkerWrapper):
     return self._model_hparams
 
 
-class LinearGraphGCN:
+class LinearGraphGCN(Benchmarker):
 
-  def __init__(self, num_features, hidden_channels=64, epochs=100, lr=0.0001):
+  def __init__(self, num_features, hidden_channels=64, epochs=100, lr=0.0001, model_name=''):
     self._model = LinearGraphGCNModel(num_features, hidden_channels)
     self._optimizer = torch.optim.Adam(self._model.parameters(), lr=lr)
     self._criterion = torch.nn.MSELoss()
     self._epochs = epochs
+    self._model_name = model_name
 
   def train(self, loader):
     self._model.train()
@@ -150,3 +151,35 @@ class LinearGraphGCN:
         total_mse += float(self._criterion(out, data.y)) * batch_size
         label_variance += np.std(data.y.numpy()) ** 2.0 * batch_size
       return total_mse / label_variance
+
+  def Benchmark(self, element):
+    mses, losses = self.train(element['torch_dataset']['train'])
+    test_mse = 0.0
+    try:
+      test_mse = float(self.test(element['torch_dataset']['test']))
+    except:
+      logging.info(f'Failed to compute test mse for sample id {sample_id}')
+
+    return {'losses': losses,
+            'test_metrics': {'test_mse': test_mse}}
+
+@gin.configurable
+class LinearGraphGCNWrapper(BenchmarkerWrapper):
+
+  def __init__(self, num_features, hidden_channels, epochs, lr, model_name):
+    self._model_hparams = {
+      "num_features": num_features,
+      "hidden_channels": hidden_channels,
+      "epochs": epochs,
+      "lr": lr,
+      "model_name": model_name
+    }
+
+  def GetBenchmarker(self):
+    return LinearGraphGCN(**self._model_hparams)
+
+  def GetBenchmarkerClass(self):
+    return LinearGraphGCN
+
+  def GetModelHparams(self):
+    return self._model_hparams
