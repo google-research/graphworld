@@ -12,7 +12,7 @@ from torch_geometric.data import DataLoader
 
 from generator_beam_handler import GeneratorBeamHandler
 from generator_config_sampler import GeneratorConfigSampler, ParamSamplerSpec
-from models.wrappers import LinearGraphGCN
+from models.benchmarker import Benchmarker, BenchmarkGNNParDo
 from substructure.simulator import GenerateSubstructureDataset, GetSubstructureGraph, Substructure
 from substructure.utils import substructure_graph_to_torchgeo_data
 from graph_metrics import GraphMetrics
@@ -96,67 +96,14 @@ class ConvertToTorchGeoDataParDo(beam.DoFn):
     yield out
 
 
-class BenchmarkGNNParDo(beam.DoFn):
-  def __init__(self, num_features, hidden_channels=64, epochs=100, lr=0.0001):
-    self._num_features = num_features
-    self._hidden_channels = hidden_channels
-    self._epochs = epochs
-    self._lr = lr
-
-  def SetOutputPath(self, output_path):
-    self._output_path = output_path
-
-  def process(self, element):
-
-    linear_model = LinearGraphGCN(
-      self._num_features,
-      self._hidden_channels,
-      self._epochs,
-      self._lr
-    )
-
-    print("type of element['torch_dataset']['train'] is %s" % type(element['torch_dataset']['train']))
-    print("element['torch_dataset']['train'] is %s" % str(element['torch_dataset']['train']))
-    mses, losses = linear_model.train(element['torch_dataset']['train'])
-    test_mse = None
-    try:
-      test_mse = float(linear_model.test(element['torch_dataset']['test']))
-    except:
-      logging.info(f'Failed to compute test accuracy for sample id {sample_id}')
-
-    sample_id = element['sample_id']
-    benchmark_result = {
-      'sample_id': sample_id,
-      'losses': losses,
-      'test_mse': test_mse,
-      'generator_config': element['generator_config']
-    }
-    for name, result in benchmark_result.items():
-      print('benchmark result %s has type %s' % (name, type(result)))
-
-    results_object_name = os.path.join(self._output_path, '{0:05}_results.txt'.format(sample_id))
-    with beam.io.filesystems.FileSystems.create(results_object_name, 'text/plain') as f:
-      buf = bytes(json.dumps(benchmark_result), 'utf-8')
-      f.write(buf)
-      f.close()
-
-    test_mse = (0.0 if benchmark_result['test_mse'] is None else
-                benchmark_result['test_mse'])
-    output_data = {"test_mse": test_mse}
-    output_data.update(benchmark_result['generator_config'])
-    output_data.update(element['metrics'])
-    yield pd.DataFrame(output_data, index=[sample_id])
-
-
 @gin.configurable
 class SubstructureBeamHandler(GeneratorBeamHandler):
 
   @gin.configurable
-  def __init__(self, param_sampler_specs, substruct,
-               num_features, hidden_channels, epochs, lr, batch_size):
+  def __init__(self, param_sampler_specs, substruct, benchmarker_wrappers, batch_size):
     self._sample_do_fn = SampleSubstructureDatasetDoFn(param_sampler_specs,
                                                        substruct)
-    self._benchmark_par_do = BenchmarkGNNParDo(num_features, hidden_channels, epochs, lr)
+    self._benchmark_par_do = BenchmarkGNNParDo(benchmarker_wrappers)
     self._metrics_par_do = ComputeSubstructureGraphMetricsParDo()
     self._batch_size = batch_size
 
