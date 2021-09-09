@@ -77,21 +77,31 @@ class ConvertToTorchGeoDataParDo(beam.DoFn):
     torch_examples = []
     out['torch_dataset'] = {}
     out['skipped'] = False
+    X = []
+    y = []
     try:
       for graph, substruct_count in zip(
           element['data']['graphs'], element['data']['substruct_counts']):
+        X.append([graph.num_vertices() / graph.num_edges() ** 2.0])
+        y.append(substruct_count)
         torch_examples.append(
           substructure_graph_to_torchgeo_data(graph, substruct_count))
     except:
       out['skipped'] = True
       logging.info(f'Failed to sample masks for sample id {sample_id}')
       yield out
+    X = np.array(X)
+    y = np.array(y)
     num_train = int(len(torch_examples) * element['generator_config']['train_prob'])
     out['torch_dataset'] = {
       'train': DataLoader(torch_examples[:num_train],
                           batch_size=self._batch_size, shuffle=True),
       'test': DataLoader(torch_examples[num_train:],
                          batch_size=self._batch_size, shuffle=False)
+    }
+    out['numpy_dataset'] = {
+      'train': {'X': X[:num_train, :], 'y': y[:num_train]},
+      'test': {'X': X[num_train:, :], 'y': y[num_train:]}
     }
     yield out
 

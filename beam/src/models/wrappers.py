@@ -15,6 +15,7 @@
 import gin
 import logging
 import numpy as np
+from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error
 import torch
 
@@ -188,6 +189,48 @@ class LinearGraphGCNWrapper(BenchmarkerWrapper):
 
   def GetBenchmarkerClass(self):
     return LinearGraphGCN
+
+  def GetModelHparams(self):
+    return self._model_hparams
+
+
+class LinearGraph(Benchmarker):
+
+  def __init__(self, model_name=''):
+    self._model_name = model_name
+
+  def Benchmark(self, element):
+    test_label_variance = np.var(element['numpy_dataset']['train']['y'])
+    reg = LinearRegression().fit(
+      element['numpy_dataset']['train']['X'],
+      element['numpy_dataset']['train']['y'])
+    y_pred = reg.predict(
+      element['numpy_dataset']['test']['X'])
+    y_test = (
+      element['numpy_dataset']['test']['y']
+    )
+    test_mse = mean_squared_error(y_test, y_pred)
+    try:
+      test_mse_scaled = test_mse / test_label_variance
+    except:
+      test_mse_scaled = 0.0
+    return {'losses': [],
+            'test_metrics': {'test_mse': test_mse,
+                             'test_mse_scaled': test_mse_scaled}}
+
+@gin.configurable
+class LinearGraphWrapper(BenchmarkerWrapper):
+
+  def __init__(self, model_name):
+    self._model_hparams = {
+      "model_name": model_name
+    }
+
+  def GetBenchmarker(self):
+    return LinearGraph(**self._model_hparams)
+
+  def GetBenchmarkerClass(self):
+    return LinearGraph
 
   def GetModelHparams(self):
     return self._model_hparams
