@@ -15,6 +15,7 @@
 import gin
 import logging
 import numpy as np
+from sklearn.metrics import mean_squared_error
 import torch
 
 from models.models import LinearGCNModel, LinearGraphGCNModel
@@ -137,31 +138,38 @@ class LinearGraphGCN(Benchmarker):
           loss.backward()  # Derive gradients.
           self._optimizer.step()  # Update parameters based on gradients.
           self._optimizer.zero_grad()  # Clear gradients.
-      train_mse.append(float(self.test(loader)))
+      train_mse.append(float(self.test(loader)[0]))
       train_losses.append(float(loss))
     return train_mse, train_losses
 
   def test(self, loader):
       self._model.eval()
       total_mse = 0.0
+      total_sse = 0.0
       label_variance = 0.0
       for iter, data in enumerate(loader):  # Iterate in batches over the training/test dataset.
         batch_size = data.batch.size().numel()
         out = self._model(data.x, data.edge_index, data.batch)
-        total_mse += float(self._criterion(out[:, 0], data.y)) * batch_size
+        mse = float(self._criterion(out[:, 0], data.y))
+        total_mse += mse
+        total_sse += mse * batch_size
         label_variance += np.std(data.y.numpy()) ** 2.0 * batch_size
-      return total_mse / label_variance
+      return total_mse, total_sse / label_variance
 
   def Benchmark(self, element):
     mses, losses = self.train(element['torch_dataset']['train'])
     test_mse = 0.0
+    test_mse_scaled = 0.0
     try:
-      test_mse = float(self.test(element['torch_dataset']['test']))
+      total_mse, total_mse_scaled = self.test(element['torch_dataset']['test'])
+      test_mse = float(total_mse)
+      test_mse_scaled = float(total_mse_scaled)
     except:
       logging.info(f'Failed to compute test mse for sample id {sample_id}')
 
     return {'losses': losses,
-            'test_metrics': {'test_mse': test_mse}}
+            'test_metrics': {'test_mse': test_mse,
+                             'test_mse_scaled': test_mse_scaled}}
 
 @gin.configurable
 class LinearGraphGCNWrapper(BenchmarkerWrapper):
