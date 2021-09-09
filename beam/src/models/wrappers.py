@@ -133,7 +133,7 @@ class LinearGraphGCN(Benchmarker):
             print(iter)
             print(data)
             raise
-          loss = self._criterion(out, data.y)  # Compute the loss.
+          loss = self._criterion(out[:, 0], data.y)  # Compute the loss.
           loss.backward()  # Derive gradients.
           self._optimizer.step()  # Update parameters based on gradients.
           self._optimizer.zero_grad()  # Clear gradients.
@@ -148,7 +148,7 @@ class LinearGraphGCN(Benchmarker):
       for iter, data in enumerate(loader):  # Iterate in batches over the training/test dataset.
         batch_size = data.batch.size().numel()
         out = self._model(data.x, data.edge_index, data.batch)
-        total_mse += float(self._criterion(out, data.y)) * batch_size
+        total_mse += float(self._criterion(out[:, 0], data.y)) * batch_size
         label_variance += np.std(data.y.numpy()) ** 2.0 * batch_size
       return total_mse / label_variance
 
