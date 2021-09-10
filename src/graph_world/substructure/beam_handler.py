@@ -1,21 +1,16 @@
-
-import argparse
-import json
 import logging
-import os
 
 import apache_beam as beam
 import gin
-import numpy as np
 import pandas as pd
 from torch_geometric.data import DataLoader
 
-from generator_beam_handler import GeneratorBeamHandler
-from generator_config_sampler import GeneratorConfigSampler, ParamSamplerSpec
-from models.benchmarker import Benchmarker, BenchmarkGNNParDo
-from substructure.simulator import GenerateSubstructureDataset, GetSubstructureGraph, Substructure
-from substructure.utils import substructure_graph_to_torchgeo_data
-from graph_metrics import GraphMetrics
+from ..beam.generator_beam_handler import GeneratorBeamHandler
+from ..beam.generator_config_sampler import GeneratorConfigSampler
+from ..models.benchmarker import BenchmarkGNNParDo
+from .simulator import GenerateSubstructureDataset, GetSubstructureGraph
+from .utils import substructure_graph_to_torchgeo_data
+from ..metrics.graph_metrics import GraphMetrics
 
 class SampleSubstructureDatasetDoFn(GeneratorConfigSampler, beam.DoFn):
 

@@ -17,8 +17,8 @@ import logging
 import numpy as np
 import torch
 
-from models.models import LinearGCNModel, LinearGraphGCNModel
-from models.benchmarker import Benchmarker, BenchmarkerWrapper
+from .models import LinearGCNModel, LinearGraphGCNModel
+from .benchmarker import Benchmarker, BenchmarkerWrapper
 
 class LinearGCN(Benchmarker):
   def __init__(self, num_features, num_classes, hidden_channels, epochs, model_name):
