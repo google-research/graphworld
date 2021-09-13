@@ -1,5 +1,3 @@
-
-import argparse
 import json
 import logging
 import os
@@ -9,12 +7,14 @@ import gin
 import numpy as np
 
 # Change the name of this...
-from generator_beam_handler import GeneratorBeamHandler
-from generator_config_sampler import GeneratorConfigSampler, ParamSamplerSpec
-from models.benchmarker import Benchmarker, BenchmarkGNNParDo
-from sbm.sbm_simulator import GenerateStochasticBlockModelWithFeatures, MatchType
-from sbm.utils import sbm_data_to_torchgeo_data, get_kclass_masks
-from graph_metrics import GraphMetrics
+
+from ..beam.generator_beam_handler import GeneratorBeamHandler
+from ..beam.generator_config_sampler import GeneratorConfigSampler
+from ..metrics.graph_metrics import GraphMetrics
+from ..sbm.sbm_simulator import GenerateStochasticBlockModelWithFeatures, MatchType
+from ..sbm.utils import sbm_data_to_torchgeo_data, get_kclass_masks
+from ..models.benchmarker import BenchmarkGNNParDo
+
 
 class SampleSbmDoFn(GeneratorConfigSampler, beam.DoFn):
 

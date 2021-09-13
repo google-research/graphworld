@@ -1,4 +1,4 @@
-beam/src/data/
-beam/src/notebooks/.ipynb_checkpoints/
+gcp/src/data/
+src/notebooks/.ipynb_checkpoints/
 __pycache__
 /.idea/
