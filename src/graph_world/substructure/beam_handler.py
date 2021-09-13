@@ -2,6 +2,7 @@ import logging
 
 import apache_beam as beam
 import gin
+import numpy as np
 import pandas as pd
 from torch_geometric.data import DataLoader
 
