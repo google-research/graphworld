@@ -151,7 +151,7 @@ class ConvertToTorchGeoDataParDo(beam.DoFn):
         f.close()
     except:
       out['skipped'] = True
-      print(f'faied convert {sample_id}')
+      print(f'failed to convert {sample_id}')
       logging.info(f'Failed to convert sbm_data to torchgeo for sample id {sample_id}')
       yield out
 

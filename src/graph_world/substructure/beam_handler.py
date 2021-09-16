@@ -75,6 +75,7 @@ class ConvertToTorchGeoDataParDo(beam.DoFn):
     out['skipped'] = False
     X = []
     y = []
+    sample_id = element['sample_id']
     try:
       for graph, substruct_count in zip(
           element['data']['graphs'], element['data']['substruct_counts']):
@@ -84,7 +85,8 @@ class ConvertToTorchGeoDataParDo(beam.DoFn):
           substructure_graph_to_torchgeo_data(graph, substruct_count))
     except:
       out['skipped'] = True
-      logging.info(f'Failed to sample masks for sample id {sample_id}')
+      print(f'failed to convert {sample_id}')
+      logging.info(f'Failed to convert sbm_data to torchgeo for sample id {sample_id}')
       yield out
     X = np.array(X)
     y = np.array(y)
