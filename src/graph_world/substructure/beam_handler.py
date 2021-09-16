@@ -79,7 +79,10 @@ class ConvertToTorchGeoDataParDo(beam.DoFn):
     try:
       for graph, substruct_count in zip(
           element['data']['graphs'], element['data']['substruct_counts']):
-        X.append([graph.num_vertices() / graph.num_edges() ** 2.0])
+        edge_density = 0.0
+        if graph.num_edges() > 0:
+          edge_density = graph.num_vertices() / graph.num_edges() ** 2.0
+        X.append([edge_density])
         y.append(substruct_count)
         torch_examples.append(
           substructure_graph_to_torchgeo_data(graph, substruct_count))
