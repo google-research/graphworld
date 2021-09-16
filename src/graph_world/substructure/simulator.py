@@ -25,7 +25,7 @@ import gin
 import graph_tool
 import numpy as np
 
-from substructure.utils import erdos_graph
+from .utils import erdos_graph
 
 
 def _get_star_graph():

@@ -25,7 +25,7 @@ from torch_geometric.utils import from_networkx
 
 import networkx as nx
 
-from sbm.sbm_simulator import StochasticBlockModel
+from .sbm_simulator import StochasticBlockModel
 
 
 def sbm_data_to_torchgeo_data(sbm_data: StochasticBlockModel) -> Data:

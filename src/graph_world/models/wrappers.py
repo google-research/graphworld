@@ -19,8 +19,9 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error
 import torch
 
-from models.models import LinearGCNModel, LinearGraphGCNModel
-from models.benchmarker import Benchmarker, BenchmarkerWrapper
+from .utils import MseWrapper
+from .models import LinearGCNModel, LinearGraphGCNModel
+from .benchmarker import Benchmarker, BenchmarkerWrapper
 
 class LinearGCN(Benchmarker):
   def __init__(self, num_features, num_classes, hidden_channels, epochs, model_name):
@@ -145,17 +146,18 @@ class LinearGraphGCN(Benchmarker):
 
   def test(self, loader):
       self._model.eval()
-      total_mse = 0.0
-      total_sse = 0.0
-      label_variance = 0.0
+      predictions = []
+      labels = []
       for iter, data in enumerate(loader):  # Iterate in batches over the training/test dataset.
         batch_size = data.batch.size().numel()
         out = self._model(data.x, data.edge_index, data.batch)
-        mse = float(self._criterion(out[:, 0], data.y))
-        total_mse += mse
-        total_sse += mse * batch_size
-        label_variance += np.std(data.y.numpy()) ** 2.0 * batch_size
-      return total_mse, total_sse / label_variance
+        predictions.append(out[:, 0].cpu().detach().numpy())
+        labels.append(data.y.cpu().detach().numpy())
+      predictions = np.concatenate(predictions)
+      labels = np.concatenate(labels)
+      mse = MseWrapper(predictions, labels)
+      mse_scaled = MseWrapper(predictions, labels, scale=True)
+      return mse, mse_scaled
 
   def Benchmark(self, element):
     mses, losses = self.train(element['torch_dataset']['train'])
@@ -200,7 +202,6 @@ class LinearGraph(Benchmarker):
     self._model_name = model_name
 
   def Benchmark(self, element):
-    test_label_variance = np.var(element['numpy_dataset']['train']['y'])
     reg = LinearRegression().fit(
       element['numpy_dataset']['train']['X'],
       element['numpy_dataset']['train']['y'])
@@ -209,11 +210,8 @@ class LinearGraph(Benchmarker):
     y_test = (
       element['numpy_dataset']['test']['y']
     )
-    test_mse = mean_squared_error(y_test, y_pred)
-    try:
-      test_mse_scaled = test_mse / test_label_variance
-    except:
-      test_mse_scaled = 0.0
+    test_mse = MseWrapper(y_pred, y_test)
+    test_mse_scaled = MseWrapper(y_pred, y_test, scale=True)
     return {'losses': [],
             'test_metrics': {'test_mse': test_mse,
                              'test_mse_scaled': test_mse_scaled}}
