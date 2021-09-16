@@ -66,6 +66,7 @@ class BenchmarkGNNParDo(beam.DoFn):
     self._output_path = output_path
 
   def process(self, element):
+    output_data = {}
     # for benchmarer in self._benchmarkers:
     for benchmarker_class, model_hparams in zip(self._benchmarker_classes, self._model_hparams):
       sample_id = element['sample_id']
@@ -88,8 +89,10 @@ class BenchmarkGNNParDo(beam.DoFn):
         f.close()
 
       # Return benchmark data for next beam stage.
-      output_data = benchmarker_out['test_metrics']
-      output_data.update(element['generator_config'])
-      output_data.update(element['metrics'])
-      output_data['model_name'] = benchmarker.GetModelName()
-      yield pd.DataFrame(output_data, index=[sample_id])
+      for key, value in benchmarker_out['test_metrics'].items():
+        output_data[
+          '%s__%s' % (benchmarker.GetModelName(), key)] = value
+
+    output_data.update(element['generator_config'])
+    output_data.update(element['metrics'])
+    yield pd.DataFrame(output_data, index=[sample_id])
