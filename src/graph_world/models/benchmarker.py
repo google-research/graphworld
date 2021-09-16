@@ -69,9 +69,14 @@ class BenchmarkGNNParDo(beam.DoFn):
 
   def process(self, element):
     output_data = {}
+    output_data.update(element['generator_config'])
+    output_data.update(element['metrics'])
+    output_data['skipped'] = element['skipped']
+    if element['skipped']:
+      yield pd.DataFrame(output_data, index=[sample_id])
     metrics_df_data = []
     metrics_df_index = []
-    # for benchmarer in self._benchmarkers:
+    # for benchmarker in self._benchmarkers:
     for benchmarker_class, model_hparams in zip(self._benchmarker_classes, self._model_hparams):
       sample_id = element['sample_id']
       # benchmarker_out = self._benchmarker.Benchmark(element)
@@ -111,6 +116,4 @@ class BenchmarkGNNParDo(beam.DoFn):
                                  columns=metrics_df.index)
       output_data['%s__diffs' % metric_name] = [distance_df]
 
-    output_data.update(element['generator_config'])
-    output_data.update(element['metrics'])
     yield pd.DataFrame(output_data, index=[sample_id])
