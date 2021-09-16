@@ -40,11 +40,11 @@ edge_feature_dim/ParamSamplerSpec.min_val = 2.0
 edge_feature_dim/ParamSamplerSpec.max_val = 2.0
 
 SbmBeamHandler.benchmarker_wrappers = [
-  @BasicLinearGCN/LinearGCNWrapper,
+  @BasicLinearGCN/NodeGCN,
 ]
 
-BasicLinearGCN/LinearGCNWrapper.model_name = "BasicLinearGCN"
-BasicLinearGCN/LinearGCNWrapper.num_features = 16
-BasicLinearGCN/LinearGCNWrapper.num_classes = 4
-BasicLinearGCN/LinearGCNWrapper.hidden_channels = 8
-BasicLinearGCN/LinearGCNWrapper.epochs = 256
+BasicLinearGCN/NodeGCN.model_name = "BasicLinearGCN"
+BasicLinearGCN/NodeGCN.num_features = 16
+BasicLinearGCN/NodeGCN.num_classes = 4
+BasicLinearGCN/NodeGCN.hidden_channels = 8
+BasicLinearGCN/NodeGCN.epochs = 256

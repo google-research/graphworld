@@ -12,7 +12,7 @@ from apache_beam.options.pipeline_options import SetupOptions
 # Generator-agnostic imports
 from ..beam.generator_beam_handler import GeneratorBeamHandlerWrapper
 from ..beam.generator_config_sampler import ParamSamplerSpec
-from ..models.wrappers import LinearGCNWrapper
+from ..models.wrappers import NodeGCN
 
 # Generator-specific imports
 from ..sbm.beam_handler import SbmBeamHandler

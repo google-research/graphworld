@@ -11,7 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+There are currently 3 pieces required for each model:
 
+  * BenchmarkerWrapper (ex. NodeGCN) -- Used in GIN config, this delegates to the Benchmarker.
+  * ModelBenchmarker (ex. GCNNodeBenchmarker) -- This performs the actual training and eval steps for the model
+  * Modelmpl (ex. GCNNodeModel) -- This is the actual model implemention (wrapping together convolution layers)
+"""
 import gin
 import logging
 import numpy as np
@@ -20,12 +26,12 @@ from sklearn.metrics import mean_squared_error
 import torch
 
 from .utils import MseWrapper
-from .models import LinearGCNModel, LinearGraphGCNModel
+from .models import GCNNodeModel, GCNGraphModel
 from .benchmarker import Benchmarker, BenchmarkerWrapper
 
-class LinearGCN(Benchmarker):
+class GCNNodeBenchmarker(Benchmarker):
   def __init__(self, num_features, num_classes, hidden_channels, epochs, model_name):
-    self._model = LinearGCNModel(num_features, num_classes, hidden_channels)
+    self._model = GCNNodeModel(num_features, num_classes, hidden_channels)
     self._optimizer = torch.optim.Adam(self._model.parameters(), lr=0.01, weight_decay=5e-4)
     self._criterion = torch.nn.CrossEntropyLoss()
     self._train_mask = None
@@ -94,7 +100,7 @@ class LinearGCN(Benchmarker):
 
 
 @gin.configurable
-class LinearGCNWrapper(BenchmarkerWrapper):
+class NodeGCN(BenchmarkerWrapper):
 
   def __init__(self, num_features, num_classes, hidden_channels, epochs, model_name):
     self._model_hparams = {
@@ -106,19 +112,19 @@ class LinearGCNWrapper(BenchmarkerWrapper):
     }
 
   def GetBenchmarker(self):
-    return LinearGCN(**self._model_hparams)
+    return GCNNodeBenchmarker(**self._model_hparams)
 
   def GetBenchmarkerClass(self):
-    return LinearGCN
+    return GCNNodeBenchmarker
 
   def GetModelHparams(self):
     return self._model_hparams
 
 
-class LinearGraphGCN(Benchmarker):
+class GCNGraphBenchmarker(Benchmarker):
 
   def __init__(self, num_features, hidden_channels=64, epochs=100, lr=0.0001, model_name=''):
-    self._model = LinearGraphGCNModel(num_features, hidden_channels)
+    self._model = GCNGraphModel(num_features, hidden_channels)
     self._optimizer = torch.optim.Adam(self._model.parameters(), lr=lr)
     self._criterion = torch.nn.MSELoss()
     self._epochs = epochs
@@ -175,7 +181,7 @@ class LinearGraphGCN(Benchmarker):
                              'test_mse_scaled': test_mse_scaled}}
 
 @gin.configurable
-class LinearGraphGCNWrapper(BenchmarkerWrapper):
+class GraphGCN(BenchmarkerWrapper):
 
   def __init__(self, num_features, hidden_channels, epochs, lr, model_name):
     self._model_hparams = {
@@ -187,10 +193,10 @@ class LinearGraphGCNWrapper(BenchmarkerWrapper):
     }
 
   def GetBenchmarker(self):
-    return LinearGraphGCN(**self._model_hparams)
+    return GCNGraphBenchmarker(**self._model_hparams)
 
   def GetBenchmarkerClass(self):
-    return LinearGraphGCN
+    return GCNGraphBenchmarker
 
   def GetModelHparams(self):
     return self._model_hparams

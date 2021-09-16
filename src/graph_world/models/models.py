@@ -18,9 +18,9 @@ import torch.nn.functional as F
 from torch_geometric.nn import GCNConv, global_mean_pool
 
 
-class LinearGCNModel(torch.nn.Module):
+class GCNNodeModel(torch.nn.Module):
   def __init__(self, num_features, num_classes, hidden_channels):
-    super(LinearGCNModel, self).__init__()
+    super(GCNNodeModel, self).__init__()
     torch.manual_seed(12345)
     self.conv1 = GCNConv(num_features, hidden_channels)
     self.conv2 = GCNConv(hidden_channels, num_classes)
@@ -33,13 +33,12 @@ class LinearGCNModel(torch.nn.Module):
     return x
 
 
-class LinearGraphGCNModel(torch.nn.Module):
+class GCNGraphModel(torch.nn.Module):
   def __init__(self, num_features, hidden_channels):
-    super(LinearGraphGCNModel, self).__init__()
+    super(GCNGraphModel, self).__init__()
     torch.manual_seed(12345)
     self.conv1 = GCNConv(num_features, hidden_channels)
     self.conv2 = GCNConv(hidden_channels, hidden_channels)
-    self.conv3 = GCNConv(hidden_channels, hidden_channels)
     self.lin = Linear(hidden_channels, 1)
 
   def forward(self, x, edge_index, batch):
@@ -47,8 +46,6 @@ class LinearGraphGCNModel(torch.nn.Module):
     x = self.conv1(x, edge_index)
     x = x.relu()
     x = self.conv2(x, edge_index)
-    x = x.relu()
-    x = self.conv3(x, edge_index)
 
     # 2. Readout layer
     x = global_mean_pool(x, batch)  # [batch_size, hidden_channels]
