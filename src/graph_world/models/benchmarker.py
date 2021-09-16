@@ -4,7 +4,9 @@ import os
 from abc import ABC, abstractmethod
 import apache_beam as beam
 import gin
+import numpy as np
 import pandas as pd
+from scipy.spatial.distance import cdist
 
 class Benchmarker(ABC):
 
@@ -67,6 +69,8 @@ class BenchmarkGNNParDo(beam.DoFn):
 
   def process(self, element):
     output_data = {}
+    metrics_df_data = []
+    metrics_df_index = []
     # for benchmarer in self._benchmarkers:
     for benchmarker_class, model_hparams in zip(self._benchmarker_classes, self._model_hparams):
       sample_id = element['sample_id']
@@ -89,9 +93,23 @@ class BenchmarkGNNParDo(beam.DoFn):
         f.close()
 
       # Return benchmark data for next beam stage.
+      metrics_df_data.append(benchmarker_out['test_metrics'])
+      metrics_df_index.append(benchmarker.GetModelName())
       for key, value in benchmarker_out['test_metrics'].items():
         output_data[
           '%s__%s' % (benchmarker.GetModelName(), key)] = value
+
+    # Compute model diffs across test metrics.
+    difference = lambda x, y: x - y
+    metrics_df = pd.DataFrame(data=metrics_df_data, index=metrics_df_index)
+    for metric_name in metrics_df.columns:
+      distance_matrix = cdist(
+        np.array([metrics_df[metric_name]]).T,
+        np.array([metrics_df[metric_name]]).T,
+        metric=difference)
+      distance_df = pd.DataFrame(distance_matrix, index=metrics_df.index,
+                                 columns=metrics_df.index)
+      output_data['%s__diffs' % metric_name] = [distance_df]
 
     output_data.update(element['generator_config'])
     output_data.update(element['metrics'])
