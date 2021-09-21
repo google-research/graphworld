@@ -1,3 +1,5 @@
+from absl import logging
+import inspect
 import json
 import os
 
@@ -105,7 +107,17 @@ class BenchmarkGNNParDo(beam.DoFn):
           '%s__%s' % (benchmarker.GetModelName(), key)] = value
 
     # Compute model diffs across test metrics.
-    difference = lambda x, y: x - y
+    # difference = lambda x, y: x - y
+    def difference(x, y):
+      if y == 0.0:
+        if x == 0.0:
+          return 0.0
+        else:
+          return np.inf
+      else:
+        return x / y
+    logging.info(inspect.getsource(difference))
+    print(inspect.getsource(difference))
     metrics_df = pd.DataFrame(data=metrics_df_data, index=metrics_df_index)
     for metric_name in metrics_df.columns:
       distance_matrix = cdist(
