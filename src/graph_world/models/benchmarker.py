@@ -59,7 +59,11 @@ class BenchmarkGNNParDo(beam.DoFn):
     #                       benchmarker_wrapper in benchmarker_wrappers]
     self._benchmarker_classes = [benchmarker_wrapper().GetBenchmarkerClass() for
                                  benchmarker_wrapper in benchmarker_wrappers]
+    self._model_classes = [benchmarker_wrapper().GetModelClass() for
+                                 benchmarker_wrapper in benchmarker_wrappers]
     self._model_hparams = [benchmarker_wrapper().GetModelHparams() for
+                           benchmarker_wrapper in benchmarker_wrappers]
+    self._benchmark_params = [benchmarker_wrapper().GetBenchmarkParams() for
                            benchmarker_wrapper in benchmarker_wrappers]
     # /end alternate code.
     self._output_path = None
@@ -72,17 +76,18 @@ class BenchmarkGNNParDo(beam.DoFn):
     output_data.update(element['generator_config'])
     output_data.update(element['metrics'])
     output_data['skipped'] = element['skipped']
+    sample_id = element['sample_id']
+
     if element['skipped']:
       yield pd.DataFrame(output_data, index=[sample_id])
     metrics_df_data = []
     metrics_df_index = []
+
     # for benchmarker in self._benchmarkers:
-    for benchmarker_class, model_hparams in zip(self._benchmarker_classes, self._model_hparams):
-      sample_id = element['sample_id']
-      # benchmarker_out = self._benchmarker.Benchmark(element)
-      benchmarker = benchmarker_class(**model_hparams)
+    for benchmarker_class, benchmark_params, model_class, model_hparams in zip(self._benchmarker_classes, self._benchmark_params, self._model_classes, self._model_hparams):
+      print(f'Running {benchmarker_class}')
+      benchmarker = benchmarker_class(model_class, benchmark_params, model_hparams)  # new benchmarker gets model and model_params
       benchmarker_out = benchmarker.Benchmark(element)
-      # /end alternate code.
 
       # Dump benchmark results to file.
       benchmark_result = {

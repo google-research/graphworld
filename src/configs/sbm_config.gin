@@ -1,3 +1,5 @@
+import graph_world.models.basic_gnn
+
 GeneratorBeamHandlerWrapper.handler = @SbmBeamHandler()
 GeneratorBeamHandlerWrapper.nsamples = 100000
 
@@ -40,11 +42,18 @@ edge_feature_dim/ParamSamplerSpec.min_val = 2.0
 edge_feature_dim/ParamSamplerSpec.max_val = 2.0
 
 SbmBeamHandler.benchmarker_wrappers = [
-  @BasicLinearGCN/NodeGCN,
+  @BasicLinearGCN/NNNodeBenchmark,
 ]
 
-BasicLinearGCN/NodeGCN.model_name = "BasicLinearGCN"
-BasicLinearGCN/NodeGCN.num_features = 16
-BasicLinearGCN/NodeGCN.num_classes = 4
-BasicLinearGCN/NodeGCN.hidden_channels = 8
-BasicLinearGCN/NodeGCN.epochs = 256
+# These params go to the benchmarker
+BasicLinearGCN/NNNodeBenchmark.model_type = @GraphSAGE
+BasicLinearGCN/NNNodeBenchmark.benchmark_params = {
+    'epochs' : 256,
+}
+#  These params go straight to the model implementation
+BasicLinearGCN/NNNodeBenchmark.h_params = {
+    'in_channels' : 16,
+    'hidden_channels' : 8,
+    'out_channels' : 4,
+    'num_layers' : 2,
+}

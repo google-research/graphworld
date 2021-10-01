@@ -15,7 +15,7 @@
 import torch
 from torch.nn import Linear
 import torch.nn.functional as F
-from torch_geometric.nn import GCNConv, global_mean_pool
+from torch_geometric.nn import GATConv, GCNConv, global_mean_pool
 
 
 class GCNNodeModel(torch.nn.Module):
@@ -55,3 +55,12 @@ class GCNGraphModel(torch.nn.Module):
     x = self.lin(x)
 
     return x
+
+class PyGBasicModel(torch.nn.Module):
+  def __init__(self, model_type, *h_params):
+    # Instantiate and pass hparams to inner model
+    self.inner_model_ = model_type(h_params)
+
+  def forward(self, x, edge_index, batch):
+    # defer to inner forward
+    return self.inner_model_.forward(x, edge_index, batch)
