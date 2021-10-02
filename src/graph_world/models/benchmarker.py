@@ -1,5 +1,4 @@
 from absl import logging
-import inspect
 import json
 import os
 
@@ -121,8 +120,6 @@ class BenchmarkGNNParDo(beam.DoFn):
           return np.inf
       else:
         return x / y
-    logging.info(inspect.getsource(difference))
-    print(inspect.getsource(difference))
     metrics_df = pd.DataFrame(data=metrics_df_data, index=metrics_df_index)
     for metric_name in metrics_df.columns:
       distance_matrix = cdist(
