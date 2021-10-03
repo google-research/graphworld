@@ -42,17 +42,54 @@ edge_feature_dim/ParamSamplerSpec.min_val = 2.0
 edge_feature_dim/ParamSamplerSpec.max_val = 2.0
 
 SbmBeamHandler.benchmarker_wrappers = [
+  @GCN_/NNNodeBenchmark,
   @GraphSAGE_/NNNodeBenchmark,
+  @GIN_/NNNodeBenchmark,
+  @GAT_/NNNodeBenchmark,
 ]
 
-# These params go to the benchmarker
+# GCN setup
+GCN_/NNNodeBenchmark.model_type = @GCN
+GCN_/NNNodeBenchmark.benchmark_params = {
+    'epochs' : 256,
+}
+GCN_/NNNodeBenchmark.h_params = {
+    'in_channels' : 16,
+    'hidden_channels' : 8,
+    'out_channels' : 4,
+    'num_layers' : 2,
+}
+
+# GraphSAGE setup
 GraphSAGE_/NNNodeBenchmark.model_type = @GraphSAGE
 GraphSAGE_/NNNodeBenchmark.benchmark_params = {
     'epochs' : 256,
 }
-
-#  These params go straight to the model implementation
 GraphSAGE_/NNNodeBenchmark.h_params = {
+    'in_channels' : 16,
+    'hidden_channels' : 8,
+    'out_channels' : 4,
+    'num_layers' : 2,
+}
+
+# GIN setup
+GIN_/NNNodeBenchmark.model_type = @GIN
+GIN_/NNNodeBenchmark.benchmark_params = {
+    'epochs' : 256,
+}
+GIN_/NNNodeBenchmark.h_params = {
+    'in_channels' : 16,
+    'hidden_channels' : 8,
+    'out_channels' : 4,
+    'num_layers' : 2,
+}
+
+# GAT setup
+GAT_/NNNodeBenchmark.model_type = @GAT
+GAT_/NNNodeBenchmark.benchmark_params = {
+    'epochs' : 256,
+}
+GAT_/NNNodeBenchmark.h_params = {
     'in_channels' : 16,
     'hidden_channels' : 8,
     'out_channels' : 4,
