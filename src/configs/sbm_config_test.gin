@@ -42,16 +42,17 @@ edge_feature_dim/ParamSamplerSpec.min_val = 2.0
 edge_feature_dim/ParamSamplerSpec.max_val = 2.0
 
 SbmBeamHandler.benchmarker_wrappers = [
-  @BasicLinearGCN/NNNodeBenchmark,
+  @GraphSAGE_/NNNodeBenchmark,
 ]
 
 # These params go to the benchmarker
-BasicLinearGCN/NNNodeBenchmark.model_type = @GraphSAGE
-BasicLinearGCN/NNNodeBenchmark.benchmark_params = {
+GraphSAGE_/NNNodeBenchmark.model_type = @GraphSAGE
+GraphSAGE_/NNNodeBenchmark.benchmark_params = {
     'epochs' : 256,
 }
+
 #  These params go straight to the model implementation
-BasicLinearGCN/NNNodeBenchmark.h_params = {
+GraphSAGE_/NNNodeBenchmark.h_params = {
     'in_channels' : 16,
     'hidden_channels' : 8,
     'out_channels' : 4,
