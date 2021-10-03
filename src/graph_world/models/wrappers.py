@@ -253,7 +253,7 @@ class NNNodeBenchmarker(Benchmarker):
     self._train_mask = None
     self._val_mask = None
     self._test_mask = None
-    self._model_name = str(model_type)
+    self._model_name = model_type.__name__
 
   def SetMasks(self, train_mask, val_mask):
     self._train_mask = train_mask
