@@ -14,13 +14,24 @@
 # limitations under the License.
 
 GENERATOR="substructure"
+TAG=""
+while getopts g:t: flag
+do
+    case "${flag}" in
+        g) GENERATOR=${OPTARG};;
+        t) TAG=${OPTARG};;
+    esac
+done
+echo "GENERATOR: $GENERATOR";
+echo "TAG: $TAG";
 
 TIMESTAMP="$(date +"%Y-%m-%d-%H-%M-%S")"
-OUTPUT_PATH="gs://research-graph-synthetic/${USER}/sampling/${GENERATOR}-${TIMESTAMP}"
+JOB_NAME="${GENERATOR}-${TIMESTAMP}-${TAG}"
+OUTPUT_PATH="gs://research-graph-synthetic/${USER}/sampling/${JOB_NAME}"
 TEMP_LOCATION="gs://research-graph-synthetic/temp"
 echo "OUTPUT_PATH: ${OUTPUT_PATH}"
 
-JOB_NAME=$(echo "${USER}-${GENERATOR}-${TIMESTAMP}" | tr '_' '-')
+FULL_JOB_NAME=$(echo "${USER}-${JOB_NAME}" | tr '_' '-')
 
 ENTRYPOINT="python3 /app/beam_benchmark_main.py \
   --runner=DataflowRunner \
@@ -30,7 +41,7 @@ ENTRYPOINT="python3 /app/beam_benchmark_main.py \
   --temp_location="${TEMP_LOCATION}" \
   --gin_config=/app/configs/${GENERATOR}_config.gin \
   --output="${OUTPUT_PATH}" \
-  --job_name="${JOB_NAME}" \
+  --job_name="${FULL_JOB_NAME}" \
   --experiments=use_monitoring_state_manager \
   --experiments=enable_execution_details_collection \
   --experiment=use_runner_v2 \
