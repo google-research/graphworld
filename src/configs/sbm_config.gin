@@ -1,7 +1,7 @@
 import graph_world.models.basic_gnn
 
 GeneratorBeamHandlerWrapper.handler = @SbmBeamHandler()
-GeneratorBeamHandlerWrapper.nsamples = 100000
+GeneratorBeamHandlerWrapper.nsamples = 16
 
 SbmBeamHandler.param_sampler_specs = [
   @nvertex/ParamSamplerSpec(),
@@ -25,9 +25,12 @@ avg_degree/ParamSamplerSpec.name = "avg_degree"
 avg_degree/ParamSamplerSpec.min_val = 5.0
 avg_degree/ParamSamplerSpec.max_val = 100.0
 
+# We must have min_val = max_val = in_channels for all models here,
+# until we dynamically pass the data's feature dimension within the
+# benchmarker ParDo.
 feature_dim/ParamSamplerSpec.name = "feature_dim"
-feature_dim/ParamSamplerSpec.min_val = 4
-feature_dim/ParamSamplerSpec.max_val = 32
+feature_dim/ParamSamplerSpec.min_val = 16
+feature_dim/ParamSamplerSpec.max_val = 16
 
 feature_center_distance/ParamSamplerSpec.name = "feature_center_distance"
 feature_center_distance/ParamSamplerSpec.min_val = 0.0
