@@ -26,7 +26,7 @@ from sklearn.metrics import mean_squared_error
 import torch
 
 from .utils import MseWrapper
-from .models import GCNNodeModel, GCNGraphModel
+from .models import GCNNodeModel, GCNGraphModel, PyGBasicGraphModel
 from .benchmarker import Benchmarker, BenchmarkerWrapper
 
 class GCNNodeBenchmarker(Benchmarker):
@@ -181,25 +181,91 @@ class GCNGraphBenchmarker(Benchmarker):
                              'test_mse_scaled': test_mse_scaled}}
 
 @gin.configurable
-class GraphGCN(BenchmarkerWrapper):
+class NNGraphBenchmark(BenchmarkerWrapper):
 
-  def __init__(self, num_features, hidden_channels, epochs, lr, model_name):
-    self._model_hparams = {
-      "num_features": num_features,
-      "hidden_channels": hidden_channels,
-      "epochs": epochs,
-      "lr": lr,
-      "model_name": model_name
-    }
+  def __init__(self, model_type, benchmark_params, h_params):
+    self._model_class = model_type
+    self._benchmark_params = benchmark_params
+    self._model_hparams = h_params
 
   def GetBenchmarker(self):
-    return GCNGraphBenchmarker(**self._model_hparams)
+    return NNGraphBenchmarker(self._model_type, self._benchmark_params, self._model_hparams)
 
   def GetBenchmarkerClass(self):
-    return GCNGraphBenchmarker
+    return NNGraphBenchmarker
+
+  def GetModelClass(self):
+    return self._model_class
 
   def GetModelHparams(self):
     return self._model_hparams
+
+  def GetBenchmarkParams(self):
+    return self._benchmark_params
+
+
+class NNGraphBenchmarker(Benchmarker):
+
+  def __init__(self, model_type, benchmark_params, h_params):
+    self._epochs = benchmark_params['epochs']
+    self._lr = benchmark_params['lr']
+
+    self._model = PyGBasicGraphModel(model_type, h_params)
+    self._optimizer = torch.optim.Adam(self._model.parameters(), self._lr, weight_decay=5e-4)
+    self._criterion = torch.nn.MSELoss()
+    self._model_name = model_type.__name__
+
+  def train(self, loader):
+    self._model.train()
+    train_losses = []
+    train_mse = []
+    for epoch in range(1, self._epochs):
+      for iter, data in enumerate(loader):  # Iterate in batches over the training dataset.
+        try:
+          out = self._model(data.x, data.edge_index, data.batch)  # Perform a single forward pass.
+        except IndexError:
+          print(iter)
+          print(data)
+          raise
+        loss = self._criterion(out[:, 0], data.y)  # Compute the loss.
+        loss.backward()  # Derive gradients.
+        self._optimizer.step()  # Update parameters based on gradients.
+        self._optimizer.zero_grad()  # Clear gradients.
+      train_mse.append(float(self.test(loader)[0]))
+      train_losses.append(float(loss))
+    return train_mse, train_losses
+
+  def test(self, loader):
+    self._model.eval()
+    predictions = []
+    labels = []
+    for iter, data in enumerate(loader):  # Iterate in batches over the training/test dataset.
+      batch_size = data.batch.size().numel()
+      out = self._model(data.x, data.edge_index, data.batch)
+      predictions.append(out[:, 0].cpu().detach().numpy())
+      labels.append(data.y.cpu().detach().numpy())
+    predictions = np.concatenate(predictions)
+    labels = np.concatenate(labels)
+    mse = MseWrapper(predictions, labels)
+    mse_scaled = MseWrapper(predictions, labels, scale=True)
+    return mse, mse_scaled
+
+  def Benchmark(self, element):
+    sample_id = element['sample_id']
+    mses, losses = self.train(element['torch_dataset']['train'])
+    test_mse = 0.0
+    test_mse_scaled = 0.0
+    try:
+      total_mse, total_mse_scaled = self.test(element['torch_dataset']['test'])
+      test_mse = float(total_mse)
+      test_mse_scaled = float(total_mse_scaled)
+    except Exception as e:
+      logging.info(f'Failed to compute test mse for sample id {sample_id}')
+      raise Exception(f'Failed to compute test accuracy for sample id {sample_id}') from e
+
+    return {'losses': losses,
+            'test_metrics': {'test_mse': test_mse,
+                             'test_mse_scaled': test_mse_scaled}}
 
 
 class LinearGraph(Benchmarker):
@@ -245,7 +311,6 @@ class NNNodeBenchmarker(Benchmarker):
   def __init__(self, model_type, benchmark_params, h_params):
     # remove meta entries from h_params
     self._epochs = benchmark_params['epochs']
-    # self._epochs = 256  ## TODO -- make this configuarable
 
     self._model = model_type(**h_params)
     self._optimizer = torch.optim.Adam(self._model.parameters(), lr=0.01, weight_decay=5e-4)

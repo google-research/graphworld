@@ -56,11 +56,31 @@ class GCNGraphModel(torch.nn.Module):
 
     return x
 
-class PyGBasicModel(torch.nn.Module):
-  def __init__(self, model_type, *h_params):
+
+class PyGBasicGraphModel(torch.nn.Module):
+  """This model wraps all basic_gnn models with a global pooling layer,
+  turning them into graph models."""
+  def __init__(self, model_type, h_params):
+    super(PyGBasicGraphModel, self).__init__()
+
+    # Make sure no final output conversion has been requested
+    print(h_params)
+    assert 'out_channels' not in h_params
+    # h_params['out_channels'] = None
+
     # Instantiate and pass hparams to inner model
-    self.inner_model_ = model_type(h_params)
+    self.inner_model_ = model_type(**h_params)
+
+    # output
+    self.lin = Linear(h_params['hidden_channels'], 1)
 
   def forward(self, x, edge_index, batch):
     # defer to inner forward
-    return self.inner_model_.forward(x, edge_index, batch)
+    x = self.inner_model_(x, edge_index)
+
+    # apply global pooling over nodes
+    x = global_mean_pool(x, batch)  # [batch_size, hidden_channels]
+
+    # convert down to 1 dimension after pooling over nodes
+    x = self.lin(x)
+    return x
