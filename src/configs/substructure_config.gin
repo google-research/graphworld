@@ -1,3 +1,5 @@
+import graph_world.models.basic_gnn
+
 GeneratorBeamHandlerWrapper.handler = @SubstructureBeamHandler()
 GeneratorBeamHandlerWrapper.nsamples = 10000
 SubstructureBeamHandler.substruct = %Substructure.TAILED_TRIANGLE_GRAPH
@@ -27,14 +29,16 @@ train_prob/ParamSamplerSpec.max_val = 0.7
 
 SubstructureBeamHandler.batch_size = 64
 SubstructureBeamHandler.benchmarker_wrappers = [
-  @BasicLinearGraphGCN/GraphGCN,
-#  @BasicLinearGraph/LinearGraphWrapper
+  @GCN_/NNGraphBenchmark,
+  @GraphSAGE_/NNGraphBenchmark,
+  @GAT_/NNGraphBenchmark,
+  @GIN_/NNGraphBenchmark
 ]
 
 # GCN setup
 GCN_/NNGraphBenchmark.model_type = @GCN
 GCN_/NNGraphBenchmark.benchmark_params = {
-    'epochs' : 100,
+    'epochs' : 50,
     'lr' : 0.0001 ,
 }
 GCN_/NNGraphBenchmark.h_params = {
@@ -43,4 +47,38 @@ GCN_/NNGraphBenchmark.h_params = {
     'num_layers' : 2,
 }
 
-BasicLinearGraph/LinearGraphWrapper.model_name = "BasicLinearGraph"
+# GraphSAGE setup
+GraphSAGE_/NNGraphBenchmark.model_type = @GraphSAGE
+GraphSAGE_/NNGraphBenchmark.benchmark_params = {
+    'epochs' : 50,
+    'lr' : 0.0001 ,
+}
+GraphSAGE_/NNGraphBenchmark.h_params = {
+    'in_channels' : 1,
+    'hidden_channels' : 16,
+    'num_layers' : 2,
+}
+
+# GAT setup
+GAT_/NNGraphBenchmark.model_type = @GAT
+GAT_/NNGraphBenchmark.benchmark_params = {
+    'epochs' : 50,
+    'lr' : 0.0001 ,
+}
+GAT_/NNGraphBenchmark.h_params = {
+    'in_channels' : 1,
+    'hidden_channels' : 16,
+    'num_layers' : 2,
+}
+
+# GIN setup
+GIN_/NNGraphBenchmark.model_type = @GIN
+GIN_/NNGraphBenchmark.benchmark_params = {
+    'epochs' : 50,
+    'lr' : 0.0001 ,
+}
+GIN_/NNGraphBenchmark.h_params = {
+    'in_channels' : 1,
+    'hidden_channels' : 16,
+    'num_layers' : 2,
+}
