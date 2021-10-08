@@ -42,6 +42,8 @@ ENTRYPOINT="python3 /app/beam_benchmark_main.py \
   --gin_config=/app/configs/${GENERATOR}_config.gin \
   --output="${OUTPUT_PATH}" \
   --job_name="${FULL_JOB_NAME}" \
+  --no_use_public_ips \
+  --network=dataflow-vpc \
   --experiments=use_monitoring_state_manager \
   --experiments=enable_execution_details_collection \
   --experiment=use_runner_v2 \
