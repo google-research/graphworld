@@ -14,12 +14,16 @@
 # limitations under the License.
 
 GENERATOR="substructure"
+MACHINE_TYPE="n1-standard-1"
+MAX_NUM_WORKERS=1000
 TAG=""
-while getopts g:t: flag
+while getopts g:t:m:w: flag
 do
     case "${flag}" in
         g) GENERATOR=${OPTARG};;
         t) TAG=${OPTARG};;
+        m) MACHINE_TYPE=${OPTARG};;
+        w) MAX_NUM_WORKERS=${OPTARG};;
     esac
 done
 echo "GENERATOR: $GENERATOR";
@@ -37,13 +41,14 @@ ENTRYPOINT="python3 /app/beam_benchmark_main.py \
   --runner=DataflowRunner \
   --project=research-graph \
   --region=us-east1 \
-  --max_num_workers=1000 \
+  --max_num_workers="${MAX_NUM_WORKERS}" \
   --temp_location="${TEMP_LOCATION}" \
   --gin_config=/app/configs/${GENERATOR}_config.gin \
   --output="${OUTPUT_PATH}" \
   --job_name="${FULL_JOB_NAME}" \
   --no_use_public_ips \
   --network=dataflow-vpc \
+  --worker_machine_type="${MACHINE_TYPE}" \
   --experiments=use_monitoring_state_manager \
   --experiments=enable_execution_details_collection \
   --experiment=use_runner_v2 \
@@ -52,5 +57,3 @@ ENTRYPOINT="python3 /app/beam_benchmark_main.py \
 echo "entrypoint: ${ENTRYPOINT}"
 
 docker-compose run --entrypoint "${ENTRYPOINT}" research-graph-synthetic
-  
-  
