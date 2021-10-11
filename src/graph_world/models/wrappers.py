@@ -361,6 +361,7 @@ class NNNodeBenchmarker(Benchmarker):
     }
     out.update(element)
     out['losses'] = None
+    out['test_metrics'] = {}
 
     if skipped:
       logging.info(f'Skipping benchmark for sample id {sample_id}')
@@ -380,7 +381,7 @@ class NNNodeBenchmarker(Benchmarker):
       raise Exception(f'Failed to compute test accuracy for sample id {sample_id}') from e
 
     out['losses'] = losses
-    out['test_metrics'] = {'test_accuracy': test_accuracy}
+    out['test_metrics']['test_accuracy'] = test_accuracy
     return out
 
 @gin.configurable
