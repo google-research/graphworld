@@ -359,10 +359,12 @@ class NNNodeBenchmarker(Benchmarker):
       'skipped': skipped,
       'results': None
     }
+    out.update(element)
+    out['losses'] = None
 
     if skipped:
       logging.info(f'Skipping benchmark for sample id {sample_id}')
-      return
+      return out
 
     train_mask, val_mask, test_mask = masks
 
@@ -377,8 +379,9 @@ class NNNodeBenchmarker(Benchmarker):
       logging.info(f'Failed to compute test accuracy for sample id {sample_id}')
       raise Exception(f'Failed to compute test accuracy for sample id {sample_id}') from e
 
-    return {'losses': losses,
-            'test_metrics': {'test_accuracy': test_accuracy}}
+    out['losses'] = losses
+    out['test_metrics'] = {'test_accuracy': test_accuracy}
+    return out
 
 @gin.configurable
 class NNNodeBenchmark(BenchmarkerWrapper):
