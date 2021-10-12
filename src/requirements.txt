@@ -11,7 +11,7 @@ notebook
 matplotlib
 pycairo
 ujson
-
+scikit-learn
 
 
 
