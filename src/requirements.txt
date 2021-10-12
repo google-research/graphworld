@@ -10,7 +10,7 @@ networkx
 notebook
 matplotlib
 pycairo
-
+ujson
 
 
 

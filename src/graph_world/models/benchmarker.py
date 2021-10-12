@@ -1,13 +1,9 @@
-from absl import logging
 import json
-import os
 
 from abc import ABC, abstractmethod
 import apache_beam as beam
 import gin
-import numpy as np
-import pandas as pd
-from scipy.spatial.distance import cdist
+
 
 class Benchmarker(ABC):
 
@@ -77,57 +73,19 @@ class BenchmarkGNNParDo(beam.DoFn):
     output_data.update(element['generator_config'])
     output_data.update(element['metrics'])
     output_data['skipped'] = element['skipped']
-    sample_id = element['sample_id']
+    output_data['sample_id'] = element['sample_id']
 
     if element['skipped']:
-      yield pd.DataFrame(output_data, index=[sample_id])
-    metrics_df_data = []
-    metrics_df_index = []
+      yield json.dumps(output_data)
 
     # for benchmarker in self._benchmarkers:
     for benchmarker_class, benchmark_params, model_class, model_hparams in zip(self._benchmarker_classes, self._benchmark_params, self._model_classes, self._model_hparams):
-      print(f'Running {benchmarker_class}')
+      print(f'Running {benchmarker_class} and model f{model_class}')
       benchmarker = benchmarker_class(model_class, benchmark_params, model_hparams)  # new benchmarker gets model and model_params
       benchmarker_out = benchmarker.Benchmark(element)
 
-      # Dump benchmark results to file.
-      benchmark_result = {
-        'sample_id': sample_id,
-        'losses': benchmarker_out['losses'],
-        'generator_config': element['generator_config']
-      }
-      benchmark_result.update(benchmarker_out['test_metrics'])
-      results_object_name = os.path.join(self._output_path, '{0:05}_results.txt'.format(sample_id))
-      with beam.io.filesystems.FileSystems.create(results_object_name, 'text/plain') as f:
-        buf = bytes(json.dumps(benchmark_result), 'utf-8')
-        f.write(buf)
-        f.close()
-
       # Return benchmark data for next beam stage.
-      metrics_df_data.append(benchmarker_out['test_metrics'])
-      metrics_df_index.append(benchmarker.GetModelName())
       for key, value in benchmarker_out['test_metrics'].items():
-        output_data[
-          '%s__%s' % (benchmarker.GetModelName(), key)] = value
+        output_data[f'{benchmarker.GetModelName()}__{key}'] = value
 
-    # Compute model diffs across test metrics.
-    # difference = lambda x, y: x - y
-    def difference(x, y):
-      if y == 0.0:
-        if x == 0.0:
-          return 0.0
-        else:
-          return np.inf
-      else:
-        return x / y
-    metrics_df = pd.DataFrame(data=metrics_df_data, index=metrics_df_index)
-    for metric_name in metrics_df.columns:
-      distance_matrix = cdist(
-        np.array([metrics_df[metric_name]]).T,
-        np.array([metrics_df[metric_name]]).T,
-        metric=difference)
-      distance_df = pd.DataFrame(distance_matrix, index=metrics_df.index,
-                                 columns=metrics_df.index)
-      output_data['%s__diffs' % metric_name] = [distance_df]
-
-    yield pd.DataFrame(output_data, index=[sample_id])
+    yield json.dumps(output_data)
