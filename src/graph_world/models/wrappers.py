@@ -417,25 +417,11 @@ class NNNodeBenchmarker(Benchmarker):
 @gin.configurable
 class NNNodeBenchmark(BenchmarkerWrapper):
 
-  def __init__(self, model_type, benchmark_params, h_params):
-    self._model_class = model_type
-    self._benchmark_params = benchmark_params
-    self._model_hparams = h_params
-
   def GetBenchmarker(self):
     return NNNodeBenchmarker(self._model_type, self._benchmark_params, self._model_hparams)
 
   def GetBenchmarkerClass(self):
     return NNNodeBenchmarker
-
-  def GetModelClass(self):
-    return self._model_class
-
-  def GetModelHparams(self):
-    return self._model_hparams
-
-  def GetBenchmarkParams(self):
-    return self._benchmark_params
 
 
 # Link prediction
@@ -514,23 +500,9 @@ class LPBenchmarker(Benchmarker):
 @gin.configurable
 class LPBenchmark(BenchmarkerWrapper):
 
-  def __init__(self, model_type, benchmark_params, h_params):
-    self._model_class = model_type
-    self._benchmark_params = benchmark_params
-    self._model_hparams = h_params
-
   def GetBenchmarker(self):
     return LPBenchmarker(self._model_type, self._benchmark_params,
                        self._model_hparams)
 
   def GetBenchmarkerClass(self):
     return LPBenchmarker
-
-  def GetModelClass(self):
-    return self._model_class
-
-  def GetModelHparams(self):
-    return self._model_hparams
-
-  def GetBenchmarkParams(self):
-    return self._benchmark_params

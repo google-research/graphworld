@@ -29,6 +29,11 @@ class Benchmarker(ABC):
 
 class BenchmarkerWrapper(ABC):
 
+  def __init__(self, model_type=None, benchmark_params=None, h_params=None):
+    self._model_class = model_type
+    self._benchmark_params = benchmark_params
+    self._model_hparams = h_params
+
   @abstractmethod
   def GetBenchmarker(self):
     return Benchmarker()
@@ -40,9 +45,15 @@ class BenchmarkerWrapper(ABC):
   def GetBenchmarkerClass(self):
     return Benchmarker
 
-  @abstractmethod
+  def GetModelClass(self):
+    return self._model_class
+
   def GetModelHparams(self):
-    return {}
+    return self._model_hparams
+
+  def GetBenchmarkParams(self):
+    return self._benchmark_params
+
 
 
 class BenchmarkGNNParDo(beam.DoFn):
