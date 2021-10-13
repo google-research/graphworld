@@ -156,6 +156,7 @@ class ConvertToTorchGeoDataParDo(beam.DoFn):
       print(f'failed to convert {sample_id}')
       logging.info(f'Failed to convert sbm_data to torchgeo for sample id {sample_id}')
       yield out
+      return
 
     try:
       out['masks'] = get_kclass_masks(sbm_data)
@@ -170,6 +171,7 @@ class ConvertToTorchGeoDataParDo(beam.DoFn):
       print(f'failed masks {sample_id}')
       logging.info(f'Failed to sample masks for sample id {sample_id}')
       yield out
+      return
 
     yield out
 
