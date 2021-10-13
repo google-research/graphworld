@@ -195,26 +195,17 @@ class NNGraphBenchmark(BenchmarkerWrapper):
   def GetBenchmarkerClass(self):
     return NNGraphBenchmarker
 
-  def GetModelClass(self):
-    return self._model_class
-
-  def GetModelHparams(self):
-    return self._h_params
-
-  def GetBenchmarkParams(self):
-    return self._benchmark_params
-
 
 class NNGraphBenchmarker(Benchmarker):
 
-  def __init__(self, model_class, benchmark_params, h_params):
-    self._epochs = benchmark_params['epochs']
-    self._lr = benchmark_params['lr']
-
-    self._model = PyGBasicGraphModel(model_class, h_params)
+  def __init__(self, generator_config, model_class, benchmark_params, h_params):
+    super().__init__(generator_config, model_class, benchmark_params, h_params)
+    self._epochs = self._benchmark_params['epochs']
+    self._lr = self._benchmark_params['lr']
+    self._model = PyGBasicGraphModel(self._model_class, self._h_params)
+    # TODO(palowitch) make optimizer configurable
     self._optimizer = torch.optim.Adam(self._model.parameters(), self._lr, weight_decay=5e-4)
     self._criterion = torch.nn.MSELoss()
-    self._model_name = model_class.__name__
 
   def train(self, loader):
     self._model.train()
