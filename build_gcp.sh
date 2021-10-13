@@ -15,4 +15,4 @@
 
 # Kick off a build on GCP.
 #
-gcloud builds submit --tag gcr.io/research-graph/research-graph-synthetic
+gcloud builds submit --tag gcr.io/research-graph/research-graph-synthetic --timeout=3600
