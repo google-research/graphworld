@@ -18,7 +18,7 @@
 # as the remote workers.
 #
 
-GENERATOR="substructure"
+GENERATOR="sbm"
 
 OUTPUT_PATH="/tmp/${GENERATOR}"
 

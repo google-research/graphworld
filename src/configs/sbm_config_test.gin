@@ -1,7 +1,7 @@
 import graph_world.models.basic_gnn
 
 GeneratorBeamHandlerWrapper.handler = @SbmBeamHandler()
-GeneratorBeamHandlerWrapper.nsamples = 5
+GeneratorBeamHandlerWrapper.nsamples = 20
 
 SbmBeamHandler.param_sampler_specs = [
   @nvertex/ParamSamplerSpec(),
@@ -10,12 +10,14 @@ SbmBeamHandler.param_sampler_specs = [
   @feature_dim/ParamSamplerSpec(),
   @edge_center_distance/ParamSamplerSpec(),
   @edge_feature_dim/ParamSamplerSpec(),
-  @p_to_q_ratio/ParamSamplerSpec()
+  @p_to_q_ratio/ParamSamplerSpec(),
+  @num_clusters/ParamSamplerSpec(),
+  @cluster_size_slope/ParamSamplerSpec()
 ]
 
 nvertex/ParamSamplerSpec.name = "nvertex"
-nvertex/ParamSamplerSpec.min_val = 5
-nvertex/ParamSamplerSpec.max_val = 50
+nvertex/ParamSamplerSpec.min_val = 32
+nvertex/ParamSamplerSpec.max_val = 512
 
 p_to_q_ratio/ParamSamplerSpec.name = "p_to_q_ratio"
 p_to_q_ratio/ParamSamplerSpec.min_val = 1.0
@@ -41,6 +43,14 @@ edge_feature_dim/ParamSamplerSpec.name = "edge_feature_dim"
 edge_feature_dim/ParamSamplerSpec.min_val = 2.0
 edge_feature_dim/ParamSamplerSpec.max_val = 2.0
 
+num_clusters/ParamSamplerSpec.name = "num_clusters"
+num_clusters/ParamSamplerSpec.min_val = 2
+num_clusters/ParamSamplerSpec.max_val = 6
+
+cluster_size_slope/ParamSamplerSpec.name = "cluster_size_slope"
+cluster_size_slope/ParamSamplerSpec.min_val = 0.0
+cluster_size_slope/ParamSamplerSpec.max_val = 0.1
+
 SbmBeamHandler.benchmarker_wrappers = [
   @GCN_/NNNodeBenchmark,
   @GraphSAGE_/NNNodeBenchmark,
@@ -56,7 +66,6 @@ GCN_/NNNodeBenchmark.benchmark_params = {
 GCN_/NNNodeBenchmark.h_params = {
     'in_channels' : 16,
     'hidden_channels' : 8,
-    'out_channels' : 4,
     'num_layers' : 2,
 }
 
@@ -68,7 +77,6 @@ GraphSAGE_/NNNodeBenchmark.benchmark_params = {
 GraphSAGE_/NNNodeBenchmark.h_params = {
     'in_channels' : 16,
     'hidden_channels' : 8,
-    'out_channels' : 4,
     'num_layers' : 2,
 }
 
@@ -80,7 +88,6 @@ GIN_/NNNodeBenchmark.benchmark_params = {
 GIN_/NNNodeBenchmark.h_params = {
     'in_channels' : 16,
     'hidden_channels' : 8,
-    'out_channels' : 4,
     'num_layers' : 2,
 }
 
@@ -92,6 +99,5 @@ GAT_/NNNodeBenchmark.benchmark_params = {
 GAT_/NNNodeBenchmark.h_params = {
     'in_channels' : 16,
     'hidden_channels' : 8,
-    'out_channels' : 4,
     'num_layers' : 2,
 }

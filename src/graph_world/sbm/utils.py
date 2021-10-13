@@ -19,6 +19,7 @@ import math
 from typing import Dict, List, Optional, Sequence, Tuple
 import random
 
+import numpy as np
 import torch
 from torch_geometric.data import Data
 from torch_geometric.utils import from_networkx
@@ -122,3 +123,22 @@ def get_kclass_masks(sbm_data: StochasticBlockModel,
   return (torch.as_tensor(training_mask).reshape(-1),
           torch.as_tensor(validate_mask).reshape(-1),
           torch.as_tensor(test_mask).reshape(-1))
+
+
+# This function creates the "Pi" vector for the model (the
+# ${num_communities}-simplex vector giving relative community sizes) from
+# the `community_size_slope` config field. See the config proto for details.
+def MakePi(num_communities: int, community_size_slope: float) -> np.ndarray:
+  pi = np.array(range(num_communities)) * community_size_slope
+  pi += np.ones(num_communities)
+  pi /= np.sum(pi)
+  return pi
+
+
+# This function creates the "PropMat" matrix for the model (the square matrix
+# giving inter-community Poisson means) from the config parameters, particularly
+# `p_to_q_ratio`. See the config proto for details.
+def MakePropMat(num_communities: int, p_to_q_ratio: float) -> np.ndarray:
+  prop_mat = np.ones((num_communities, num_communities))
+  np.fill_diagonal(prop_mat, p_to_q_ratio)
+  return prop_mat

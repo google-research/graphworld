@@ -12,7 +12,7 @@ from ..beam.generator_beam_handler import GeneratorBeamHandler
 from ..beam.generator_config_sampler import GeneratorConfigSampler
 from ..metrics.graph_metrics import GraphMetrics
 from ..sbm.sbm_simulator import GenerateStochasticBlockModelWithFeatures, MatchType
-from ..sbm.utils import sbm_data_to_torchgeo_data, get_kclass_masks
+from ..sbm.utils import sbm_data_to_torchgeo_data, get_kclass_masks, MakePropMat, MakePi
 from ..models.benchmarker import BenchmarkGNNParDo
 
 
@@ -27,6 +27,8 @@ class SampleSbmDoFn(GeneratorConfigSampler, beam.DoFn):
     self._AddSamplerFn('edge_feature_dim', self._SampleUniformInteger)
     self._AddSamplerFn('edge_center_distance', self._SampleUniformFloat)
     self._AddSamplerFn('p_to_q_ratio', self._SampleUniformFloat)
+    self._AddSamplerFn('num_clusters', self._SampleUniformInteger)
+    self._AddSamplerFn('cluster_size_slope', self._SampleUniformFloat)
 
   def process(self, sample_id):
     """Sample and save SMB outputs given a configuration filepath.
@@ -42,9 +44,9 @@ class SampleSbmDoFn(GeneratorConfigSampler, beam.DoFn):
     data = GenerateStochasticBlockModelWithFeatures(
       num_vertices=generator_config['nvertex'],
       num_edges=generator_config['nvertex'] * generator_config['avg_degree'],
-      pi=np.array([0.25, 0.25, 0.25, 0.25]),
-      prop_mat=np.ones((4, 4)) + generator_config['p_to_q_ratio'] * np.diag([1, 1, 1, 1]),
-      num_feature_groups=4,
+      pi=MakePi(generator_config['num_clusters'], generator_config['cluster_size_slope']),
+      prop_mat=MakePropMat(generator_config['num_clusters'], generator_config['p_to_q_ratio']),
+      num_feature_groups=generator_config['num_clusters'],
       feature_group_match_type=MatchType.GROUPED,
       feature_center_distance=generator_config['feature_center_distance'],
       feature_dim=generator_config['feature_dim'],

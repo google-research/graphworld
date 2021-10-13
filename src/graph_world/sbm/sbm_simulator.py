@@ -228,8 +228,8 @@ def SimulateSbm(sbm_data,
       group, if they are not already so.
   Returns: (none)
   """
-  if np.sum(pi) != 1.0:
-    raise ValueError("entries of pi must sum to 1.0")
+  if round(abs(np.sum(pi) - 1.0), 12) != 0:
+    raise ValueError("entries of pi ( must sum to 1.0")
   if prop_mat.shape[0] != len(pi) or prop_mat.shape[1] != len(pi):
     raise ValueError("prop_mat must be k x k where k = len(pi)")
   sbm_data.graph_memberships = _GenerateNodeMemberships(num_vertices, pi)
