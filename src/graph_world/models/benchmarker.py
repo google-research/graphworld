@@ -81,6 +81,7 @@ class BenchmarkGNNParDo(beam.DoFn):
     # for benchmarker in self._benchmarkers:
     for benchmarker_class, benchmark_params, model_class, model_hparams in zip(self._benchmarker_classes, self._benchmark_params, self._model_classes, self._model_hparams):
       print(f'Running {benchmarker_class} and model f{model_class}')
+      model_hparams['out_channels'] = element['generator_config']['num_clusters']
       benchmarker = benchmarker_class(model_class, benchmark_params, model_hparams)  # new benchmarker gets model and model_params
       benchmarker_out = benchmarker.Benchmark(element)
 
