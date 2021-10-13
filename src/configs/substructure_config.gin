@@ -29,6 +29,7 @@ train_prob/ParamSamplerSpec.max_val = 0.7
 
 SubstructureBeamHandler.batch_size = 64
 SubstructureBeamHandler.benchmarker_wrappers = [
+  @LRGraphBenchmark,
   @GCN_/NNGraphBenchmark,
   @GraphSAGE_/NNGraphBenchmark,
   @GAT_/NNGraphBenchmark,

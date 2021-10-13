@@ -260,10 +260,13 @@ class NNGraphBenchmarker(Benchmarker):
                              'test_mse_scaled': test_mse_scaled}}
 
 
-class LinearGraph(Benchmarker):
+class LRGraphBenchmarker(Benchmarker):
 
-  def __init__(self, model_name=''):
-    self._model_name = model_name
+  def __init__(self, generator_config, model_class=None,
+               benchmark_params=None, h_params=None):
+    super().__init__(generator_config, model_class, benchmark_params,
+                     h_params)
+    self._model_name = 'LR'
 
   def Benchmark(self, element):
     reg = LinearRegression().fit(
@@ -281,21 +284,13 @@ class LinearGraph(Benchmarker):
                              'test_mse_scaled': test_mse_scaled}}
 
 @gin.configurable
-class LinearGraphWrapper(BenchmarkerWrapper):
-
-  def __init__(self, model_name):
-    self._h_params = {
-      "model_name": model_name
-    }
+class LRGraphBenchmark(BenchmarkerWrapper):
 
   def GetBenchmarker(self):
-    return LinearGraph(**self._h_params)
+    return LRGraphBenchmarker(**self._h_params)
 
   def GetBenchmarkerClass(self):
-    return LinearGraph
-
-  def GetModelHparams(self):
-    return self._h_params
+    return LRGraphBenchmarker
 
 
 # general benchmarkers
