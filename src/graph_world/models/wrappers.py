@@ -24,6 +24,7 @@ import numpy as np
 from sklearn.linear_model import LinearRegression
 import sklearn.metrics
 import torch
+from torch_geometric.nn import GAE
 
 from .utils import MseWrapper
 from .models import GCNNodeModel, GCNGraphModel, PyGBasicGraphModel
@@ -426,6 +427,104 @@ class NNNodeBenchmark(BenchmarkerWrapper):
 
   def GetBenchmarkerClass(self):
     return NNNodeBenchmarker
+
+  def GetModelClass(self):
+    return self._model_class
+
+  def GetModelHparams(self):
+    return self._model_hparams
+
+  def GetBenchmarkParams(self):
+    return self._benchmark_params
+
+
+# Link prediction
+class LPBenchmarker(Benchmarker):
+  def __init__(self, model_type, benchmark_params, h_params):
+    # remove meta entries from h_params
+    self._epochs = benchmark_params['epochs']
+
+    self._model = model_type(**h_params)
+    self._lp_wrapper_model = GAE(self._model)
+    self._optimizer = torch.optim.Adam(self._model.parameters(), lr=0.01,
+                                       weight_decay=5e-4)
+    self._model_name = model_type.__name__
+
+  def train_step(self, data):
+    self._lp_wrapper_model.train()
+    self._optimizer.zero_grad()  # Clear gradients.
+    z = self._model(data.x, data.train_pos_edge_index)
+    loss = self._lp_wrapper_model.recon_loss(z, data.train_pos_edge_index)
+    loss.backward()  # Derive gradients.
+    self._optimizer.step()  # Update parameters based on gradients.
+    return loss
+
+  def test(self, data):
+    self._lp_wrapper_model.eval()
+    results = {}
+    z = self._model(data.x, data.train_pos_edge_index)
+    roc_auc_score, average_precision_score = self._lp_wrapper_model.test(z,
+                                                                         data.test_pos_edge_index,
+                                                                         data.test_neg_edge_index)
+    results['test_rocauc'] = roc_auc_score
+    results['test_ap'] = average_precision_score
+    return results
+
+  def train(self, data):
+    losses = []
+    for epoch in range(self._epochs):
+      losses.append(float(self.train_step(data)))
+    return losses
+
+  def Benchmark(self, element):
+    torch_data = element['torch_data']
+    skipped = element['skipped']
+    sample_id = element['sample_id']
+
+    out = {
+        'skipped': skipped,
+        'results': None
+    }
+    out.update(element)
+    out['losses'] = None
+    out['test_metrics'] = {}
+
+    if skipped:
+      logging.info(f'Skipping benchmark for sample id {sample_id}')
+      return out
+
+    losses = self.train(torch_data)
+    test_accuracy = {
+        'test_rocaus': 0,
+        'test_ap': 0,
+    }
+    try:
+      # Divide by zero sometimes happens with the ksample masks.
+      test_accuracy = self.test(torch_data)
+    except Exception as e:
+      logging.info(f'Failed to compute test accuracy for sample id {sample_id}')
+      raise Exception(
+          f'Failed to compute test accuracy for sample id {sample_id}') from e
+
+    out['losses'] = losses
+    out['test_metrics'].update(test_accuracy)
+    return out
+
+
+@gin.configurable
+class LPBenchmark(BenchmarkerWrapper):
+
+  def __init__(self, model_type, benchmark_params, h_params):
+    self._model_class = model_type
+    self._benchmark_params = benchmark_params
+    self._model_hparams = h_params
+
+  def GetBenchmarker(self):
+    return LPBenchmarker(self._model_type, self._benchmark_params,
+                       self._model_hparams)
+
+  def GetBenchmarkerClass(self):
+    return LPBenchmarker
 
   def GetModelClass(self):
     return self._model_class

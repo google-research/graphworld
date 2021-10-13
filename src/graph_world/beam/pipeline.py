@@ -17,15 +17,8 @@ from ..models.wrappers import NodeGCN
 # Generator-specific imports
 from ..sbm.beam_handler import SbmBeamHandler
 from ..substructure.beam_handler import SubstructureBeamHandler
+from ..linkprediction.beam_handler import LinkPredictionBeamHandler
 from ..substructure.simulator import Substructure
-
-
-def CombineDataframes(dfs):
-  return pd.concat(dfs or [pd.DataFrame()])
-
-
-def WriteDataFrame(df, output_path):
-  df.to_csv(os.path.join(output_path, "results_df.csv"))
 
 
 def entry(argv=None):
