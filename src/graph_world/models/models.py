@@ -60,7 +60,7 @@ class GCNGraphModel(torch.nn.Module):
 class PyGBasicGraphModel(torch.nn.Module):
   """This model wraps all basic_gnn models with a global pooling layer,
   turning them into graph models."""
-  def __init__(self, model_type, h_params):
+  def __init__(self, model_class, h_params):
     super(PyGBasicGraphModel, self).__init__()
 
     # Make sure no final output conversion has been requested
@@ -69,7 +69,7 @@ class PyGBasicGraphModel(torch.nn.Module):
     # h_params['out_channels'] = None
 
     # Instantiate and pass hparams to inner model
-    self.inner_model_ = model_type(**h_params)
+    self.inner_model_ = model_class(**h_params)
 
     # output
     self.lin = Linear(h_params['hidden_channels'], 1)

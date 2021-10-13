@@ -184,13 +184,13 @@ class GCNGraphBenchmarker(Benchmarker):
 @gin.configurable
 class NNGraphBenchmark(BenchmarkerWrapper):
 
-  def __init__(self, model_type, benchmark_params, h_params):
-    self._model_class = model_type
+  def __init__(self, model_class, benchmark_params, h_params):
+    self._model_class = model_class
     self._benchmark_params = benchmark_params
     self._model_hparams = h_params
 
   def GetBenchmarker(self):
-    return NNGraphBenchmarker(self._model_type, self._benchmark_params, self._model_hparams)
+    return NNGraphBenchmarker(self._model_class, self._benchmark_params, self._model_hparams)
 
   def GetBenchmarkerClass(self):
     return NNGraphBenchmarker
@@ -207,14 +207,14 @@ class NNGraphBenchmark(BenchmarkerWrapper):
 
 class NNGraphBenchmarker(Benchmarker):
 
-  def __init__(self, model_type, benchmark_params, h_params):
+  def __init__(self, model_class, benchmark_params, h_params):
     self._epochs = benchmark_params['epochs']
     self._lr = benchmark_params['lr']
 
-    self._model = PyGBasicGraphModel(model_type, h_params)
+    self._model = PyGBasicGraphModel(model_class, h_params)
     self._optimizer = torch.optim.Adam(self._model.parameters(), self._lr, weight_decay=5e-4)
     self._criterion = torch.nn.MSELoss()
-    self._model_name = model_type.__name__
+    self._model_name = model_class.__name__
 
   def train(self, loader):
     self._model.train()
@@ -309,17 +309,17 @@ class LinearGraphWrapper(BenchmarkerWrapper):
 
 # general benchmarkers
 class NNNodeBenchmarker(Benchmarker):
-  def __init__(self, model_type, benchmark_params, h_params):
+  def __init__(self, model_class, benchmark_params, h_params):
     # remove meta entries from h_params
     self._epochs = benchmark_params['epochs']
 
-    self._model = model_type(**h_params)
+    self._model = model_class(**h_params)
     self._optimizer = torch.optim.Adam(self._model.parameters(), lr=0.01, weight_decay=5e-4)
     self._criterion = torch.nn.CrossEntropyLoss()
     self._train_mask = None
     self._val_mask = None
     self._test_mask = None
-    self._model_name = model_type.__name__
+    self._model_name = model_class.__name__
 
   def SetMasks(self, train_mask, val_mask):
     self._train_mask = train_mask
@@ -418,7 +418,7 @@ class NNNodeBenchmarker(Benchmarker):
 class NNNodeBenchmark(BenchmarkerWrapper):
 
   def GetBenchmarker(self):
-    return NNNodeBenchmarker(self._model_type, self._benchmark_params, self._model_hparams)
+    return NNNodeBenchmarker(self._model_class, self._benchmark_params, self._model_hparams)
 
   def GetBenchmarkerClass(self):
     return NNNodeBenchmarker
@@ -426,15 +426,15 @@ class NNNodeBenchmark(BenchmarkerWrapper):
 
 # Link prediction
 class LPBenchmarker(Benchmarker):
-  def __init__(self, model_type, benchmark_params, h_params):
+  def __init__(self, model_class, benchmark_params, h_params):
     # remove meta entries from h_params
     self._epochs = benchmark_params['epochs']
 
-    self._model = model_type(**h_params)
+    self._model = model_class(**h_params)
     self._lp_wrapper_model = GAE(self._model)
     self._optimizer = torch.optim.Adam(self._model.parameters(), lr=0.01,
                                        weight_decay=5e-4)
-    self._model_name = model_type.__name__
+    self._model_name = model_class.__name__
 
   def train_step(self, data):
     self._lp_wrapper_model.train()
@@ -501,7 +501,7 @@ class LPBenchmarker(Benchmarker):
 class LPBenchmark(BenchmarkerWrapper):
 
   def GetBenchmarker(self):
-    return LPBenchmarker(self._model_type, self._benchmark_params,
+    return LPBenchmarker(self._model_class, self._benchmark_params,
                        self._model_hparams)
 
   def GetBenchmarkerClass(self):

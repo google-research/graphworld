@@ -29,8 +29,8 @@ class Benchmarker(ABC):
 
 class BenchmarkerWrapper(ABC):
 
-  def __init__(self, model_type=None, benchmark_params=None, h_params=None):
-    self._model_class = model_type
+  def __init__(self, model_class=None, benchmark_params=None, h_params=None):
+    self._model_class = model_class
     self._benchmark_params = benchmark_params
     self._model_hparams = h_params
 

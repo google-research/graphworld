@@ -36,7 +36,7 @@ SubstructureBeamHandler.benchmarker_wrappers = [
 ]
 
 # GCN setup
-GCN_/NNGraphBenchmark.model_type = @GCN
+GCN_/NNGraphBenchmark.model_class = @GCN
 GCN_/NNGraphBenchmark.benchmark_params = {
     'epochs' : 50,
     'lr' : 0.0001 ,
@@ -48,7 +48,7 @@ GCN_/NNGraphBenchmark.h_params = {
 }
 
 # GraphSAGE setup
-GraphSAGE_/NNGraphBenchmark.model_type = @GraphSAGE
+GraphSAGE_/NNGraphBenchmark.model_class = @GraphSAGE
 GraphSAGE_/NNGraphBenchmark.benchmark_params = {
     'epochs' : 50,
     'lr' : 0.0001 ,
@@ -60,7 +60,7 @@ GraphSAGE_/NNGraphBenchmark.h_params = {
 }
 
 # GAT setup
-GAT_/NNGraphBenchmark.model_type = @GAT
+GAT_/NNGraphBenchmark.model_class = @GAT
 GAT_/NNGraphBenchmark.benchmark_params = {
     'epochs' : 50,
     'lr' : 0.0001 ,
@@ -72,7 +72,7 @@ GAT_/NNGraphBenchmark.h_params = {
 }
 
 # GIN setup
-GIN_/NNGraphBenchmark.model_type = @GIN
+GIN_/NNGraphBenchmark.model_class = @GIN
 GIN_/NNGraphBenchmark.benchmark_params = {
     'epochs' : 50,
     'lr' : 0.0001 ,

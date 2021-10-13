@@ -60,7 +60,7 @@ LinkPredictionBeamHandler.benchmarker_wrappers = [
 ]
 
 # GCN setup
-GCN_/LPBenchmark.model_type = @GCN
+GCN_/LPBenchmark.model_class = @GCN
 GCN_/LPBenchmark.benchmark_params = {
     'epochs' : 256,
 }
@@ -71,7 +71,7 @@ GCN_/LPBenchmark.h_params = {
 }
 
 # GraphSAGE setup
-GraphSAGE_/LPBenchmark.model_type = @GraphSAGE
+GraphSAGE_/LPBenchmark.model_class = @GraphSAGE
 GraphSAGE_/LPBenchmark.benchmark_params = {
     'epochs' : 256,
 }
@@ -82,7 +82,7 @@ GraphSAGE_/LPBenchmark.h_params = {
 }
 
 # GIN setup
-GIN_/LPBenchmark.model_type = @GIN
+GIN_/LPBenchmark.model_class = @GIN
 GIN_/LPBenchmark.benchmark_params = {
     'epochs' : 256,
 }
@@ -93,7 +93,7 @@ GIN_/LPBenchmark.h_params = {
 }
 
 # GAT setup
-GAT_/LPBenchmark.model_type = @GAT
+GAT_/LPBenchmark.model_class = @GAT
 GAT_/LPBenchmark.benchmark_params = {
     'epochs' : 256,
 }

@@ -34,7 +34,7 @@ SubstructureBeamHandler.benchmarker_wrappers = [
 ]
 
 # GCN setup
-GCN_/NNGraphBenchmark.model_type = @GCN
+GCN_/NNGraphBenchmark.model_class = @GCN
 GCN_/NNGraphBenchmark.benchmark_params = {
     'epochs' : 50,
     'lr' : 0.0001 ,

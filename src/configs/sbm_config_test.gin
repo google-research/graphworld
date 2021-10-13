@@ -59,7 +59,7 @@ SbmBeamHandler.benchmarker_wrappers = [
 ]
 
 # GCN setup
-GCN_/NNNodeBenchmark.model_type = @GCN
+GCN_/NNNodeBenchmark.model_class = @GCN
 GCN_/NNNodeBenchmark.benchmark_params = {
     'epochs' : 256,
 }
@@ -70,7 +70,7 @@ GCN_/NNNodeBenchmark.h_params = {
 }
 
 # GraphSAGE setup
-GraphSAGE_/NNNodeBenchmark.model_type = @GraphSAGE
+GraphSAGE_/NNNodeBenchmark.model_class = @GraphSAGE
 GraphSAGE_/NNNodeBenchmark.benchmark_params = {
     'epochs' : 256,
 }
@@ -81,7 +81,7 @@ GraphSAGE_/NNNodeBenchmark.h_params = {
 }
 
 # GIN setup
-GIN_/NNNodeBenchmark.model_type = @GIN
+GIN_/NNNodeBenchmark.model_class = @GIN
 GIN_/NNNodeBenchmark.benchmark_params = {
     'epochs' : 256,
 }
@@ -92,7 +92,7 @@ GIN_/NNNodeBenchmark.h_params = {
 }
 
 # GAT setup
-GAT_/NNNodeBenchmark.model_type = @GAT
+GAT_/NNNodeBenchmark.model_class = @GAT
 GAT_/NNNodeBenchmark.benchmark_params = {
     'epochs' : 256,
 }
