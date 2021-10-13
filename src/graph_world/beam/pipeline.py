@@ -41,6 +41,11 @@ def entry(argv=None):
                       default='',
                       help='Location of gin config (/app/configs = /src/configs).')
 
+  parser.add_argument('--write_intermediate',
+                      dest='write_samples',
+                      default=False,
+                      help='Whether to write sampled graph data. Saves CPU and disk if disabled.')
+
   args, pipeline_args = parser.parse_known_args(argv)
   logging.info(f'Pipeline Args: {pipeline_args}')
   gin.parse_config_file(args.gin_config)
@@ -58,9 +63,9 @@ def entry(argv=None):
         | 'Sample Graphs' >> beam.ParDo(
         gen_handler_wrapper.handler.GetSampleDoFn())
     )
-
-    graph_samples | 'Write Sampled Graph' >> beam.ParDo(
-        gen_handler_wrapper.handler.GetWriteDoFn())
+    if args.write_samples:
+      graph_samples | 'Write Sampled Graph' >> beam.ParDo(
+          gen_handler_wrapper.handler.GetWriteDoFn())
 
     torch_data = (
         graph_samples | 'Compute graph metrics.' >> beam.ParDo(
