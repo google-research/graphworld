@@ -104,7 +104,7 @@ class GCNNodeBenchmarker(Benchmarker):
 class NodeGCN(BenchmarkerWrapper):
 
   def __init__(self, num_features, num_classes, hidden_channels, epochs, model_name):
-    self._model_hparams = {
+    self._h_params = {
       "num_features": num_features,
       "num_classes": num_classes,
       "hidden_channels": hidden_channels,
@@ -113,13 +113,13 @@ class NodeGCN(BenchmarkerWrapper):
     }
 
   def GetBenchmarker(self):
-    return GCNNodeBenchmarker(**self._model_hparams)
+    return GCNNodeBenchmarker(**self._h_params)
 
   def GetBenchmarkerClass(self):
     return GCNNodeBenchmarker
 
   def GetModelHparams(self):
-    return self._model_hparams
+    return self._h_params
 
 
 class GCNGraphBenchmarker(Benchmarker):
@@ -187,10 +187,10 @@ class NNGraphBenchmark(BenchmarkerWrapper):
   def __init__(self, model_class, benchmark_params, h_params):
     self._model_class = model_class
     self._benchmark_params = benchmark_params
-    self._model_hparams = h_params
+    self._h_params = h_params
 
   def GetBenchmarker(self):
-    return NNGraphBenchmarker(self._model_class, self._benchmark_params, self._model_hparams)
+    return NNGraphBenchmarker(self._model_class, self._benchmark_params, self._h_params)
 
   def GetBenchmarkerClass(self):
     return NNGraphBenchmarker
@@ -199,7 +199,7 @@ class NNGraphBenchmark(BenchmarkerWrapper):
     return self._model_class
 
   def GetModelHparams(self):
-    return self._model_hparams
+    return self._h_params
 
   def GetBenchmarkParams(self):
     return self._benchmark_params
@@ -293,33 +293,34 @@ class LinearGraph(Benchmarker):
 class LinearGraphWrapper(BenchmarkerWrapper):
 
   def __init__(self, model_name):
-    self._model_hparams = {
+    self._h_params = {
       "model_name": model_name
     }
 
   def GetBenchmarker(self):
-    return LinearGraph(**self._model_hparams)
+    return LinearGraph(**self._h_params)
 
   def GetBenchmarkerClass(self):
     return LinearGraph
 
   def GetModelHparams(self):
-    return self._model_hparams
+    return self._h_params
 
 
 # general benchmarkers
 class NNNodeBenchmarker(Benchmarker):
   def __init__(self, model_class, benchmark_params, h_params):
+    super().__init__(model_class, benchmark_params, h_params)
     # remove meta entries from h_params
     self._epochs = benchmark_params['epochs']
 
     self._model = model_class(**h_params)
+    # TODO(palowitch): make optimizer configurable.
     self._optimizer = torch.optim.Adam(self._model.parameters(), lr=0.01, weight_decay=5e-4)
     self._criterion = torch.nn.CrossEntropyLoss()
     self._train_mask = None
     self._val_mask = None
     self._test_mask = None
-    self._model_name = model_class.__name__
 
   def SetMasks(self, train_mask, val_mask):
     self._train_mask = train_mask
@@ -418,7 +419,7 @@ class NNNodeBenchmarker(Benchmarker):
 class NNNodeBenchmark(BenchmarkerWrapper):
 
   def GetBenchmarker(self):
-    return NNNodeBenchmarker(self._model_class, self._benchmark_params, self._model_hparams)
+    return NNNodeBenchmarker(self._model_class, self._benchmark_params, self._h_params)
 
   def GetBenchmarkerClass(self):
     return NNNodeBenchmarker
@@ -427,14 +428,16 @@ class NNNodeBenchmark(BenchmarkerWrapper):
 # Link prediction
 class LPBenchmarker(Benchmarker):
   def __init__(self, model_class, benchmark_params, h_params):
+
+    super().__init__(model_class, benchmark_params, h_params)
+
     # remove meta entries from h_params
     self._epochs = benchmark_params['epochs']
-
-    self._model = model_class(**h_params)
+    self._model = self._model_class(**h_params)
     self._lp_wrapper_model = GAE(self._model)
+    # TODO(palowitch,tsitsulin): fill optimizer using param input instead.
     self._optimizer = torch.optim.Adam(self._model.parameters(), lr=0.01,
                                        weight_decay=5e-4)
-    self._model_name = model_class.__name__
 
   def train_step(self, data):
     self._lp_wrapper_model.train()
@@ -501,8 +504,7 @@ class LPBenchmarker(Benchmarker):
 class LPBenchmark(BenchmarkerWrapper):
 
   def GetBenchmarker(self):
-    return LPBenchmarker(self._model_class, self._benchmark_params,
-                       self._model_hparams)
+    return LPBenchmarker(self._model_class, self._benchmark_params, self._h_params)
 
   def GetBenchmarkerClass(self):
     return LPBenchmarker
