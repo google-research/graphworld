@@ -309,8 +309,8 @@ class LinearGraphWrapper(BenchmarkerWrapper):
 
 # general benchmarkers
 class NNNodeBenchmarker(Benchmarker):
-  def __init__(self, model_class, benchmark_params, h_params):
-    super().__init__(model_class, benchmark_params, h_params)
+  def __init__(self, generator_config, model_class, benchmark_params, h_params):
+    super().__init__(generator_config, model_class, benchmark_params, h_params)
     # remove meta entries from h_params
     self._epochs = benchmark_params['epochs']
 
@@ -321,6 +321,10 @@ class NNNodeBenchmarker(Benchmarker):
     self._train_mask = None
     self._val_mask = None
     self._test_mask = None
+
+  def AdjustParams(self, generator_config):
+    if 'num_clusters' in generator_config:
+      self._h_params['out_channels'] = generator_config['num_clusters']
 
   def SetMasks(self, train_mask, val_mask):
     self._train_mask = train_mask
@@ -427,9 +431,9 @@ class NNNodeBenchmark(BenchmarkerWrapper):
 
 # Link prediction
 class LPBenchmarker(Benchmarker):
-  def __init__(self, model_class, benchmark_params, h_params):
+  def __init__(self, generator_config, model_class, benchmark_params, h_params):
 
-    super().__init__(model_class, benchmark_params, h_params)
+    super().__init__(generator_config, model_class, benchmark_params, h_params)
 
     # remove meta entries from h_params
     self._epochs = benchmark_params['epochs']
@@ -438,6 +442,10 @@ class LPBenchmarker(Benchmarker):
     # TODO(palowitch,tsitsulin): fill optimizer using param input instead.
     self._optimizer = torch.optim.Adam(self._model.parameters(), lr=0.01,
                                        weight_decay=5e-4)
+
+  def AdjustParams(self, generator_config):
+    if 'num_clusters' in generator_config:
+      self._h_params['out_channels'] = generator_config['num_clusters']
 
   def train_step(self, data):
     self._lp_wrapper_model.train()

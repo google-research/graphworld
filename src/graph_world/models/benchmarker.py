@@ -7,12 +7,18 @@ import gin
 
 class Benchmarker(ABC):
 
-  def __init__(self, model_class=None, benchmark_params=None, h_params=None):
+  def __init__(self, generator_config,
+               model_class=None, benchmark_params=None, h_params=None):
     self._model_name = model_class.__name__ if model_class is not None else ''
     self._model_class = model_class
     self._benchmark_params = benchmark_params
     self._h_params = h_params
+    self.AdjustParams(generator_config)
 
+  # Override this function if the input data affects the model architecture.
+  # See NNNodeBenchmarker for an example implementation.
+  def AdjustParams(self, generator_config):
+    pass
 
   def GetModelName(self):
     return self._model_name
@@ -96,8 +102,8 @@ class BenchmarkGNNParDo(beam.DoFn):
     # for benchmarker in self._benchmarkers:
     for benchmarker_class, benchmark_params, model_class, h_params in zip(self._benchmarker_classes, self._benchmark_params, self._model_classes, self._h_params):
       print(f'Running {benchmarker_class} and model f{model_class}')
-      h_params['out_channels'] = element['generator_config']['num_clusters']
-      benchmarker = benchmarker_class(model_class, benchmark_params, h_params)  # new benchmarker gets model and model_params
+      benchmarker = benchmarker_class(element['generator_config'],
+                                      model_class, benchmark_params, h_params)
       benchmarker_out = benchmarker.Benchmark(element)
 
       # Return benchmark data for next beam stage.
