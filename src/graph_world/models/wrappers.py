@@ -22,7 +22,7 @@ import gin
 import logging
 import numpy as np
 from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_squared_error
+import sklearn.metrics
 import torch
 
 from .utils import MseWrapper
@@ -338,10 +338,31 @@ class NNNodeBenchmarker(Benchmarker):
   def test(self, data):
     self._model.eval()
     out = self._model(data.x, data.edge_index)
-    pred = out.argmax(dim=1)  # Use the class with highest probability.
-    test_correct = pred[self._test_mask] == data.y[self._test_mask]  # Check against ground-truth labels.
-    test_acc = int(test_correct.sum()) / int(self._test_mask.sum())  # Derive ratio of correct predictions.
-    return test_acc
+    pred = out[self._test_mask].detach().numpy()
+
+    pred_best = pred.argmax(-1)
+    correct = data.y[self._test_mask].numpy()
+    n_classes = out.shape[-1]
+    pred_onehot = np.zeros((len(pred_best), n_classes))
+    pred_onehot[np.arange(pred_best.shape[0]), pred_best] = 1
+
+    correct_onehot = np.zeros((len(correct), n_classes))
+    correct_onehot[np.arange(correct.shape[0]), correct] = 1
+
+    results = {
+        'test_accuracy': sklearn.metrics.accuracy_score(correct, pred_best),
+        'test_f1_micro': sklearn.metrics.f1_score(correct, pred_best,
+                                                  average='micro'),
+        'test_f1_macro': sklearn.metrics.f1_score(correct, pred_best,
+                                                  average='macro'),
+        'test_rocauc_ovr': sklearn.metrics.roc_auc_score(correct_onehot,
+                                                         pred_onehot,
+                                                         multi_class='ovr'),
+        'test_rocauc_ovo': sklearn.metrics.roc_auc_score(correct_onehot,
+                                                         pred_onehot,
+                                                         multi_class='ovo'),
+        'logloss': sklearn.metrics.log_loss(correct, pred)}
+    return results
 
   def train(self, data):
     losses = []
@@ -372,16 +393,24 @@ class NNNodeBenchmarker(Benchmarker):
     self.SetMasks(train_mask, val_mask)
 
     losses = self.train(torch_data)
-    test_accuracy = 0.0
+    test_accuracy = {
+        'test_accuracy': 0,
+        'test_f1_micro': 0,
+        'test_f1_macro': 0,
+        'test_rocauc_ovr': 0,
+        'test_rocauc_ovo': 0,
+        'logloss': 0
+    }
     try:
-      # Divide by zero somesimtes happens with the ksample masks.
+      # Divide by zero sometimes happens with the ksample masks.
       test_accuracy = self.test(torch_data)
     except Exception as e:
       logging.info(f'Failed to compute test accuracy for sample id {sample_id}')
-      raise Exception(f'Failed to compute test accuracy for sample id {sample_id}') from e
+      raise Exception(
+          f'Failed to compute test accuracy for sample id {sample_id}') from e
 
     out['losses'] = losses
-    out['test_metrics']['test_accuracy'] = test_accuracy
+    out['test_metrics'].update(test_accuracy)
     return out
 
 @gin.configurable
