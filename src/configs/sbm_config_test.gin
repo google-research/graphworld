@@ -1,8 +1,11 @@
 import graph_world.models.basic_gnn
 
 GeneratorBeamHandlerWrapper.handler = @SbmBeamHandler()
-GeneratorBeamHandlerWrapper.nsamples = 20
+GeneratorBeamHandlerWrapper.nsamples = 1
 
+SbmBeamHandler.num_tuning_rounds = 2
+SbmBeamHandler.tuning_metric = "test_f1_macro"
+SbmBeamHandler.tuning_metric_is_loss = False
 SbmBeamHandler.param_sampler_specs = [
   @nvertex/ParamSamplerSpec(),
   @avg_degree/ParamSamplerSpec(),
@@ -66,7 +69,7 @@ GCN_/NNNodeBenchmark.benchmark_params = {
 }
 GCN_/NNNodeBenchmark.h_params = {
     'in_channels' : 16,
-    'hidden_channels' : 8,
+    'hidden_channels' : [8, 16],
     'num_layers' : 2,
 }
 
@@ -78,7 +81,7 @@ GraphSAGE_/NNNodeBenchmark.benchmark_params = {
 }
 GraphSAGE_/NNNodeBenchmark.h_params = {
     'in_channels' : 16,
-    'hidden_channels' : 8,
+    'hidden_channels' : [8, 16],
     'num_layers' : 2,
 }
 

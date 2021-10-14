@@ -3,6 +3,10 @@ import graph_world.models.basic_gnn
 GeneratorBeamHandlerWrapper.handler = @LinkPredictionBeamHandler()
 GeneratorBeamHandlerWrapper.nsamples = 10000
 
+LinkPredictionBeamHandler.training_ratio = 0.6
+LinkPredictionBeamHandler.tuning_ratio = 0.2
+LinkPredictionBeamHandler.num_tuning_rounds = 8
+LinkPredictionBeamHandler.tuning_metric = "test_rocauc"
 LinkPredictionBeamHandler.param_sampler_specs = [
   @nvertex/ParamSamplerSpec(),
   @avg_degree/ParamSamplerSpec(),
@@ -51,7 +55,6 @@ cluster_size_slope/ParamSamplerSpec.name = "cluster_size_slope"
 cluster_size_slope/ParamSamplerSpec.min_val = 0.0
 cluster_size_slope/ParamSamplerSpec.max_val = 0.1
 
-LinkPredictionBeamHandler.training_ratio = 0.9
 LinkPredictionBeamHandler.benchmarker_wrappers = [
   @GCN_/LPBenchmark,
   @GraphSAGE_/LPBenchmark,
@@ -59,50 +62,55 @@ LinkPredictionBeamHandler.benchmarker_wrappers = [
   @GAT_/LPBenchmark,
 ]
 
+# Graph classification hyperparameter ranges
+LR = [0.01, 0.001, 0.0001]
+HIDDEN_CHANNELS = [4, 8]
+NUM_LAYERS = [2, 3, 4]
+
 # GCN setup
 GCN_/LPBenchmark.model_class = @GCN
 GCN_/LPBenchmark.benchmark_params = {
     'epochs' : 256,
-    'lr': 0.01,
+    'lr': %LR,
 }
 GCN_/LPBenchmark.h_params = {
     'in_channels' : 16,
-    'hidden_channels' : 8,
-    'num_layers' : 2,
+    'hidden_channels' : %HIDDEN_CHANNELS,
+    'num_layers' : %NUM_LAYERS,
 }
 
 # GraphSAGE setup
 GraphSAGE_/LPBenchmark.model_class = @GraphSAGE
 GraphSAGE_/LPBenchmark.benchmark_params = {
     'epochs' : 256,
-    'lr': 0.01,
+    'lr': %LR,
 }
 GraphSAGE_/LPBenchmark.h_params = {
     'in_channels' : 16,
-    'hidden_channels' : 8,
-    'num_layers' : 2,
+    'hidden_channels' : %HIDDEN_CHANNELS,
+    'num_layers' : %NUM_LAYERS,
 }
 
 # GIN setup
 GIN_/LPBenchmark.model_class = @GIN
 GIN_/LPBenchmark.benchmark_params = {
     'epochs' : 256,
-    'lr': 0.01,
+    'lr': %LR,
 }
 GIN_/LPBenchmark.h_params = {
     'in_channels' : 16,
-    'hidden_channels' : 8,
-    'num_layers' : 2,
+    'hidden_channels' : %HIDDEN_CHANNELS,
+    'num_layers' : %NUM_LAYERS,
 }
 
 # GAT setup
 GAT_/LPBenchmark.model_class = @GAT
 GAT_/LPBenchmark.benchmark_params = {
     'epochs' : 256,
-    'lr': 0.01,
+    'lr': %LR,
 }
 GAT_/LPBenchmark.h_params = {
     'in_channels' : 16,
-    'hidden_channels' : 8,
-    'num_layers' : 2,
+    'hidden_channels' : %HIDDEN_CHANNELS,
+    'num_layers' : %NUM_LAYERS,
 }

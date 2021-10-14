@@ -3,6 +3,9 @@ import json
 from abc import ABC, abstractmethod
 import apache_beam as beam
 import gin
+import numpy as np
+
+from .utils import ComputeNumPossibleConfigs, SampleModelConfig
 
 
 class Benchmarker(ABC):
@@ -72,7 +75,8 @@ class BenchmarkGNNParDo(beam.DoFn):
   # replace the alternate code below it, if we were using Python 3.7. See:
   #  - https://github.com/huggingface/transformers/issues/8453
   #  - https://github.com/huggingface/transformers/issues/8212
-  def __init__(self, benchmarker_wrappers):
+  def __init__(self, benchmarker_wrappers, num_tuning_rounds, tuning_metric,
+               tuning_metric_is_loss=False):
     # self._benchmarkers = [benchmarker_wrapper().GetBenchmarker() for
     #                       benchmarker_wrapper in benchmarker_wrappers]
     self._benchmarker_classes = [benchmarker_wrapper().GetBenchmarkerClass() for
@@ -85,6 +89,9 @@ class BenchmarkGNNParDo(beam.DoFn):
                            benchmarker_wrapper in benchmarker_wrappers]
     # /end alternate code.
     self._output_path = None
+    self._num_tuning_rounds = num_tuning_rounds
+    self._tuning_metric = tuning_metric
+    self._tuning_metric_is_loss = tuning_metric_is_loss
 
   def SetOutputPath(self, output_path):
     self._output_path = output_path
@@ -102,11 +109,42 @@ class BenchmarkGNNParDo(beam.DoFn):
     # for benchmarker in self._benchmarkers:
     for benchmarker_class, benchmark_params, model_class, h_params in zip(self._benchmarker_classes, self._benchmark_params, self._model_classes, self._h_params):
       print(f'Running {benchmarker_class} and model f{model_class}')
-      benchmarker = benchmarker_class(element['generator_config'],
-                                      model_class, benchmark_params, h_params)
-      benchmarker_out = benchmarker.Benchmark(element)
+      num_possible_configs = ComputeNumPossibleConfigs(benchmark_params, h_params)
+      num_tuning_rounds = min(num_possible_configs, self._num_tuning_rounds)
+      if num_tuning_rounds == 1 or self._tuning_metric == '':
+        benchmark_params_sample, h_params_sample = SampleModelConfig(benchmark_params,
+                                                                     h_params)
+        benchmarker = benchmarker_class(element['generator_config'],
+                                        model_class,
+                                        benchmark_params_sample,
+                                        h_params_sample)
+        benchmarker_out = benchmarker.Benchmark(element)
+      else:
+        configs = []
+        scores = []
+        for _ in range(num_tuning_rounds):
+          benchmark_params_sample, h_params_sample = SampleModelConfig(benchmark_params,
+                                                                       h_params)
+          benchmarker = benchmarker_class(element['generator_config'],
+                                          model_class,
+                                          benchmark_params_sample,
+                                          h_params_sample)
+          benchmarker_out = benchmarker.Benchmark(element, tuning=True)
+          configs.append((benchmark_params_sample, h_params_sample))
+          scores.append(benchmarker_out['test_metrics'][self._tuning_metric])
+        if self._tuning_metric_is_loss:
+          best_tuning_round = np.argmin(scores)
+        else:
+          best_tuning_round = np.argmax(scores)
+        benchmarker = benchmarker_class(element['generator_config'],
+                                        model_class,
+                                        configs[best_tuning_round][0],
+                                        configs[best_tuning_round][1])
+        benchmarker_out = benchmarker.Benchmark(element)
 
       # Return benchmark data for next beam stage.
+      output_data['%s__num_tuning_rounds' % benchmarker.GetModelName()] = num_tuning_rounds
+
       for key, value in benchmarker_out['test_metrics'].items():
         output_data[f'{benchmarker.GetModelName()}__{key}'] = value
 

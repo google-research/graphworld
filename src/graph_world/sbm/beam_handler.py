@@ -180,9 +180,11 @@ class ConvertToTorchGeoDataParDo(beam.DoFn):
 class SbmBeamHandler(GeneratorBeamHandler):
 
   @gin.configurable
-  def __init__(self, param_sampler_specs, benchmarker_wrappers):
+  def __init__(self, param_sampler_specs, benchmarker_wrappers, num_tuning_rounds=1,
+               tuning_metric='', tuning_metric_is_loss=False):
     self._sample_do_fn = SampleSbmDoFn(param_sampler_specs)
-    self._benchmark_par_do = BenchmarkGNNParDo(benchmarker_wrappers)
+    self._benchmark_par_do = BenchmarkGNNParDo(benchmarker_wrappers, num_tuning_rounds,
+                                               tuning_metric, tuning_metric_is_loss)
     self._metrics_par_do = ComputeSbmGraphMetrics()
 
   def GetSampleDoFn(self):

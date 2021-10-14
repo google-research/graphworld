@@ -21,6 +21,7 @@ class SampleSubstructureDatasetDoFn(GeneratorConfigSampler, beam.DoFn):
     self._AddSamplerFn('num_vertices', self._SampleUniformInteger)
     self._AddSamplerFn('edge_prob', self._SampleUniformFloat)
     self._AddSamplerFn('train_prob', self._SampleUniformFloat)
+    self._AddSamplerFn('tuning_prob', self._SampleUniformFloat)
     self._substruct = substruct
 
   def process(self, sample_id):
@@ -94,15 +95,21 @@ class ConvertToTorchGeoDataParDo(beam.DoFn):
     X = np.array(X)
     y = np.array(y)
     num_train = int(len(torch_examples) * element['generator_config']['train_prob'])
+    num_tuning = int(len(torch_examples) * element['generator_config']['tuning_prob'])
     out['torch_dataset'] = {
       'train': DataLoader(torch_examples[:num_train],
                           batch_size=self._batch_size, shuffle=True),
-      'test': DataLoader(torch_examples[num_train:],
+      'tuning': DataLoader(torch_examples[num_train:(num_train + num_tuning)],
+                          batch_size=self._batch_size, shuffle=True),
+      'test': DataLoader(torch_examples[(num_train + num_tuning):],
                          batch_size=self._batch_size, shuffle=False)
     }
     out['numpy_dataset'] = {
       'train': {'X': X[:num_train, :], 'y': y[:num_train]},
-      'test': {'X': X[num_train:, :], 'y': y[num_train:]}
+      'tuning': {'X': X[num_train:(num_train + num_tuning), :],
+                 'y': y[num_train:(num_train + num_tuning)]},
+      'test': {'X': X[(num_train + num_tuning):, :],
+               'y': y[(num_train + num_tuning):]}
     }
     yield out
 
@@ -111,10 +118,12 @@ class ConvertToTorchGeoDataParDo(beam.DoFn):
 class SubstructureBeamHandler(GeneratorBeamHandler):
 
   @gin.configurable
-  def __init__(self, param_sampler_specs, substruct, benchmarker_wrappers, batch_size):
+  def __init__(self, param_sampler_specs, substruct, benchmarker_wrappers, batch_size,
+               num_tuning_rounds=1, tuning_metric='', tuning_metric_is_loss=False):
     self._sample_do_fn = SampleSubstructureDatasetDoFn(param_sampler_specs,
                                                        substruct)
-    self._benchmark_par_do = BenchmarkGNNParDo(benchmarker_wrappers)
+    self._benchmark_par_do = BenchmarkGNNParDo(benchmarker_wrappers, num_tuning_rounds,
+                                               tuning_metric, tuning_metric_is_loss)
     self._metrics_par_do = ComputeSubstructureGraphMetricsParDo()
     self._batch_size = batch_size
 

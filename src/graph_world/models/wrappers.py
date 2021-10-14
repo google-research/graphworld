@@ -242,13 +242,16 @@ class NNGraphBenchmarker(Benchmarker):
     mse_scaled = MseWrapper(predictions, labels, scale=True)
     return mse, mse_scaled
 
-  def Benchmark(self, element):
+  def Benchmark(self, element, tuning=False):
     sample_id = element['sample_id']
     mses, losses = self.train(element['torch_dataset']['train'])
     test_mse = 0.0
     test_mse_scaled = 0.0
     try:
-      total_mse, total_mse_scaled = self.test(element['torch_dataset']['test'])
+      if tuning:
+        total_mse, total_mse_scaled = self.test(element['torch_dataset']['tuning'])
+      else:
+        total_mse, total_mse_scaled = self.test(element['torch_dataset']['test'])
       test_mse = float(total_mse)
       test_mse_scaled = float(total_mse_scaled)
     except Exception as e:
@@ -314,10 +317,10 @@ class NNNodeBenchmarker(Benchmarker):
     if 'num_clusters' in generator_config:
       self._h_params['out_channels'] = generator_config['num_clusters']
 
-  def SetMasks(self, train_mask, val_mask):
+  def SetMasks(self, train_mask, val_mask, test_mask):
     self._train_mask = train_mask
     self._val_mask = val_mask
-    self._test_mask = val_mask
+    self._test_mask = test_mask
 
   def train_step(self, data):
     self._model.train()
@@ -329,13 +332,19 @@ class NNNodeBenchmarker(Benchmarker):
     self._optimizer.step()  # Update parameters based on gradients.
     return loss
 
-  def test(self, data):
+  def test(self, data, tuning=False):
     self._model.eval()
     out = self._model(data.x, data.edge_index)
-    pred = out[self._test_mask].detach().numpy()
+    if tuning:
+      pred = out[self._val_mask].detach().numpy()
+    else:
+      pred = out[self._test_mask].detach().numpy()
 
     pred_best = pred.argmax(-1)
-    correct = data.y[self._test_mask].numpy()
+    if tuning:
+      correct = data.y[self._val_mask].numpy()
+    else:
+      correct = data.y[self._test_mask].numpy()
     n_classes = out.shape[-1]
     pred_onehot = np.zeros((len(pred_best), n_classes))
     pred_onehot[np.arange(pred_best.shape[0]), pred_best] = 1
@@ -364,7 +373,7 @@ class NNNodeBenchmarker(Benchmarker):
       losses.append(float(self.train_step(data)))
     return losses
 
-  def Benchmark(self, element):
+  def Benchmark(self, element, tuning=False):
     torch_data = element['torch_data']
     masks = element['masks']
     skipped = element['skipped']
@@ -384,7 +393,7 @@ class NNNodeBenchmarker(Benchmarker):
 
     train_mask, val_mask, test_mask = masks
 
-    self.SetMasks(train_mask, val_mask)
+    self.SetMasks(train_mask, val_mask, test_mask)
 
     losses = self.train(torch_data)
     test_accuracy = {
@@ -397,7 +406,7 @@ class NNNodeBenchmarker(Benchmarker):
     }
     try:
       # Divide by zero sometimes happens with the ksample masks.
-      test_accuracy = self.test(torch_data)
+      test_accuracy = self.test(torch_data, tuning=tuning)
     except Exception as e:
       logging.info(f'Failed to compute test accuracy for sample id {sample_id}')
       raise Exception(
@@ -445,13 +454,17 @@ class LPBenchmarker(Benchmarker):
     self._optimizer.step()  # Update parameters based on gradients.
     return loss
 
-  def test(self, data):
+  def test(self, data, tuning=False):
     self._lp_wrapper_model.eval()
     results = {}
     z = self._model(data.x, data.train_pos_edge_index)
-    roc_auc_score, average_precision_score = self._lp_wrapper_model.test(z,
-                                                                         data.test_pos_edge_index,
-                                                                         data.test_neg_edge_index)
+
+    if tuning:
+      roc_auc_score, average_precision_score = self._lp_wrapper_model.test(
+        z, data.val_pos_edge_index, data.val_neg_edge_index)
+    else:
+      roc_auc_score, average_precision_score = self._lp_wrapper_model.test(
+        z, data.test_pos_edge_index, data.test_neg_edge_index)
     results['test_rocauc'] = roc_auc_score
     results['test_ap'] = average_precision_score
     return results
@@ -462,7 +475,7 @@ class LPBenchmarker(Benchmarker):
       losses.append(float(self.train_step(data)))
     return losses
 
-  def Benchmark(self, element):
+  def Benchmark(self, element, tuning=False):
     torch_data = element['torch_data']
     skipped = element['skipped']
     sample_id = element['sample_id']
@@ -486,7 +499,7 @@ class LPBenchmarker(Benchmarker):
     }
     try:
       # Divide by zero sometimes happens with the ksample masks.
-      test_accuracy = self.test(torch_data)
+      test_accuracy = self.test(torch_data, tuning=tuning)
     except Exception as e:
       logging.info(f'Failed to compute test accuracy for sample id {sample_id}')
       raise Exception(

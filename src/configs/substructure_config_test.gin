@@ -4,11 +4,15 @@ GeneratorBeamHandlerWrapper.handler = @SubstructureBeamHandler()
 GeneratorBeamHandlerWrapper.nsamples = 1
 SubstructureBeamHandler.substruct = %Substructure.TAILED_TRIANGLE_GRAPH
 
+SubstructureBeamHandler.num_tuning_rounds = 2
+SubstructureBeamHandler.tuning_metric = "test_mse_scaled"
+SubstructureBeamHandler.tuning_metric_is_loss = True
 SubstructureBeamHandler.param_sampler_specs = [
   @num_graphs/ParamSamplerSpec(),
   @num_vertices/ParamSamplerSpec(),
   @edge_prob/ParamSamplerSpec(),
-  @train_prob/ParamSamplerSpec()
+  @train_prob/ParamSamplerSpec(),
+  @tuning_prob/ParamSamplerSpec()
 ]
 
 num_graphs/ParamSamplerSpec.name = "num_graphs"
@@ -27,6 +31,10 @@ train_prob/ParamSamplerSpec.name = "train_prob"
 train_prob/ParamSamplerSpec.min_val = 0.6
 train_prob/ParamSamplerSpec.max_val = 0.6
 
+tuning_prob/ParamSamplerSpec.name = "tuning_prob"
+tuning_prob/ParamSamplerSpec.min_val = 0.2
+tuning_prob/ParamSamplerSpec.max_val = 0.2
+
 SubstructureBeamHandler.batch_size = 64
 SubstructureBeamHandler.benchmarker_wrappers = [
   @LRGraphBenchmark,
@@ -41,6 +49,6 @@ GCN_/NNGraphBenchmark.benchmark_params = {
 }
 GCN_/NNGraphBenchmark.h_params = {
     'in_channels' : 1,
-    'hidden_channels' : 16,
+    'hidden_channels' : [16, 32],
     'num_layers' : 2,
 }

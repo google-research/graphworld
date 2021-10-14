@@ -15,8 +15,9 @@ from .utils import sample_data
 
 
 class ConvertToTorchGeoDataParDo(beam.DoFn):
-  def __init__(self, training_ratio):
+  def __init__(self, training_ratio, tuning_ratio):
     self._training_ratio = training_ratio
+    self._tuning_ratio = tuning_ratio
 
   def process(self, element):
     sample_id = element['sample_id']
@@ -32,7 +33,7 @@ class ConvertToTorchGeoDataParDo(beam.DoFn):
 
     try:
       torch_data = sbm_data_to_torchgeo_data(sbm_data)
-      torch_data = sample_data(torch_data, self._training_ratio)
+      torch_data = sample_data(torch_data, self._training_ratio, self._tuning_ratio)
       out['torch_data'] = torch_data
       out['generator_config'] = element['generator_config']
     except:
@@ -49,11 +50,15 @@ class ConvertToTorchGeoDataParDo(beam.DoFn):
 class LinkPredictionBeamHandler(GeneratorBeamHandler):
 
   @gin.configurable
-  def __init__(self, param_sampler_specs, benchmarker_wrappers, training_ratio):
+  def __init__(self, param_sampler_specs, benchmarker_wrappers, training_ratio,
+               tuning_ratio, num_tuning_rounds=1, tuning_metric='',
+               tuning_metric_is_loss=False):
     self._sample_do_fn = SampleSbmDoFn(param_sampler_specs)
-    self._benchmark_par_do = BenchmarkGNNParDo(benchmarker_wrappers)
+    self._benchmark_par_do = BenchmarkGNNParDo(benchmarker_wrappers, num_tuning_rounds,
+                                               tuning_metric, tuning_metric_is_loss)
     self._metrics_par_do = ComputeSbmGraphMetrics()
     self._training_ratio = training_ratio
+    self._tuning_ratio = tuning_ratio
 
   def GetSampleDoFn(self):
     return self._sample_do_fn
@@ -73,5 +78,6 @@ class LinkPredictionBeamHandler(GeneratorBeamHandler):
   def SetOutputPath(self, output_path):
     self._output_path = output_path
     self._write_do_fn = WriteSbmDoFn(output_path)
-    self._convert_par_do = ConvertToTorchGeoDataParDo(self._training_ratio)
+    self._convert_par_do = ConvertToTorchGeoDataParDo(self._training_ratio,
+                                                      self._tuning_ratio)
     self._benchmark_par_do.SetOutputPath(output_path)
