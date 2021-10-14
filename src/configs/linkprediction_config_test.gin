@@ -63,6 +63,7 @@ LinkPredictionBeamHandler.benchmarker_wrappers = [
 GCN_/LPBenchmark.model_class = @GCN
 GCN_/LPBenchmark.benchmark_params = {
     'epochs' : 256,
+    'lr': 0.01,
 }
 GCN_/LPBenchmark.h_params = {
     'in_channels' : 16,
@@ -74,6 +75,7 @@ GCN_/LPBenchmark.h_params = {
 GraphSAGE_/LPBenchmark.model_class = @GraphSAGE
 GraphSAGE_/LPBenchmark.benchmark_params = {
     'epochs' : 256,
+    'lr': 0.01,
 }
 GraphSAGE_/LPBenchmark.h_params = {
     'in_channels' : 16,
@@ -85,6 +87,7 @@ GraphSAGE_/LPBenchmark.h_params = {
 GIN_/LPBenchmark.model_class = @GIN
 GIN_/LPBenchmark.benchmark_params = {
     'epochs' : 256,
+    'lr': 0.01,
 }
 GIN_/LPBenchmark.h_params = {
     'in_channels' : 16,
@@ -96,6 +99,7 @@ GIN_/LPBenchmark.h_params = {
 GAT_/LPBenchmark.model_class = @GAT
 GAT_/LPBenchmark.benchmark_params = {
     'epochs' : 256,
+    'lr': 0.01,
 }
 GAT_/LPBenchmark.h_params = {
     'in_channels' : 16,

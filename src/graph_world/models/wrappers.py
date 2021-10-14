@@ -302,7 +302,9 @@ class NNNodeBenchmarker(Benchmarker):
 
     self._model = model_class(**h_params)
     # TODO(palowitch): make optimizer configurable.
-    self._optimizer = torch.optim.Adam(self._model.parameters(), lr=0.01, weight_decay=5e-4)
+    self._optimizer = torch.optim.Adam(self._model.parameters(),
+                                       lr=benchmark_params['lr'],
+                                       weight_decay=5e-4)
     self._criterion = torch.nn.CrossEntropyLoss()
     self._train_mask = None
     self._val_mask = None
@@ -426,7 +428,8 @@ class LPBenchmarker(Benchmarker):
     self._model = self._model_class(**h_params)
     self._lp_wrapper_model = GAE(self._model)
     # TODO(palowitch,tsitsulin): fill optimizer using param input instead.
-    self._optimizer = torch.optim.Adam(self._model.parameters(), lr=0.01,
+    self._optimizer = torch.optim.Adam(self._model.parameters(),
+                                       lr=benchmark_params['lr'],
                                        weight_decay=5e-4)
 
   def AdjustParams(self, generator_config):
