@@ -364,7 +364,7 @@ class NNNodeBenchmarker(Benchmarker):
         'test_rocauc_ovo': sklearn.metrics.roc_auc_score(correct_onehot,
                                                          pred_onehot,
                                                          multi_class='ovo'),
-        'logloss': sklearn.metrics.log_loss(correct, pred)}
+        'test_logloss': sklearn.metrics.log_loss(correct, pred)}
     return results
 
   def train(self, data):
@@ -402,7 +402,7 @@ class NNNodeBenchmarker(Benchmarker):
         'test_f1_macro': 0,
         'test_rocauc_ovr': 0,
         'test_rocauc_ovo': 0,
-        'logloss': 0
+        'test_logloss': 0
     }
     try:
       # Divide by zero sometimes happens with the ksample masks.
