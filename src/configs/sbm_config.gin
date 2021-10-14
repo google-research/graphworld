@@ -6,6 +6,8 @@ GeneratorBeamHandlerWrapper.nsamples = 10000
 SbmBeamHandler.num_tuning_rounds = 16
 SbmBeamHandler.tuning_metric = "test_f1_macro"
 SbmBeamHandler.tuning_metric_is_loss = False
+SbmBeamHandler.ktrain = 5
+SbmBeamHandler.ktuning = 5
 SbmBeamHandler.param_sampler_specs = [
   @nvertex/ParamSamplerSpec(),
   @avg_degree/ParamSamplerSpec(),

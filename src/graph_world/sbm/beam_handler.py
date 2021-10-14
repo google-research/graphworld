@@ -118,8 +118,10 @@ class ComputeSbmGraphMetrics(beam.DoFn):
 
 
 class ConvertToTorchGeoDataParDo(beam.DoFn):
-  def __init__(self, output_path):
+  def __init__(self, output_path, ktrain=5, ktuning=5):
     self._output_path = output_path
+    self._ktrain = ktrain
+    self._ktuning = ktuning
 
   def process(self, element):
     sample_id = element['sample_id']
@@ -159,7 +161,8 @@ class ConvertToTorchGeoDataParDo(beam.DoFn):
       return
 
     try:
-      out['masks'] = get_kclass_masks(sbm_data)
+      out['masks'] = get_kclass_masks(sbm_data, k_train=self._ktrain,
+                                      k_val=self._ktuning)
 
       masks_object_name = os.path.join(self._output_path, '{0:05}_masks.txt'.format(sample_id))
       with beam.io.filesystems.FileSystems.create(masks_object_name, 'text/plain') as f:
@@ -181,11 +184,13 @@ class SbmBeamHandler(GeneratorBeamHandler):
 
   @gin.configurable
   def __init__(self, param_sampler_specs, benchmarker_wrappers, num_tuning_rounds=1,
-               tuning_metric='', tuning_metric_is_loss=False):
+               tuning_metric='', tuning_metric_is_loss=False, ktrain=5, ktuning=5):
     self._sample_do_fn = SampleSbmDoFn(param_sampler_specs)
     self._benchmark_par_do = BenchmarkGNNParDo(benchmarker_wrappers, num_tuning_rounds,
                                                tuning_metric, tuning_metric_is_loss)
     self._metrics_par_do = ComputeSbmGraphMetrics()
+    self._ktrain = ktrain
+    self._ktuning = ktuning
 
   def GetSampleDoFn(self):
     return self._sample_do_fn
@@ -205,5 +210,6 @@ class SbmBeamHandler(GeneratorBeamHandler):
   def SetOutputPath(self, output_path):
     self._output_path = output_path
     self._write_do_fn = WriteSbmDoFn(output_path)
-    self._convert_par_do = ConvertToTorchGeoDataParDo(output_path)
+    self._convert_par_do = ConvertToTorchGeoDataParDo(output_path, self._ktrain,
+                                                      self._ktuning)
     self._benchmark_par_do.SetOutputPath(output_path)

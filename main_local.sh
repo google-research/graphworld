@@ -18,7 +18,7 @@
 # as the remote workers.
 #
 
-GENERATOR="linkprediction"
+GENERATOR="sbm"
 
 OUTPUT_PATH="/tmp/${GENERATOR}"
 
