@@ -136,10 +136,11 @@ class BenchmarkGNNParDo(beam.DoFn):
           best_tuning_round = np.argmin(scores)
         else:
           best_tuning_round = np.argmax(scores)
+        benchmark_params_sample, h_params_sample = configs[best_tuning_round]
         benchmarker = benchmarker_class(element['generator_config'],
                                         model_class,
-                                        configs[best_tuning_round][0],
-                                        configs[best_tuning_round][1])
+                                        benchmark_params_sample,
+                                        h_params_sample)
         benchmarker_out = benchmarker.Benchmark(element)
 
       # Return benchmark data for next beam stage.
@@ -147,5 +148,11 @@ class BenchmarkGNNParDo(beam.DoFn):
 
       for key, value in benchmarker_out['test_metrics'].items():
         output_data[f'{benchmarker.GetModelName()}__{key}'] = value
+
+      for key, value in benchmark_params_sample.items():
+        output_data[f'{benchmarker.GetModelName()}__train_{key}'] = value
+
+      for key, value in h_params_sample.items():
+        output_data[f'{benchmarker.GetModelName()}__model_{key}'] = value
 
     yield json.dumps(output_data)
