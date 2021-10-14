@@ -5,7 +5,7 @@ GeneratorBeamHandlerWrapper.nsamples = 10000
 
 LinkPredictionBeamHandler.training_ratio = 0.6
 LinkPredictionBeamHandler.tuning_ratio = 0.2
-LinkPredictionBeamHandler.num_tuning_rounds = 8
+LinkPredictionBeamHandler.num_tuning_rounds = 16
 LinkPredictionBeamHandler.tuning_metric = "test_rocauc"
 LinkPredictionBeamHandler.param_sampler_specs = [
   @nvertex/ParamSamplerSpec(),
@@ -64,7 +64,7 @@ LinkPredictionBeamHandler.benchmarker_wrappers = [
 
 # Graph classification hyperparameter ranges
 LR = [0.01, 0.001, 0.0001]
-HIDDEN_CHANNELS = [4, 8]
+HIDDEN_CHANNELS = [4, 8, 16]
 NUM_LAYERS = [2, 3, 4]
 
 # GCN setup

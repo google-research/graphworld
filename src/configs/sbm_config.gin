@@ -1,9 +1,9 @@
 import graph_world.models.basic_gnn
 
 GeneratorBeamHandlerWrapper.handler = @SbmBeamHandler()
-GeneratorBeamHandlerWrapper.nsamples = 1000
+GeneratorBeamHandlerWrapper.nsamples = 10000
 
-SbmBeamHandler.num_tuning_rounds = 8
+SbmBeamHandler.num_tuning_rounds = 16
 SbmBeamHandler.tuning_metric = "test_f1_macro"
 SbmBeamHandler.tuning_metric_is_loss = False
 SbmBeamHandler.param_sampler_specs = [
@@ -66,7 +66,7 @@ SbmBeamHandler.benchmarker_wrappers = [
 
 # Node classification hyperparameter ranges
 LR = [0.01, 0.001, 0.0001]
-HIDDEN_CHANNELS = [4, 8]
+HIDDEN_CHANNELS = [4, 8, 16]
 NUM_LAYERS = [2, 3, 4]
 
 # GCN setup

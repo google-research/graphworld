@@ -4,7 +4,7 @@ GeneratorBeamHandlerWrapper.handler = @SubstructureBeamHandler()
 GeneratorBeamHandlerWrapper.nsamples = 10000
 SubstructureBeamHandler.substruct = %Substructure.TAILED_TRIANGLE_GRAPH
 
-SubstructureBeamHandler.num_tuning_rounds = 8
+SubstructureBeamHandler.num_tuning_rounds = 16
 SubstructureBeamHandler.tuning_metric = "test_mse_scaled"
 SubstructureBeamHandler.tuning_metric_is_loss = True
 SubstructureBeamHandler.param_sampler_specs = [
@@ -46,7 +46,7 @@ SubstructureBeamHandler.benchmarker_wrappers = [
 
 # Graph classification hyperparameter ranges
 LR = [0.01, 0.001, 0.0001]
-HIDDEN_CHANNELS = [4, 8]
+HIDDEN_CHANNELS = [4, 8, 16]
 NUM_LAYERS = [2, 3, 4]
 
 # GCN setup
