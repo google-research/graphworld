@@ -13,9 +13,10 @@ from torch import Tensor
 import torch.nn.functional as F
 from torch.nn import ModuleList, Sequential, Linear, BatchNorm1d, ReLU
 
-from torch_geometric.nn.conv import GCNConv, SAGEConv, GINConv, GATConv
+from torch_geometric.nn.conv import GCNConv, SAGEConv, GINConv, GATConv, SGConv
 from torch_geometric.nn.models.jumping_knowledge import JumpingKnowledge
 
+from torch_geometric.nn.conv import APPNP as APPNPConv
 
 class BasicGNN(torch.nn.Module):
     r"""An abstract class for implementing basic GNN models.
@@ -68,6 +69,8 @@ class BasicGNN(torch.nn.Module):
                 self.out_channels = num_layers * hidden_channels
             else:
                 self.out_channels = hidden_channels
+
+        print(self)
 
     def reset_parameters(self):
         for conv in self.convs:
@@ -317,7 +320,7 @@ class MLP(torch.nn.Module):
     def reset_parameters(self):
         self.model.reset_parameters()
 
-    def forward(self, batch: Tensor, edge_index: Adj, *args, **kwargs) -> Tensor:
+    def forward(self, batch: Tensor, _: Adj, *args, **kwargs) -> Tensor:
         # TODO(palowitch): Does our scaffolding ever invoke the else clause?
         if isinstance(batch, torch.Tensor):
             batch = self.model(batch)
@@ -328,3 +331,51 @@ class MLP(torch.nn.Module):
     def __repr__(self) -> str:
         return (f'{self.__class__.__name__}({self.in_channels}, '
                 f'{self.out_channels}, num_layers={self.num_layers})')
+
+
+@gin.configurable
+class APPNP(torch.nn.Module):
+    def __init__(self, iterations: int, alpha: float,
+                 in_channels: int, hidden_channels: int, num_layers: int,
+                 out_channels: Optional[int] = None, dropout: float = 0.0,
+                 act: Optional[Callable] = ReLU(inplace=True),
+                 cached=False):
+        super(APPNP, self).__init__()
+
+        self.mlp = MLP(in_channels, hidden_channels, num_layers, out_channels, dropout, act)
+        self.appnp = APPNPConv(iterations, alpha, cached=cached)
+
+        print(self.appnp)
+
+    def reset_parameters(self):
+        self.mlp.reset_parameters()
+
+    def forward(self, x: Tensor, edge_index: Adj, *args, **kwargs) -> Tensor:
+        x = self.mlp(x, edge_index)
+        x = self.appnp(x, edge_index)
+        #return F.log_softmax(x, dim=1)   # don't think we need this here
+        return x
+
+
+@gin.configurable
+class SGC(torch.nn.Module):
+    def __init__(self, iterations: int,
+                 in_channels: int, hidden_channels: int,
+                 out_channels: Optional[int] = None,
+                 cached=False):
+        super(SGC, self).__init__()
+
+        if out_channels is None:
+            out_channels = hidden_channels
+        self.sgc = SGConv(in_channels=in_channels, out_channels=out_channels, K=iterations, cached=cached)
+
+        print(self.sgc)
+
+    def reset_parameters(self):
+        self.sgc.reset_parameters()
+
+    def forward(self, x: Tensor, edge_index: Adj, *args, **kwargs) -> Tensor:
+        x = self.sgc(x, edge_index)
+        #return F.log_softmax(x, dim=1) # don't think we need this here
+        return x
+
