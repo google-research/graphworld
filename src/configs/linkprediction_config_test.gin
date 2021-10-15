@@ -56,6 +56,7 @@ cluster_size_slope/ParamSamplerSpec.min_val = 0.0
 cluster_size_slope/ParamSamplerSpec.max_val = 0.1
 
 LinkPredictionBeamHandler.benchmarker_wrappers = [
+  @MLP_/LPBenchmark,
   @GCN_/LPBenchmark,
   @GraphSAGE_/LPBenchmark,
   @GIN_/LPBenchmark,
@@ -105,6 +106,18 @@ GAT_/LPBenchmark.benchmark_params = {
     'lr': 0.01,
 }
 GAT_/LPBenchmark.h_params = {
+    'in_channels' : 16,
+    'hidden_channels' : 8,
+    'num_layers' : 2,
+}
+
+# MLP setup
+MLP_/LPBenchmark.model_class = @MLP
+MLP_/LPBenchmark.benchmark_params = {
+    'epochs' : 256,
+    'lr': 0.01,
+}
+MLP_/LPBenchmark.h_params = {
     'in_channels' : 16,
     'hidden_channels' : 8,
     'num_layers' : 2,

@@ -1,7 +1,7 @@
 import graph_world.models.basic_gnn
 
 GeneratorBeamHandlerWrapper.handler = @LinkPredictionBeamHandler()
-GeneratorBeamHandlerWrapper.nsamples = 10000
+GeneratorBeamHandlerWrapper.nsamples = 1000
 
 LinkPredictionBeamHandler.training_ratio = 0.6
 LinkPredictionBeamHandler.tuning_ratio = 0.2
@@ -56,6 +56,7 @@ cluster_size_slope/ParamSamplerSpec.min_val = 0.0
 cluster_size_slope/ParamSamplerSpec.max_val = 0.1
 
 LinkPredictionBeamHandler.benchmarker_wrappers = [
+  @MLP_/LPBenchmark,
   @GCN_/LPBenchmark,
   @GraphSAGE_/LPBenchmark,
   @GIN_/LPBenchmark,
@@ -110,6 +111,19 @@ GAT_/LPBenchmark.benchmark_params = {
     'lr': %LR,
 }
 GAT_/LPBenchmark.h_params = {
+    'in_channels' : 16,
+    'hidden_channels' : %HIDDEN_CHANNELS,
+    'num_layers' : %NUM_LAYERS,
+}
+
+
+# MLP setup
+MLP_/LPBenchmark.model_class = @MLP
+MLP_/LPBenchmark.benchmark_params = {
+    'epochs' : 256,
+    'lr': %LR,
+}
+MLP_/LPBenchmark.h_params = {
     'in_channels' : 16,
     'hidden_channels' : %HIDDEN_CHANNELS,
     'num_layers' : %NUM_LAYERS,

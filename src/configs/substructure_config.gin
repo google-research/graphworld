@@ -1,7 +1,7 @@
 import graph_world.models.basic_gnn
 
 GeneratorBeamHandlerWrapper.handler = @SubstructureBeamHandler()
-GeneratorBeamHandlerWrapper.nsamples = 10000
+GeneratorBeamHandlerWrapper.nsamples = 1000
 SubstructureBeamHandler.substruct = %Substructure.TAILED_TRIANGLE_GRAPH
 
 SubstructureBeamHandler.num_tuning_rounds = 16

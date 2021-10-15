@@ -1,7 +1,7 @@
 import graph_world.models.basic_gnn
 
 GeneratorBeamHandlerWrapper.handler = @SbmBeamHandler()
-GeneratorBeamHandlerWrapper.nsamples = 10000
+GeneratorBeamHandlerWrapper.nsamples = 1000
 
 SbmBeamHandler.num_tuning_rounds = 16
 SbmBeamHandler.tuning_metric = "test_f1_macro"
@@ -127,7 +127,7 @@ MLP_/NNNodeBenchmark.benchmark_params = {
     'lr': %LR,
 }
 MLP_/NNNodeBenchmark.h_params = {
-    'in_channels' : 1,
+    'in_channels' : 16,
     'hidden_channels' : %HIDDEN_CHANNELS,
     'num_layers' : %NUM_LAYERS,
 }
