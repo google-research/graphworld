@@ -37,7 +37,7 @@ tuning_prob/ParamSamplerSpec.max_val = 0.2
 
 SubstructureBeamHandler.batch_size = 64
 SubstructureBeamHandler.benchmarker_wrappers = [
-#  @LRGraphBenchmark,
+  @LRGraphBenchmark,
   @GCN_/NNGraphBenchmark,
   @MLP_/NNGraphBenchmark
 ]

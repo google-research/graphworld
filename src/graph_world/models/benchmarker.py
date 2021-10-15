@@ -149,10 +149,12 @@ class BenchmarkGNNParDo(beam.DoFn):
       for key, value in benchmarker_out['test_metrics'].items():
         output_data[f'{benchmarker.GetModelName()}__{key}'] = value
 
-      for key, value in benchmark_params_sample.items():
-        output_data[f'{benchmarker.GetModelName()}__train_{key}'] = value
+      if benchmark_params_sample is not None:
+        for key, value in benchmark_params_sample.items():
+          output_data[f'{benchmarker.GetModelName()}__train_{key}'] = value
 
-      for key, value in h_params_sample.items():
-        output_data[f'{benchmarker.GetModelName()}__model_{key}'] = value
+      if h_params_sample is not None:
+        for key, value in h_params_sample.items():
+          output_data[f'{benchmarker.GetModelName()}__model_{key}'] = value
 
     yield json.dumps(output_data)
