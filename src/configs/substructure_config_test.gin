@@ -37,8 +37,9 @@ tuning_prob/ParamSamplerSpec.max_val = 0.2
 
 SubstructureBeamHandler.batch_size = 64
 SubstructureBeamHandler.benchmarker_wrappers = [
-  @LRGraphBenchmark,
+#  @LRGraphBenchmark,
   @GCN_/NNGraphBenchmark,
+  @MLP_/NNGraphBenchmark
 ]
 
 # GCN setup
@@ -48,6 +49,18 @@ GCN_/NNGraphBenchmark.benchmark_params = {
     'lr' : 0.0001 ,
 }
 GCN_/NNGraphBenchmark.h_params = {
+    'in_channels' : 1,
+    'hidden_channels' : [16, 32],
+    'num_layers' : 2,
+}
+
+# MLP setup
+MLP_/NNGraphBenchmark.model_class = @MLP
+MLP_/NNGraphBenchmark.benchmark_params = {
+    'epochs' : 50,
+    'lr' : 0.0001 ,
+}
+MLP_/NNGraphBenchmark.h_params = {
     'in_channels' : 1,
     'hidden_channels' : [16, 32],
     'num_layers' : 2,

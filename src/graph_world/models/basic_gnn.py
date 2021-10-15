@@ -266,3 +266,63 @@ class GAT(BasicGNN):
             GATConv(in_channels, out_channels, dropout=dropout, **kwargs))
         for _ in range(1, num_layers):
             self.convs.append(GATConv(hidden_channels, out_channels, **kwargs))
+
+
+@gin.configurable
+class MLP(torch.nn.Module):
+    r"""Multi-layer Perceptron.
+
+    Args:
+        in_channels (int): Size of each input sample.
+        hidden_channels (int): Size of each hidden sample.
+        num_layers (int): Number of message passing layers.
+        out_channels (int, optional): If not set to :obj:`None`, will apply a
+            final linear transformation to convert hidden node embeddings to
+            output size :obj:`out_channels`. (default: :obj:`None`)
+        dropout (float, optional): Dropout probability. (default: :obj:`0.`)
+        act (Callable, optional): The non-linear activation function to use.
+            (default: :meth:`torch.nn.ReLU(inplace=True)`)
+    """
+    def __init__(self, in_channels: int, hidden_channels: int, num_layers: int,
+                 out_channels: Optional[int] = None, dropout: float = 0.0,
+                 act: Optional[Callable] = ReLU(inplace=True)):
+        super().__init__()
+        self.in_channels = in_channels
+        self.hidden_channels = hidden_channels
+        self.num_layers = num_layers
+        self.dropout = dropout
+        self.act = act
+
+        if out_channels is not None:
+            self.out_channels = out_channels
+        else:
+            self.out_channels = hidden_channels
+
+        layers = []
+        layers.append(Linear(in_channels, hidden_channels))
+        layers.append(self.act)
+        for i in range(1, num_layers):
+            layers.append(Linear(hidden_channels, hidden_channels))
+            layers.append(self.act)
+
+        if out_channels is not None:
+            layers.append(Linear(hidden_channels, out_channels))
+
+        self.model = Sequential(*layers)
+
+        print(self.model)
+
+    def reset_parameters(self):
+        self.model.reset_parameters()
+
+    def forward(self, batch: Tensor, edge_index: Adj, *args, **kwargs) -> Tensor:
+        # TODO(palowitch): Does our scaffolding ever invoke the else clause?
+        if isinstance(batch, torch.Tensor):
+            batch = self.model(batch)
+        else:
+            batch.x = self.model(batch.x)
+        return batch
+
+    def __repr__(self) -> str:
+        return (f'{self.__class__.__name__}({self.in_channels}, '
+                f'{self.out_channels}, num_layers={self.num_layers})')

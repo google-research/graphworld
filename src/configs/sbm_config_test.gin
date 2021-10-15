@@ -57,6 +57,7 @@ cluster_size_slope/ParamSamplerSpec.min_val = 0.0
 cluster_size_slope/ParamSamplerSpec.max_val = 0.1
 
 SbmBeamHandler.benchmarker_wrappers = [
+  @MLP_/NNNodeBenchmark,
   @GCN_/NNNodeBenchmark,
   @GraphSAGE_/NNNodeBenchmark,
   @GIN_/NNNodeBenchmark,
@@ -106,6 +107,18 @@ GAT_/NNNodeBenchmark.benchmark_params = {
     'lr': 0.01,
 }
 GAT_/NNNodeBenchmark.h_params = {
+    'in_channels' : 16,
+    'hidden_channels' : 8,
+    'num_layers' : 2,
+}
+
+# MLP setup
+MLP_/NNNodeBenchmark.model_class = @MLP
+MLP_/NNNodeBenchmark.benchmark_params = {
+    'epochs' : 256,
+    'lr': 0.01,
+}
+MLP_/NNNodeBenchmark.h_params = {
     'in_channels' : 16,
     'hidden_channels' : 8,
     'num_layers' : 2,

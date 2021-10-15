@@ -41,7 +41,8 @@ SubstructureBeamHandler.benchmarker_wrappers = [
   @GCN_/NNGraphBenchmark,
   @GraphSAGE_/NNGraphBenchmark,
   @GAT_/NNGraphBenchmark,
-  @GIN_/NNGraphBenchmark
+  @GIN_/NNGraphBenchmark,
+  @MLP_/NNGraphBenchmark,
 ]
 
 # Graph classification hyperparameter ranges
@@ -92,6 +93,18 @@ GIN_/NNGraphBenchmark.benchmark_params = {
     'lr': %LR,
 }
 GIN_/NNGraphBenchmark.h_params = {
+    'in_channels' : 1,
+    'hidden_channels' : %HIDDEN_CHANNELS,
+    'num_layers' : %NUM_LAYERS,
+}
+
+# MLP setup
+MLP_/NNGraphBenchmark.model_class = @MLP
+MLP_/NNGraphBenchmark.benchmark_params = {
+    'epochs' : 50,
+    'lr': %LR,
+}
+MLP_/NNGraphBenchmark.h_params = {
     'in_channels' : 1,
     'hidden_channels' : %HIDDEN_CHANNELS,
     'num_layers' : %NUM_LAYERS,

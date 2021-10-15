@@ -64,6 +64,7 @@ SbmBeamHandler.benchmarker_wrappers = [
   @GraphSAGE_/NNNodeBenchmark,
   @GIN_/NNNodeBenchmark,
   @GAT_/NNNodeBenchmark,
+  @MLP_/NNNodeBenchmark,
 ]
 
 # Node classification hyperparameter ranges
@@ -115,6 +116,18 @@ GAT_/NNNodeBenchmark.benchmark_params = {
 }
 GAT_/NNNodeBenchmark.h_params = {
     'in_channels' : 16,
+    'hidden_channels' : %HIDDEN_CHANNELS,
+    'num_layers' : %NUM_LAYERS,
+}
+
+# MLP setup
+MLP_/NNNodeBenchmark.model_class = @MLP
+MLP_/NNNodeBenchmark.benchmark_params = {
+    'epochs' : 50,
+    'lr': %LR,
+}
+MLP_/NNNodeBenchmark.h_params = {
+    'in_channels' : 1,
     'hidden_channels' : %HIDDEN_CHANNELS,
     'num_layers' : %NUM_LAYERS,
 }
