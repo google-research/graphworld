@@ -62,6 +62,8 @@ SbmBeamHandler.benchmarker_wrappers = [
   @GraphSAGE_/NNNodeBenchmark,
   @GIN_/NNNodeBenchmark,
   @GAT_/NNNodeBenchmark,
+  @APPNP_/NNNodeBenchmark,
+  @SGC_/NNNodeBenchmark,
 ]
 
 # GCN setup
@@ -122,4 +124,30 @@ MLP_/NNNodeBenchmark.h_params = {
     'in_channels' : 16,
     'hidden_channels' : 8,
     'num_layers' : 2,
+}
+
+# APPNP setup
+APPNP_/NNNodeBenchmark.model_class = @APPNP
+APPNP_/NNNodeBenchmark.benchmark_params = {
+    'epochs' : 256,
+    'lr': 0.01,
+}
+APPNP_/NNNodeBenchmark.h_params = {
+    'iterations' : 10,
+    'alpha' : 0.1,
+    'in_channels' : 16,
+    'hidden_channels' : 8,
+    'num_layers' : 2,
+}
+
+# SGC setup
+SGC_/NNNodeBenchmark.model_class = @SGC
+SGC_/NNNodeBenchmark.benchmark_params = {
+    'epochs' : 256,
+    'lr': 0.01,
+}
+SGC_/NNNodeBenchmark.h_params = {
+    'iterations' : 10,
+    'in_channels' : 16,
+    'hidden_channels' : 8,
 }
