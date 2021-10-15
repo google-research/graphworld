@@ -301,9 +301,11 @@ class MLP(torch.nn.Module):
         layers = []
         layers.append(Linear(in_channels, hidden_channels))
         layers.append(self.act)
+        layers.append(torch.nn.Dropout(dropout))
         for i in range(1, num_layers):
             layers.append(Linear(hidden_channels, hidden_channels))
             layers.append(self.act)
+            layers.append(torch.nn.Dropout(dropout))
 
         if out_channels is not None:
             layers.append(Linear(hidden_channels, out_channels))
