@@ -17,7 +17,8 @@ SbmBeamHandler.param_sampler_specs = [
   @edge_feature_dim/ParamSamplerSpec(),
   @p_to_q_ratio/ParamSamplerSpec(),
   @num_clusters/ParamSamplerSpec(),
-  @cluster_size_slope/ParamSamplerSpec()
+  @cluster_size_slope/ParamSamplerSpec(),
+  @power_exponent/ParamSamplerSpec()
 ]
 
 nvertex/ParamSamplerSpec.name = "nvertex"
@@ -55,6 +56,10 @@ num_clusters/ParamSamplerSpec.max_val = 6
 cluster_size_slope/ParamSamplerSpec.name = "cluster_size_slope"
 cluster_size_slope/ParamSamplerSpec.min_val = 0.0
 cluster_size_slope/ParamSamplerSpec.max_val = 0.1
+
+power_exponent/ParamSamplerSpec.name = "power_exponent"
+power_exponent/ParamSamplerSpec.min_val = 1.0
+power_exponent/ParamSamplerSpec.max_val = 1.0
 
 SbmBeamHandler.benchmarker_wrappers = [
   @MLP_/NNNodeBenchmark,

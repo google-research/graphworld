@@ -29,6 +29,7 @@ class SampleSbmDoFn(GeneratorConfigSampler, beam.DoFn):
     self._AddSamplerFn('p_to_q_ratio', self._SampleUniformFloat)
     self._AddSamplerFn('num_clusters', self._SampleUniformInteger)
     self._AddSamplerFn('cluster_size_slope', self._SampleUniformFloat)
+    self._AddSamplerFn('power_exponent', self._SampleUniformFloat)
 
   def process(self, sample_id):
     """Sample and save SMB outputs given a configuration filepath.
@@ -51,7 +52,9 @@ class SampleSbmDoFn(GeneratorConfigSampler, beam.DoFn):
       feature_center_distance=generator_config['feature_center_distance'],
       feature_dim=generator_config['feature_dim'],
       edge_center_distance=generator_config['edge_center_distance'],
-      edge_feature_dim=generator_config['edge_feature_dim']
+      edge_feature_dim=generator_config['edge_feature_dim'],
+      out_degs=np.random.power(generator_config['power_exponent'],
+                               generator_config['nvertex'])
     )
 
     yield {'sample_id': sample_id,
