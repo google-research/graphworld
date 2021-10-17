@@ -1,10 +1,10 @@
 import graph_world.models.basic_gnn
 
 GeneratorBeamHandlerWrapper.handler = @SubstructureBeamHandler()
-GeneratorBeamHandlerWrapper.nsamples = 1000
+GeneratorBeamHandlerWrapper.nsamples = 2000
 SubstructureBeamHandler.substruct = %Substructure.TAILED_TRIANGLE_GRAPH
 SubstructureBeamHandler.scale_labels = True
-SubstructureBeamHandler.num_tuning_rounds = 16
+SubstructureBeamHandler.num_tuning_rounds = 32
 SubstructureBeamHandler.tuning_metric = "test_mse_scaled"
 SubstructureBeamHandler.tuning_metric_is_loss = True
 SubstructureBeamHandler.param_sampler_specs = [
@@ -41,15 +41,19 @@ SubstructureBeamHandler.benchmarker_wrappers = [
   @GCN_/NNGraphBenchmark,
   @GraphSAGE_/NNGraphBenchmark,
   @GAT_/NNGraphBenchmark,
-  @GIN_/NNGraphBenchmark,
-  @MLP_/NNGraphBenchmark,
+  @MLP_/NNNodeBenchmark,
+  @APPNP_/NNGraphBenchmark,
+  @SGC_/NNGraphBenchmark,
 ]
 
-# Graph classification hyperparameter ranges
+# GCN & GNN hyperparameter ranges
 LR = [0.01, 0.001, 0.0001]
 HIDDEN_CHANNELS = [4, 8, 16]
 NUM_LAYERS = [2, 3, 4]
 EPOCHS = 50
+# GNN only
+ALPHA = [0.1, 0.2, 0.3]
+ITERATIONS = [5, 10, 15]
 
 # GCN setup
 GCN_/NNGraphBenchmark.model_class = @GCN
@@ -109,4 +113,30 @@ MLP_/NNGraphBenchmark.h_params = {
     'in_channels' : 1,
     'hidden_channels' : %HIDDEN_CHANNELS,
     'num_layers' : %NUM_LAYERS,
+}
+
+# APPNP setup
+APPNP_/NNGraphBenchmark.model_class = @APPNP
+APPNP_/NNGraphBenchmark.benchmark_params = {
+    'epochs' : %EPOCHS,
+    'lr': %LR,
+}
+APPNP_/NNGraphBenchmark.h_params = {
+    'in_channels' : 1,
+    'hidden_channels' : %HIDDEN_CHANNELS,
+    'num_layers' : %NUM_LAYERS,
+    'alpha': %ALPHA,
+    'iterations': %ITERATIONS
+}
+
+# SGC setup
+SGC_/NNGraphBenchmark.model_class = @SGC
+SGC_/NNGraphBenchmark.benchmark_params = {
+    'epochs' : %EPOCHS,
+    'lr': %LR,
+}
+SGC_/NNGraphBenchmark.h_params = {
+    'in_channels' : 1,
+    'hidden_channels' : %HIDDEN_CHANNELS,
+    'iterations': %ITERATIONS
 }

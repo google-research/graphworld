@@ -39,7 +39,7 @@ feature_dim/ParamSamplerSpec.max_val = 16
 
 feature_center_distance/ParamSamplerSpec.name = "feature_center_distance"
 feature_center_distance/ParamSamplerSpec.min_val = 0.0
-feature_center_distance/ParamSamplerSpec.max_val = 5.0
+feature_center_distance/ParamSamplerSpec.max_val = 0.0
 
 edge_center_distance/ParamSamplerSpec.name = "edge_center_distance"
 edge_center_distance/ParamSamplerSpec.min_val = 2.0
@@ -67,13 +67,18 @@ SbmBeamHandler.benchmarker_wrappers = [
   @GIN_/NNNodeBenchmark,
   @GAT_/NNNodeBenchmark,
   @MLP_/NNNodeBenchmark,
+  @APPNP_/NNNodeBenchmark,
+  @SGC_/NNNodeBenchmark,
 ]
 
-# Node classification hyperparameter ranges
+# GCN & GNN hyperparameter ranges
 LR = [0.01, 0.001, 0.0001]
 HIDDEN_CHANNELS = [4, 8, 16]
 NUM_LAYERS = [2, 3, 4]
 EPOCHS = 50
+# GNN only
+ALPHA = [0.1, 0.2, 0.3]
+ITERATIONS = [5, 10, 15]
 
 # GCN setup
 GCN_/NNNodeBenchmark.model_class = @GCN
@@ -133,5 +138,31 @@ MLP_/NNNodeBenchmark.h_params = {
     'in_channels' : 16,
     'hidden_channels' : %HIDDEN_CHANNELS,
     'num_layers' : %NUM_LAYERS,
+}
+
+# APPNP setup
+APPNP_/NNNodeBenchmark.model_class = @APPNP
+APPNP_/NNNodeBenchmark.benchmark_params = {
+    'epochs' : %EPOCHS,
+    'lr': %LR,
+}
+APPNP_/NNNodeBenchmark.h_params = {
+    'in_channels' : 16,
+    'hidden_channels' : %HIDDEN_CHANNELS,
+    'num_layers' : %NUM_LAYERS,
+    'alpha': %ALPHA,
+    'iterations': %ITERATIONS
+}
+
+# SGC setup
+SGC_/NNNodeBenchmark.model_class = @SGC
+SGC_/NNNodeBenchmark.benchmark_params = {
+    'epochs' : %EPOCHS,
+    'lr': %LR,
+}
+SGC_/NNNodeBenchmark.h_params = {
+    'in_channels' : 16,
+    'hidden_channels' : %HIDDEN_CHANNELS,
+    'iterations': %ITERATIONS
 }
 
