@@ -62,97 +62,76 @@ power_exponent/ParamSamplerSpec.min_val = 1.0
 power_exponent/ParamSamplerSpec.max_val = 1.0
 
 SbmBeamHandler.benchmarker_wrappers = [
-  @MLP_/NNNodeBenchmark,
   @GCN_/NNNodeBenchmark,
   @GraphSAGE_/NNNodeBenchmark,
   @GIN_/NNNodeBenchmark,
   @GAT_/NNNodeBenchmark,
-  @APPNP_/NNNodeBenchmark,
-  @SGC_/NNNodeBenchmark,
+  @MLP_/NNNodeBenchmark,
 ]
+
+# Node classification hyperparameter ranges
+LR = [0.01, 0.001, 0.0001]
+HIDDEN_CHANNELS = [4, 8, 16]
+NUM_LAYERS = [2, 3, 4]
+EPOCHS = 50
 
 # GCN setup
 GCN_/NNNodeBenchmark.model_class = @GCN
 GCN_/NNNodeBenchmark.benchmark_params = {
-    'epochs' : 256,
-    'lr': 0.01,
+    'epochs' : %EPOCHS,
+    'lr': %LR,
 }
 GCN_/NNNodeBenchmark.h_params = {
     'in_channels' : 16,
-    'hidden_channels' : [8, 16],
-    'num_layers' : 2,
+    'hidden_channels' : %HIDDEN_CHANNELS,
+    'num_layers' : %NUM_LAYERS,
 }
 
 # GraphSAGE setup
 GraphSAGE_/NNNodeBenchmark.model_class = @GraphSAGE
 GraphSAGE_/NNNodeBenchmark.benchmark_params = {
-    'epochs' : 256,
-    'lr': 0.01,
+    'epochs' : %EPOCHS,
+    'lr': %LR,
 }
 GraphSAGE_/NNNodeBenchmark.h_params = {
     'in_channels' : 16,
-    'hidden_channels' : [8, 16],
-    'num_layers' : 2,
+    'hidden_channels' : %HIDDEN_CHANNELS,
+    'num_layers' : %NUM_LAYERS,
 }
 
 # GIN setup
 GIN_/NNNodeBenchmark.model_class = @GIN
 GIN_/NNNodeBenchmark.benchmark_params = {
-    'epochs' : 256,
-    'lr': 0.01,
+    'epochs' : %EPOCHS,
+    'lr': %LR,
 }
 GIN_/NNNodeBenchmark.h_params = {
     'in_channels' : 16,
-    'hidden_channels' : 8,
-    'num_layers' : 2,
+    'hidden_channels' : %HIDDEN_CHANNELS,
+    'num_layers' : %NUM_LAYERS,
 }
 
 # GAT setup
 GAT_/NNNodeBenchmark.model_class = @GAT
 GAT_/NNNodeBenchmark.benchmark_params = {
-    'epochs' : 256,
-    'lr': 0.01,
+    'epochs' : %EPOCHS,
+    'lr': %LR,
 }
 GAT_/NNNodeBenchmark.h_params = {
     'in_channels' : 16,
-    'hidden_channels' : 8,
-    'num_layers' : 2,
+    'hidden_channels' : %HIDDEN_CHANNELS,
+    'num_layers' : %NUM_LAYERS,
 }
 
 # MLP setup
 MLP_/NNNodeBenchmark.model_class = @MLP
 MLP_/NNNodeBenchmark.benchmark_params = {
-    'epochs' : 256,
-    'lr': 0.01,
+    'epochs' : %EPOCHS,
+    'lr': %LR,
 }
 MLP_/NNNodeBenchmark.h_params = {
     'in_channels' : 16,
-    'hidden_channels' : 8,
-    'num_layers' : 2,
+    'hidden_channels' : %HIDDEN_CHANNELS,
+    'num_layers' : %NUM_LAYERS,
 }
 
-# APPNP setup
-APPNP_/NNNodeBenchmark.model_class = @APPNP
-APPNP_/NNNodeBenchmark.benchmark_params = {
-    'epochs' : 256,
-    'lr': 0.01,
-}
-APPNP_/NNNodeBenchmark.h_params = {
-    'iterations' : 10,
-    'alpha' : 0.1,
-    'in_channels' : 16,
-    'hidden_channels' : 8,
-    'num_layers' : 2,
-}
-
-# SGC setup
-SGC_/NNNodeBenchmark.model_class = @SGC
-SGC_/NNNodeBenchmark.benchmark_params = {
-    'epochs' : 256,
-    'lr': 0.01,
-}
-SGC_/NNNodeBenchmark.h_params = {
-    'iterations' : 10,
-    'in_channels' : 16,
-    'hidden_channels' : 8,
-}

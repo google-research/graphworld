@@ -1,7 +1,7 @@
 import graph_world.models.basic_gnn
 
 GeneratorBeamHandlerWrapper.handler = @SbmBeamHandler()
-GeneratorBeamHandlerWrapper.nsamples = 1000
+GeneratorBeamHandlerWrapper.nsamples = 10000
 
 SbmBeamHandler.num_tuning_rounds = 16
 SbmBeamHandler.tuning_metric = "test_f1_macro"
@@ -76,11 +76,12 @@ SbmBeamHandler.benchmarker_wrappers = [
 LR = [0.01, 0.001, 0.0001]
 HIDDEN_CHANNELS = [4, 8, 16]
 NUM_LAYERS = [2, 3, 4]
+EPOCHS = 50
 
 # GCN setup
 GCN_/NNNodeBenchmark.model_class = @GCN
 GCN_/NNNodeBenchmark.benchmark_params = {
-    'epochs' : 256,
+    'epochs' : %EPOCHS,
     'lr': %LR,
 }
 GCN_/NNNodeBenchmark.h_params = {
@@ -92,7 +93,7 @@ GCN_/NNNodeBenchmark.h_params = {
 # GraphSAGE setup
 GraphSAGE_/NNNodeBenchmark.model_class = @GraphSAGE
 GraphSAGE_/NNNodeBenchmark.benchmark_params = {
-    'epochs' : 256,
+    'epochs' : %EPOCHS,
     'lr': %LR,
 }
 GraphSAGE_/NNNodeBenchmark.h_params = {
@@ -104,7 +105,7 @@ GraphSAGE_/NNNodeBenchmark.h_params = {
 # GIN setup
 GIN_/NNNodeBenchmark.model_class = @GIN
 GIN_/NNNodeBenchmark.benchmark_params = {
-    'epochs' : 256,
+    'epochs' : %EPOCHS,
     'lr': %LR,
 }
 GIN_/NNNodeBenchmark.h_params = {
@@ -116,7 +117,7 @@ GIN_/NNNodeBenchmark.h_params = {
 # GAT setup
 GAT_/NNNodeBenchmark.model_class = @GAT
 GAT_/NNNodeBenchmark.benchmark_params = {
-    'epochs' : 256,
+    'epochs' : %EPOCHS,
     'lr': %LR,
 }
 GAT_/NNNodeBenchmark.h_params = {
@@ -128,7 +129,7 @@ GAT_/NNNodeBenchmark.h_params = {
 # MLP setup
 MLP_/NNNodeBenchmark.model_class = @MLP
 MLP_/NNNodeBenchmark.benchmark_params = {
-    'epochs' : 50,
+    'epochs' : %EPOCHS,
     'lr': %LR,
 }
 MLP_/NNNodeBenchmark.h_params = {

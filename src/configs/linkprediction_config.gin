@@ -72,11 +72,12 @@ LinkPredictionBeamHandler.benchmarker_wrappers = [
 LR = [0.01, 0.001, 0.0001]
 HIDDEN_CHANNELS = [4, 8, 16]
 NUM_LAYERS = [2, 3, 4]
+EPOCHS = 50
 
 # GCN setup
 GCN_/LPBenchmark.model_class = @GCN
 GCN_/LPBenchmark.benchmark_params = {
-    'epochs' : 256,
+    'epochs' : %EPOCHS,
     'lr': %LR,
 }
 GCN_/LPBenchmark.h_params = {
@@ -88,7 +89,7 @@ GCN_/LPBenchmark.h_params = {
 # GraphSAGE setup
 GraphSAGE_/LPBenchmark.model_class = @GraphSAGE
 GraphSAGE_/LPBenchmark.benchmark_params = {
-    'epochs' : 256,
+    'epochs' : %EPOCHS,
     'lr': %LR,
 }
 GraphSAGE_/LPBenchmark.h_params = {
@@ -100,7 +101,7 @@ GraphSAGE_/LPBenchmark.h_params = {
 # GIN setup
 GIN_/LPBenchmark.model_class = @GIN
 GIN_/LPBenchmark.benchmark_params = {
-    'epochs' : 256,
+    'epochs' : %EPOCHS,
     'lr': %LR,
 }
 GIN_/LPBenchmark.h_params = {
@@ -112,7 +113,7 @@ GIN_/LPBenchmark.h_params = {
 # GAT setup
 GAT_/LPBenchmark.model_class = @GAT
 GAT_/LPBenchmark.benchmark_params = {
-    'epochs' : 256,
+    'epochs' : %EPOCHS,
     'lr': %LR,
 }
 GAT_/LPBenchmark.h_params = {
@@ -125,7 +126,7 @@ GAT_/LPBenchmark.h_params = {
 # MLP setup
 MLP_/LPBenchmark.model_class = @MLP
 MLP_/LPBenchmark.benchmark_params = {
-    'epochs' : 256,
+    'epochs' : %EPOCHS,
     'lr': %LR,
 }
 MLP_/LPBenchmark.h_params = {
