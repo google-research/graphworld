@@ -1,6 +1,8 @@
 #@title Imports
 import os
 import numpy as np
+import time
+
 import graph_tool
 
 
@@ -39,6 +41,10 @@ def average_cc_sp_length(G_comp):
   return sp_lengths / G_comp.num_vertices() / (G_comp.num_vertices() - 1)
 
 
+def matrix_row_norm(X):
+  return (X.T / np.linalg.norm(X, axis=1)).T
+
+
 def GraphMetrics(G):
   result = {}
   result['n_nodes'] = G.num_vertices()
@@ -60,3 +66,84 @@ def GraphMetrics(G):
   comp = graph_tool.topology.label_largest_component(G)
   result['cc_size'] = int(comp.a.sum()) / G.num_vertices()
   return result
+
+
+def edge_homogeneity(graph, labels):
+  count_in = 0
+  count_total = 0
+  for edge in graph.edges():
+    count_total += 1
+    count_in += (
+        labels[int(edge.source())] == labels[int(edge.target())])
+  return count_in / count_total
+
+
+def sum_angular_distance_matrix_nan(X, Y, batch_size=100):
+  nx = X.shape[0]
+  ny = Y.shape[0]
+
+  total_sum = 0.0
+
+  pos1 = 0
+  while pos1 < nx:
+    if pos1 % batch_size == 0:
+      print('----now doing pos1 = %d' % pos1)
+    end1 = min(pos1 + batch_size, nx)
+    vec1 = X[pos1:end1, :]
+
+    pos2 = 0
+    curr_sum = 0.0
+    while pos2 < ny:
+      # Get data
+      end2 = min(pos2 + batch_size, ny)
+      vec2 = Y[pos2:end2, :]
+
+      vecsims = np.matmul(vec1, vec2.T)
+      vecsims = 1.0 - np.arccos(vecsims) / np.pi
+      vecsims[np.where(np.isnan(vecsims))] = 1.0
+      total_sum += np.sum(vecsims)
+
+      pos2 += batch_size
+
+    pos1 += batch_size
+  return total_sum
+
+
+def feature_homogeneity(normed_features, labels):
+  all_labels = sorted(list(set(labels)))
+  n_labels = len(all_labels)
+  sum_mat = np.zeros((n_labels, n_labels))
+  count_mat = np.zeros((n_labels, n_labels))
+  for label_idx, i in enumerate(all_labels):
+    idx_i = np.where(labels == i)[0]
+    vecs_i = normed_features[idx_i, :]
+    print('processing i label %d w/%d examples' % (i, vecs_i.shape[0]))
+    for j in all_labels[label_idx:]:
+      start_time = time.time()
+      idx_j = np.where(labels == j)[0]
+      vecs_j = normed_features[idx_j, :]
+      print('-processing j label %d w/%d examples' % (j, vecs_j.shape[0]))
+      the_sum = sum_angular_distance_matrix_nan(vecs_i, vecs_j)
+      the_count = len(idx_j) * len(idx_i)
+      if i == j:
+        the_sum -= float(len(idx_j))
+        the_sum /= 2.0
+        the_count -= float(len(idx_j))
+        the_count /= 2
+      sum_mat[i, j] = the_sum
+      count_mat[i, j] = the_count
+      elapsed = time.time() - start_time
+      print('-label %d took %0.2f minutes' % (j, elapsed / 60.0))
+  out_avg = np.sum(sum_mat[np.triu_indices(sum_mat.shape[0])]) / (
+    np.sum(count_mat[np.triu_indices(count_mat.shape[0])]))
+  in_avg = np.sum(np.diag(sum_mat)) / np.sum(np.diag(count_mat))
+  return in_avg, out_avg
+
+
+def NodeLabelMetrics(graph, labels, features):
+  metrics = {'edge_homogeneity': edge_homogeneity(graph, labels)}
+  normed_features = matrix_row_norm(features)
+  in_avg, out_avg = feature_homogeneity(normed_features, labels)
+  metrics.update({'avg_in_feature_angular_distance' : in_avg,
+                  'avg_out_feature_angular_distance': out_avg})
+  return metrics
