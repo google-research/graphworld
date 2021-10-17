@@ -22,7 +22,7 @@ SbmBeamHandler.param_sampler_specs = [
 ]
 
 nvertex/ParamSamplerSpec.name = "nvertex"
-nvertex/ParamSamplerSpec.min_val = 32
+nvertex/ParamSamplerSpec.min_val = 128
 nvertex/ParamSamplerSpec.max_val = 512
 
 p_to_q_ratio/ParamSamplerSpec.name = "p_to_q_ratio"
@@ -58,7 +58,7 @@ cluster_size_slope/ParamSamplerSpec.min_val = 0.0
 cluster_size_slope/ParamSamplerSpec.max_val = 0.1
 
 power_exponent/ParamSamplerSpec.name = "power_exponent"
-power_exponent/ParamSamplerSpec.min_val = 1.0
+power_exponent/ParamSamplerSpec.min_val = 0.5
 power_exponent/ParamSamplerSpec.max_val = 1.0
 
 SbmBeamHandler.benchmarker_wrappers = [

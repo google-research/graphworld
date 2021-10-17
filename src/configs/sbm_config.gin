@@ -22,7 +22,7 @@ SbmBeamHandler.param_sampler_specs = [
 ]
 
 nvertex/ParamSamplerSpec.name = "nvertex"
-nvertex/ParamSamplerSpec.min_val = 32
+nvertex/ParamSamplerSpec.min_val = 128
 nvertex/ParamSamplerSpec.max_val = 512
 
 p_to_q_ratio/ParamSamplerSpec.name = "p_to_q_ratio"
