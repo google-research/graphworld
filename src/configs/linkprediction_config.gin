@@ -17,7 +17,7 @@ LinkPredictionBeamHandler.param_sampler_specs = [
   @p_to_q_ratio/ParamSamplerSpec(),
   @num_clusters/ParamSamplerSpec(),
   @cluster_size_slope/ParamSamplerSpec(),
-  @power_exponent/ParamSamplerSpec()
+  @power_exponent/ParamSamplerSpec(),
 ]
 
 nvertex/ParamSamplerSpec.name = "nvertex"
