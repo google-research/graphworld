@@ -1,11 +1,11 @@
 import graph_world.models.basic_gnn
 
 GeneratorBeamHandlerWrapper.handler = @LinkPredictionBeamHandler()
-GeneratorBeamHandlerWrapper.nsamples = 1000
+GeneratorBeamHandlerWrapper.nsamples = 2000
 
 LinkPredictionBeamHandler.training_ratio = 0.6
 LinkPredictionBeamHandler.tuning_ratio = 0.2
-LinkPredictionBeamHandler.num_tuning_rounds = 16
+LinkPredictionBeamHandler.num_tuning_rounds = 32
 LinkPredictionBeamHandler.tuning_metric = "test_rocauc"
 LinkPredictionBeamHandler.param_sampler_specs = [
   @nvertex/ParamSamplerSpec(),
