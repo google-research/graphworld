@@ -318,7 +318,9 @@ class MLP(torch.nn.Module):
         print(self.model)
 
     def reset_parameters(self):
-        self.model.reset_parameters()
+        for module in self.model:
+            if hasattr(module, 'reset_parameters'):
+                module.reset_parameters()
 
     def forward(self, batch: Tensor, _: Adj, *args, **kwargs) -> Tensor:
         # TODO(palowitch): Does our scaffolding ever invoke the else clause?
