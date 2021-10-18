@@ -41,7 +41,7 @@ SubstructureBeamHandler.benchmarker_wrappers = [
   @GCN_/NNGraphBenchmark,
   @GraphSAGE_/NNGraphBenchmark,
   @GAT_/NNGraphBenchmark,
-  @MLP_/NNNodeBenchmark,
+  @MLP_/NNGraphBenchmark,
   @APPNP_/NNGraphBenchmark,
   @SGC_/NNGraphBenchmark,
 ]
