@@ -66,6 +66,7 @@ GraphSAGE_/LPBenchmark.h_params = {
     'hidden_channels' : %HIDDEN_CHANNELS,
     'num_layers' : %NUM_LAYERS,
     'dropout' : %DROPOUT,
+    'root_weight' : False,
 }
 
 # GIN setup
