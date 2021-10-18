@@ -26,7 +26,9 @@ def MseWrapper(pred, true, scale=False):
   """
   mse = mean_squared_error(pred, true)
   if scale:
-    mse /= np.var(true)
+    var = np.var(true)
+    if var != 0:
+      mse /= var
   return mse
 
 
