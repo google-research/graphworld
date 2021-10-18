@@ -78,7 +78,7 @@ LinkPredictionBeamHandler.benchmarker_wrappers = [
 LR = [0.01, 0.001, 0.0001]
 HIDDEN_CHANNELS = [4, 8, 16]
 NUM_LAYERS = [1, 2, 3, 4]
-DROPOUT = [0, 0.5]
+DROPOUT = [0, 0, 0, 0.3, 0.5, 0.8] # a hack to make dropout equiprobable
 EPOCHS = 50
 # GNN only
 ALPHA = [0.1, 0.2, 0.3]

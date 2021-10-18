@@ -83,6 +83,7 @@ SbmBeamHandler.benchmarker_wrappers = [
 LR = [0.01, 0.001, 0.0001]
 HIDDEN_CHANNELS = [4, 8, 16]
 NUM_LAYERS = [1, 2, 3, 4]
+DROPOUT = [0, 0, 0, 0.3, 0.5, 0.8] # a hack to make dropout equiprobable
 EPOCHS = 50
 # GNN only
 ALPHA = [0.1, 0.2, 0.3]
@@ -98,6 +99,7 @@ GCN_/NNNodeBenchmark.h_params = {
     'in_channels' : 16,
     'hidden_channels' : %HIDDEN_CHANNELS,
     'num_layers' : %NUM_LAYERS,
+    'dropout' : %DROPOUT,
 }
 
 # GraphSAGE setup
@@ -110,6 +112,7 @@ GraphSAGE_/NNNodeBenchmark.h_params = {
     'in_channels' : 16,
     'hidden_channels' : %HIDDEN_CHANNELS,
     'num_layers' : %NUM_LAYERS,
+    'dropout' : %DROPOUT,
 }
 
 # GIN setup
@@ -122,6 +125,7 @@ GIN_/NNNodeBenchmark.h_params = {
     'in_channels' : 16,
     'hidden_channels' : %HIDDEN_CHANNELS,
     'num_layers' : %NUM_LAYERS,
+    'dropout' : %DROPOUT,
 }
 
 # GAT setup
@@ -134,6 +138,7 @@ GAT_/NNNodeBenchmark.h_params = {
     'in_channels' : 16,
     'hidden_channels' : %HIDDEN_CHANNELS,
     'num_layers' : %NUM_LAYERS,
+    'dropout' : %DROPOUT,
 }
 
 # MLP setup
@@ -146,6 +151,7 @@ MLP_/NNNodeBenchmark.h_params = {
     'in_channels' : 16,
     'hidden_channels' : %HIDDEN_CHANNELS,
     'num_layers' : %NUM_LAYERS,
+    'dropout' : %DROPOUT,
 }
 
 # APPNP setup
@@ -159,7 +165,8 @@ APPNP_/NNNodeBenchmark.h_params = {
     'hidden_channels' : %HIDDEN_CHANNELS,
     'num_layers' : %NUM_LAYERS,
     'alpha': %ALPHA,
-    'iterations': %ITERATIONS
+    'iterations': %ITERATIONS,
+    'dropout' : %DROPOUT,
 }
 
 # SGC setup
@@ -171,7 +178,8 @@ SGC_/NNNodeBenchmark.benchmark_params = {
 SGC_/NNNodeBenchmark.h_params = {
     'in_channels' : 16,
     'hidden_channels' : %HIDDEN_CHANNELS,
-    'iterations': %ITERATIONS
+    'iterations': %ITERATIONS,
+    'dropout' : %DROPOUT,
 }
 
 
@@ -185,6 +193,7 @@ GATv2_/NNNodeBenchmark.h_params = {
     'in_channels' : 16,
     'hidden_channels' : %HIDDEN_CHANNELS,
     'num_layers' : %NUM_LAYERS,
+    'dropout' : %DROPOUT,
 }
 
 # ARMA setup
@@ -197,6 +206,7 @@ ARMA_/NNNodeBenchmark.h_params = {
     'in_channels' : 16,
     'hidden_channels' : %HIDDEN_CHANNELS,
     'num_layers' : %NUM_LAYERS,
+    'dropout' : %DROPOUT,
 }
 
 # FiLM setup
@@ -209,4 +219,5 @@ FiLM_/NNNodeBenchmark.h_params = {
     'in_channels' : 16,
     'hidden_channels' : %HIDDEN_CHANNELS,
     'num_layers' : %NUM_LAYERS,
+    'dropout' : %DROPOUT,
 }

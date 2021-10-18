@@ -37,10 +37,14 @@ tuning_prob/ParamSamplerSpec.max_val = 0.2
 
 SubstructureBeamHandler.batch_size = 64
 SubstructureBeamHandler.benchmarker_wrappers = [
-  @LRGraphBenchmark,
   @GCN_/NNGraphBenchmark,
   @GraphSAGE_/NNGraphBenchmark,
   @GAT_/NNGraphBenchmark,
+  @GATv2_/NNGraphBenchmark,
+  @ARMA_/NNGraphBenchmark,
+  @FiLM_/NNGraphBenchmark,
+
+  @LRGraphBenchmark,
   @MLP_/NNGraphBenchmark,
   @APPNP_/NNGraphBenchmark,
   @SGC_/NNGraphBenchmark,
@@ -49,7 +53,8 @@ SubstructureBeamHandler.benchmarker_wrappers = [
 # GCN & GNN hyperparameter ranges
 LR = [0.01, 0.001, 0.0001]
 HIDDEN_CHANNELS = [4, 8, 16]
-NUM_LAYERS = [2, 3, 4]
+NUM_LAYERS = [1, 2, 3, 4]
+DROPOUT = [0, 0, 0, 0.3, 0.5, 0.8] # a hack to make dropout equiprobable
 EPOCHS = 50
 # GNN only
 ALPHA = [0.1, 0.2, 0.3]
@@ -65,6 +70,7 @@ GCN_/NNGraphBenchmark.h_params = {
     'in_channels' : 1,
     'hidden_channels' : %HIDDEN_CHANNELS,
     'num_layers' : %NUM_LAYERS,
+    'dropout' : %DROPOUT,
 }
 
 # GraphSAGE setup
@@ -77,6 +83,7 @@ GraphSAGE_/NNGraphBenchmark.h_params = {
     'in_channels' : 1,
     'hidden_channels' : %HIDDEN_CHANNELS,
     'num_layers' : %NUM_LAYERS,
+    'dropout' : %DROPOUT,
 }
 
 # GAT setup
@@ -89,6 +96,7 @@ GAT_/NNGraphBenchmark.h_params = {
     'in_channels' : 1,
     'hidden_channels' : %HIDDEN_CHANNELS,
     'num_layers' : %NUM_LAYERS,
+    'dropout' : %DROPOUT,
 }
 
 # GIN setup
@@ -101,6 +109,7 @@ GIN_/NNGraphBenchmark.h_params = {
     'in_channels' : 1,
     'hidden_channels' : %HIDDEN_CHANNELS,
     'num_layers' : %NUM_LAYERS,
+    'dropout' : %DROPOUT,
 }
 
 # MLP setup
@@ -113,6 +122,7 @@ MLP_/NNGraphBenchmark.h_params = {
     'in_channels' : 1,
     'hidden_channels' : %HIDDEN_CHANNELS,
     'num_layers' : %NUM_LAYERS,
+    'dropout' : %DROPOUT,
 }
 
 # APPNP setup
@@ -126,7 +136,8 @@ APPNP_/NNGraphBenchmark.h_params = {
     'hidden_channels' : %HIDDEN_CHANNELS,
     'num_layers' : %NUM_LAYERS,
     'alpha': %ALPHA,
-    'iterations': %ITERATIONS
+    'iterations': %ITERATIONS,
+    'dropout' : %DROPOUT,
 }
 
 # SGC setup
@@ -138,5 +149,45 @@ SGC_/NNGraphBenchmark.benchmark_params = {
 SGC_/NNGraphBenchmark.h_params = {
     'in_channels' : 1,
     'hidden_channels' : %HIDDEN_CHANNELS,
-    'iterations': %ITERATIONS
+    'iterations': %ITERATIONS,
+    'dropout' : %DROPOUT,
+}
+
+# GATv2 setup
+GATv2_/NNGraphBenchmark.model_class = @GATv2
+GATv2_/NNGraphBenchmark.benchmark_params = {
+    'epochs' : %EPOCHS,
+    'lr': %LR,
+}
+GATv2_/NNGraphBenchmark.h_params = {
+    'in_channels' : 1,
+    'hidden_channels' : %HIDDEN_CHANNELS,
+    'num_layers' : %NUM_LAYERS,
+    'dropout' : %DROPOUT,
+}
+
+# ARMA setup
+ARMA_/NNGraphBenchmark.model_class = @ARMA
+ARMA_/NNGraphBenchmark.benchmark_params = {
+    'epochs' : %EPOCHS,
+    'lr': %LR,
+}
+ARMA_/NNGraphBenchmark.h_params = {
+    'in_channels' : 1,
+    'hidden_channels' : %HIDDEN_CHANNELS,
+    'num_layers' : %NUM_LAYERS,
+    'dropout' : %DROPOUT,
+}
+
+# FiLM setup
+FiLM_/NNGraphBenchmark.model_class = @FiLM
+FiLM_/NNGraphBenchmark.benchmark_params = {
+    'epochs' : %EPOCHS,
+    'lr': %LR,
+}
+FiLM_/NNGraphBenchmark.h_params = {
+    'in_channels' : 1,
+    'hidden_channels' : %HIDDEN_CHANNELS,
+    'num_layers' : %NUM_LAYERS,
+    'dropout' : %DROPOUT,
 }
