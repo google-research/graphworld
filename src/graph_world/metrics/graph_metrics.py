@@ -42,7 +42,7 @@ def average_cc_sp_length(G_comp):
 
 
 def matrix_row_norm(X):
-  return (X.T / np.linalg.norm(X, axis=1)).T
+  return X / np.linalg.norm(X, axis=1)[:, None]
 
 
 def GraphMetrics(G):
