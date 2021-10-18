@@ -70,6 +70,10 @@ SbmBeamHandler.benchmarker_wrappers = [
   @GraphSAGE_/NNNodeBenchmark,
   @GIN_/NNNodeBenchmark,
   @GAT_/NNNodeBenchmark,
+  @GATv2_/NNNodeBenchmark,
+  @ARMA_/NNNodeBenchmark,
+  @FiLM_/NNNodeBenchmark,
+
   @MLP_/NNNodeBenchmark,
   @APPNP_/NNNodeBenchmark,
   @SGC_/NNNodeBenchmark,
@@ -78,7 +82,7 @@ SbmBeamHandler.benchmarker_wrappers = [
 # GCN & GNN hyperparameter ranges
 LR = [0.01, 0.001, 0.0001]
 HIDDEN_CHANNELS = [4, 8, 16]
-NUM_LAYERS = [2, 3, 4]
+NUM_LAYERS = [1, 2, 3, 4]
 EPOCHS = 50
 # GNN only
 ALPHA = [0.1, 0.2, 0.3]
@@ -170,3 +174,39 @@ SGC_/NNNodeBenchmark.h_params = {
     'iterations': %ITERATIONS
 }
 
+
+# GATv2 setup
+GATv2_/NNNodeBenchmark.model_class = @GATv2
+GATv2_/NNNodeBenchmark.benchmark_params = {
+    'epochs' : %EPOCHS,
+    'lr': %LR,
+}
+GATv2_/NNNodeBenchmark.h_params = {
+    'in_channels' : 16,
+    'hidden_channels' : %HIDDEN_CHANNELS,
+    'num_layers' : %NUM_LAYERS,
+}
+
+# ARMA setup
+ARMA_/NNNodeBenchmark.model_class = @ARMA
+ARMA_/NNNodeBenchmark.benchmark_params = {
+    'epochs' : %EPOCHS,
+    'lr': %LR,
+}
+ARMA_/NNNodeBenchmark.h_params = {
+    'in_channels' : 16,
+    'hidden_channels' : %HIDDEN_CHANNELS,
+    'num_layers' : %NUM_LAYERS,
+}
+
+# FiLM setup
+FiLM_/NNNodeBenchmark.model_class = @FiLM
+FiLM_/NNNodeBenchmark.benchmark_params = {
+    'epochs' : %EPOCHS,
+    'lr': %LR,
+}
+FiLM_/NNNodeBenchmark.h_params = {
+    'in_channels' : 16,
+    'hidden_channels' : %HIDDEN_CHANNELS,
+    'num_layers' : %NUM_LAYERS,
+}

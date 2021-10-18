@@ -66,6 +66,10 @@ LinkPredictionBeamHandler.benchmarker_wrappers = [
   @GraphSAGE_/LPBenchmark,
   @GIN_/LPBenchmark,
   @GAT_/LPBenchmark,
+  @GATv2_/LPBenchmark,
+  @ARMA_/LPBenchmark,
+  @FiLM_/LPBenchmark,
+
   @APPNP_/LPBenchmark,
   @SGC_/LPBenchmark,
 ]
@@ -73,7 +77,8 @@ LinkPredictionBeamHandler.benchmarker_wrappers = [
 # GCN & GNN hyperparameter ranges
 LR = [0.01, 0.001, 0.0001]
 HIDDEN_CHANNELS = [4, 8, 16]
-NUM_LAYERS = [2, 3, 4]
+NUM_LAYERS = [1, 2, 3, 4]
+DROPOUT = [0, 0.5]
 EPOCHS = 50
 # GNN only
 ALPHA = [0.1, 0.2, 0.3]
@@ -89,6 +94,7 @@ GCN_/LPBenchmark.h_params = {
     'in_channels' : 16,
     'hidden_channels' : %HIDDEN_CHANNELS,
     'num_layers' : %NUM_LAYERS,
+    'dropout' : %DROPOUT,
 }
 
 # GraphSAGE setup
@@ -101,6 +107,7 @@ GraphSAGE_/LPBenchmark.h_params = {
     'in_channels' : 16,
     'hidden_channels' : %HIDDEN_CHANNELS,
     'num_layers' : %NUM_LAYERS,
+    'dropout' : %DROPOUT,
 }
 
 # GIN setup
@@ -113,6 +120,7 @@ GIN_/LPBenchmark.h_params = {
     'in_channels' : 16,
     'hidden_channels' : %HIDDEN_CHANNELS,
     'num_layers' : %NUM_LAYERS,
+    'dropout' : %DROPOUT,
 }
 
 # GAT setup
@@ -125,6 +133,7 @@ GAT_/LPBenchmark.h_params = {
     'in_channels' : 16,
     'hidden_channels' : %HIDDEN_CHANNELS,
     'num_layers' : %NUM_LAYERS,
+    'dropout' : %DROPOUT,
 }
 
 
@@ -138,6 +147,7 @@ MLP_/LPBenchmark.h_params = {
     'in_channels' : 16,
     'hidden_channels' : %HIDDEN_CHANNELS,
     'num_layers' : %NUM_LAYERS,
+    'dropout' : %DROPOUT,
 }
 
 # APPNP setup
@@ -151,7 +161,8 @@ APPNP_/LPBenchmark.h_params = {
     'hidden_channels' : %HIDDEN_CHANNELS,
     'num_layers' : %NUM_LAYERS,
     'alpha': %ALPHA,
-    'iterations': %ITERATIONS
+    'iterations': %ITERATIONS,
+    'dropout' : %DROPOUT,
 }
 
 # SGC setup
@@ -163,5 +174,45 @@ SGC_/LPBenchmark.benchmark_params = {
 SGC_/LPBenchmark.h_params = {
     'in_channels' : 16,
     'hidden_channels' : %HIDDEN_CHANNELS,
-    'iterations': %ITERATIONS
+    'iterations': %ITERATIONS,
+    'dropout' : %DROPOUT,
+}
+
+# GATv2 setup
+GATv2_/LPBenchmark.model_class = @GATv2
+GATv2_/LPBenchmark.benchmark_params = {
+    'epochs' : %EPOCHS,
+    'lr': %LR,
+}
+GATv2_/LPBenchmark.h_params = {
+    'in_channels' : 16,
+    'hidden_channels' : %HIDDEN_CHANNELS,
+    'num_layers' : %NUM_LAYERS,
+    'dropout' : %DROPOUT,
+}
+
+# ARMA setup
+ARMA_/LPBenchmark.model_class = @ARMA
+ARMA_/LPBenchmark.benchmark_params = {
+    'epochs' : %EPOCHS,
+    'lr': %LR,
+}
+ARMA_/LPBenchmark.h_params = {
+    'in_channels' : 16,
+    'hidden_channels' : %HIDDEN_CHANNELS,
+    'num_layers' : %NUM_LAYERS,
+    'dropout' : %DROPOUT,
+}
+
+# FiLM setup
+FiLM_/LPBenchmark.model_class = @FiLM
+FiLM_/LPBenchmark.benchmark_params = {
+    'epochs' : %EPOCHS,
+    'lr': %LR,
+}
+FiLM_/LPBenchmark.h_params = {
+    'in_channels' : 16,
+    'hidden_channels' : %HIDDEN_CHANNELS,
+    'num_layers' : %NUM_LAYERS,
+    'dropout' : %DROPOUT,
 }

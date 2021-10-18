@@ -13,10 +13,12 @@ from torch import Tensor
 import torch.nn.functional as F
 from torch.nn import ModuleList, Sequential, Linear, BatchNorm1d, ReLU
 
-from torch_geometric.nn.conv import GCNConv, SAGEConv, GINConv, GATConv, SGConv
+from torch_geometric.nn.conv import GCNConv, SAGEConv, GINConv, GATConv, \
+    SGConv, GATv2Conv, ARMAConv, FiLMConv
 from torch_geometric.nn.models.jumping_knowledge import JumpingKnowledge
 
 from torch_geometric.nn.conv import APPNP as APPNPConv
+
 
 class BasicGNN(torch.nn.Module):
     r"""An abstract class for implementing basic GNN models.
@@ -315,8 +317,6 @@ class MLP(torch.nn.Module):
 
         self.model = Sequential(*layers)
 
-        print(self.model)
-
     def reset_parameters(self):
         for module in self.model:
             if hasattr(module, 'reset_parameters'):
@@ -364,12 +364,13 @@ class SGC(torch.nn.Module):
     def __init__(self, iterations: int,
                  in_channels: int, hidden_channels: int,
                  out_channels: Optional[int] = None,
-                 cached=False):
+                 cached=False, dropout:float =0):
         super(SGC, self).__init__()
 
         if out_channels is None:
             out_channels = hidden_channels
         self.sgc = SGConv(in_channels=in_channels, out_channels=out_channels, K=iterations, cached=cached)
+        self.dropout = dropout
 
         print(self.sgc)
 
@@ -378,6 +379,62 @@ class SGC(torch.nn.Module):
 
     def forward(self, x: Tensor, edge_index: Adj, *args, **kwargs) -> Tensor:
         x = self.sgc(x, edge_index)
+        x = F.dropout(x, p=self.dropout, training=self.training)
         #return F.log_softmax(x, dim=1) # don't think we need this here
         return x
 
+
+@gin.configurable
+class GATv2(BasicGNN):
+    def __init__(self, in_channels: int, hidden_channels: int, num_layers: int,
+        out_channels: Optional[int] = None, dropout: float = 0.0,
+        act: Optional[Callable] = ReLU(inplace=True),
+        norm: Optional[torch.nn.Module] = None, jk: str = 'last',
+        **kwargs):
+        super().__init__(in_channels, hidden_channels, num_layers,
+                         out_channels, dropout, act, norm, jk)
+
+        if 'concat' in kwargs:
+            del kwargs['concat']
+
+        if 'heads' in kwargs:
+            assert hidden_channels % kwargs['heads'] == 0
+
+        out_channels = hidden_channels // kwargs.get('heads', 1)
+
+        self.convs.append(
+            GATv2Conv(in_channels, out_channels, dropout=dropout, **kwargs))
+        for _ in range(1, num_layers):
+            self.convs.append(GATv2Conv(hidden_channels, out_channels, **kwargs))
+
+
+@gin.configurable
+class ARMA(BasicGNN):
+    def __init__(self, in_channels: int, hidden_channels: int, num_layers: int,
+        out_channels: Optional[int] = None, dropout: float = 0.0,
+        act: Optional[Callable] = ReLU(inplace=True),
+        norm: Optional[torch.nn.Module] = None, jk: str = 'last',
+        **kwargs):
+        super().__init__(in_channels, hidden_channels, num_layers,
+                         out_channels, dropout, act, norm, jk)
+
+        self.convs.append(ARMAConv(in_channels, hidden_channels, **kwargs))
+        for _ in range(1, num_layers):
+            self.convs.append(
+                ARMAConv(hidden_channels, hidden_channels, **kwargs))
+
+
+@gin.configurable
+class FiLM(BasicGNN):
+    def __init__(self, in_channels: int, hidden_channels: int, num_layers: int,
+        out_channels: Optional[int] = None, dropout: float = 0.0,
+        act: Optional[Callable] = ReLU(inplace=True),
+        norm: Optional[torch.nn.Module] = None, jk: str = 'last',
+        **kwargs):
+        super().__init__(in_channels, hidden_channels, num_layers,
+                         out_channels, dropout, act, norm, jk)
+
+        self.convs.append(FiLMConv(in_channels, hidden_channels, **kwargs))
+        for _ in range(1, num_layers):
+            self.convs.append(
+                FiLMConv(hidden_channels, hidden_channels, **kwargs))
