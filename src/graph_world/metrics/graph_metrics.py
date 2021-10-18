@@ -99,6 +99,7 @@ def sum_angular_distance_matrix_nan(X, Y, batch_size=100):
       vec2 = Y[pos2:end2, :]
 
       vecsims = np.matmul(vec1, vec2.T)
+      vecsims = np.clip(vecsims, -1, 1)
       vecsims = 1.0 - np.arccos(vecsims) / np.pi
       vecsims[np.where(np.isnan(vecsims))] = 1.0
       total_sum += np.sum(vecsims)
