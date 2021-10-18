@@ -21,6 +21,7 @@ There are currently 3 pieces required for each model:
 import gin
 import logging
 import numpy as np
+import graph_tool.all as gt
 from sklearn.linear_model import LinearRegression
 import sklearn.metrics
 import torch
@@ -512,6 +513,74 @@ class LPBenchmarker(Benchmarker):
     return out
 
 
+class LPBaselineBenchmarker(Benchmarker):
+
+  def __init__(self, generator_config, model_class, benchmark_params, h_params):
+    super().__init__(generator_config, model_class, benchmark_params, h_params)
+    self._scorer = h_params['scorer']
+
+  def score(self, graph, edge_index):
+    return gt.vertex_similarity(graph, sim_type=self._scorer,
+                                vertex_pairs=edge_index)
+
+  def test(self, data, tuning=False):
+    graph = gt.Graph(directed=False)
+    graph.add_edge_list(data.train_pos_edge_index.T)
+
+    if tuning:
+      pos_scores = self.score(graph, data.val_pos_edge_index.T)
+      neg_scores = self.score(graph, data.val_neg_edge_index.T)
+    else:
+      pos_scores = self.score(graph, data.test_pos_edge_index.T)
+      neg_scores = self.score(graph, data.test_neg_edge_index.T)
+
+    all_scores = np.hstack([pos_scores, neg_scores])
+    all_scores = np.nan_to_num(all_scores, copy=False)
+
+    y_true = np.ones(data.val_pos_edge_index.shape[1] +
+                     data.val_neg_edge_index.shape[1])
+    y_true[data.val_pos_edge_index.shape[1]:] = 0
+
+    return {
+        'test_rocauc': sklearn.metrics.roc_auc_score(y_true, all_scores),
+        'test_ap': sklearn.metrics.average_precision_score(y_true, all_scores),
+    }
+
+  def GetModelName(self):
+    return 'Baseline'
+
+  def Benchmark(self, element, tuning=False):
+    torch_data = element['torch_data']
+    skipped = element['skipped']
+    sample_id = element['sample_id']
+
+    out = {
+        'skipped': skipped,
+        'results': None
+    }
+    out.update(element)
+    out['losses'] = None
+    out['test_metrics'] = {}
+
+    if skipped:
+      logging.info(f'Skipping benchmark for sample id {sample_id}')
+      return out
+
+    test_accuracy = {
+        'test_rocauc': 0,
+        'test_ap': 0,
+    }
+    try:
+      # Divide by zero sometimes happens with the ksample masks.
+      test_accuracy = self.test(torch_data, tuning=tuning)
+    except Exception as e:
+      logging.info(f'Failed to compute test accuracy for sample id {sample_id}')
+      raise Exception(
+          f'Failed to compute test accuracy for sample id {sample_id}') from e
+
+    out['test_metrics'].update(test_accuracy)
+    return out
+
 @gin.configurable
 class LPBenchmark(BenchmarkerWrapper):
 
@@ -520,3 +589,12 @@ class LPBenchmark(BenchmarkerWrapper):
 
   def GetBenchmarkerClass(self):
     return LPBenchmarker
+
+@gin.configurable
+class LPBenchmarkBaseline(BenchmarkerWrapper):
+
+  def GetBenchmarker(self):
+    return LPBaselineBenchmarker(None, self._benchmark_params, self._h_params)
+
+  def GetBenchmarkerClass(self):
+    return LPBaselineBenchmarker

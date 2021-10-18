@@ -22,6 +22,8 @@ LinkPredictionBeamHandler.benchmarker_wrappers = [
 
   @APPNP_/LPBenchmark,
   @SGC_/LPBenchmark,
+
+  @Baseline_/LPBenchmarkBaseline,
 ]
 
 # GCN & GNN hyperparameter ranges
@@ -33,6 +35,12 @@ EPOCHS = 50
 # GNN only
 ALPHA = [0.1, 0.2, 0.3]
 ITERATIONS = [5, 10, 15]
+
+SCORERS = ['dice', 'salton', 'hub-promoted', 'hub-suppressed', 'jaccard', 'inv-log-weight', 'resource-allocation', 'leicht-holme-newman']
+
+Baseline_/LPBenchmarkBaseline.h_params = {
+    'scorer' : %SCORERS,
+}
 
 # GCN setup
 GCN_/LPBenchmark.model_class = @GCN
