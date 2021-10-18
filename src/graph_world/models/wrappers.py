@@ -446,6 +446,7 @@ class LPBenchmarker(Benchmarker):
       self._h_params['out_channels'] = generator_config['num_clusters']
 
   def train_step(self, data):
+    self._model.train()
     self._lp_wrapper_model.train()
     self._optimizer.zero_grad()  # Clear gradients.
     z = self._model(data.x, data.train_pos_edge_index)
@@ -455,6 +456,7 @@ class LPBenchmarker(Benchmarker):
     return loss
 
   def test(self, data, tuning=False):
+    self._model.eval()
     self._lp_wrapper_model.eval()
     results = {}
     z = self._model(data.x, data.train_pos_edge_index)
