@@ -2,9 +2,9 @@ import graph_world.models.basic_gnn
 include 'app/configs/sbm_generator_config.gin'
 
 GeneratorBeamHandlerWrapper.handler = @SbmBeamHandler()
-GeneratorBeamHandlerWrapper.nsamples = 2000
+GeneratorBeamHandlerWrapper.nsamples = 100000
 
-SbmBeamHandler.num_tuning_rounds = 32
+SbmBeamHandler.num_tuning_rounds = 1
 SbmBeamHandler.tuning_metric = "test_f1_macro"
 SbmBeamHandler.tuning_metric_is_loss = False
 SbmBeamHandler.ktrain = 5
@@ -23,6 +23,8 @@ SbmBeamHandler.benchmarker_wrappers = [
   @MLP_/NNNodeBenchmark,
   @APPNP_/NNNodeBenchmark,
   @SGC_/NNNodeBenchmark,
+
+  @Baseline_/NNNodeBaselineBenchmark,
 ]
 
 # GCN & GNN hyperparameter ranges
@@ -34,6 +36,10 @@ EPOCHS = 50
 # GNN only
 ALPHA = [0.1, 0.2, 0.3]
 ITERATIONS = [5, 10, 15]
+
+Baseline_/NNNodeBaselineBenchmark.h_params = {
+    'alpha' : %ALPHA,
+}
 
 # GCN setup
 GCN_/NNNodeBenchmark.model_class = @GCN

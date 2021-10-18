@@ -417,6 +417,104 @@ class NNNodeBenchmarker(Benchmarker):
     out['test_metrics'].update(test_accuracy)
     return out
 
+
+class NNNodeBaselineBenchmarker(Benchmarker):
+
+  def __init__(self, generator_config, model_class, benchmark_params, h_params):
+    super().__init__(generator_config, model_class, benchmark_params, h_params)
+    # remove meta entries from h_params
+    self._alpha = h_params['alpha']
+
+  def GetModelName(self):
+    return 'PPRBaseline'
+
+  def test(self, data, graph, masks, tuning=False):
+    train_mask, val_mask, test_mask = masks
+    node_ids = np.arange(train_mask.shape[0])
+    labels = data.y.numpy()
+    nodes_train, nodes_val, nodes_test = node_ids[train_mask], node_ids[val_mask], node_ids[test_mask]
+    n_classes = max(data.y.numpy()) + 1
+    pers = graph.new_vertex_property("double")
+    if tuning:
+      pred = np.zeros((len(nodes_val), n_classes))
+      for idx, node in enumerate(nodes_val):
+        pers.a = 0
+        pers[node] = 1
+        pprs = np.array(gt.pagerank(graph, damping=1-self._alpha, pers=pers, max_iter=100).a)
+        pred[idx, labels[nodes_train]] += pprs[nodes_train]
+    else:
+      pred = np.zeros((len(nodes_test), n_classes))
+      for idx, node in enumerate(nodes_test):
+        pers.a = 0
+        pers[node] = 1
+        pprs = np.array(gt.pagerank(graph, damping=1-self._alpha, pers=pers, max_iter=100).a)
+        pred[idx, labels[nodes_train]] += pprs[nodes_train]
+
+    pred_best = pred.argmax(-1)
+    if tuning:
+      correct = labels[nodes_val]
+    else:
+      correct = labels[nodes_test]
+
+    pred_onehot = np.zeros((len(pred_best), n_classes))
+    pred_onehot[np.arange(pred_best.shape[0]), pred_best] = 1
+
+    correct_onehot = np.zeros((len(correct), n_classes))
+    correct_onehot[np.arange(correct.shape[0]), correct] = 1
+
+    results = {
+        'test_accuracy': sklearn.metrics.accuracy_score(correct, pred_best),
+        'test_f1_micro': sklearn.metrics.f1_score(correct, pred_best,
+                                                  average='micro'),
+        'test_f1_macro': sklearn.metrics.f1_score(correct, pred_best,
+                                                  average='macro'),
+        'test_rocauc_ovr': sklearn.metrics.roc_auc_score(correct_onehot,
+                                                         pred_onehot,
+                                                         multi_class='ovr'),
+        'test_rocauc_ovo': sklearn.metrics.roc_auc_score(correct_onehot,
+                                                         pred_onehot,
+                                                         multi_class='ovo'),
+        'test_logloss': sklearn.metrics.log_loss(correct, pred)}
+    return results
+
+  def Benchmark(self, element, tuning=False):
+    gt_data = element['gt_data']
+    torch_data = element['torch_data']
+    masks = element['masks']
+    skipped = element['skipped']
+    sample_id = element['sample_id']
+
+    out = {
+        'skipped': skipped,
+        'results': None
+    }
+    out.update(element)
+    out['losses'] = None
+    out['test_metrics'] = {}
+
+    if skipped:
+      logging.info(f'Skipping benchmark for sample id {sample_id}')
+      return out
+
+    test_accuracy = {
+        'test_accuracy': 0,
+        'test_f1_micro': 0,
+        'test_f1_macro': 0,
+        'test_rocauc_ovr': 0,
+        'test_rocauc_ovo': 0,
+        'test_logloss': 0
+    }
+    try:
+      # Divide by zero sometimes happens with the ksample masks.
+      test_accuracy = self.test(torch_data, gt_data, masks, tuning=tuning)
+    except Exception as e:
+      logging.info(f'Failed to compute test accuracy for sample id {sample_id}')
+      raise Exception(
+          f'Failed to compute test accuracy for sample id {sample_id}') from e
+
+    out['test_metrics'].update(test_accuracy)
+    return out
+
 @gin.configurable
 class NNNodeBenchmark(BenchmarkerWrapper):
 
@@ -425,6 +523,15 @@ class NNNodeBenchmark(BenchmarkerWrapper):
 
   def GetBenchmarkerClass(self):
     return NNNodeBenchmarker
+
+@gin.configurable
+class NNNodeBaselineBenchmark(BenchmarkerWrapper):
+
+  def GetBenchmarker(self):
+    return NNNodeBaselineBenchmarker(self._model_class, self._benchmark_params, self._h_params)
+
+  def GetBenchmarkerClass(self):
+    return NNNodeBaselineBenchmarker
 
 
 # Link prediction

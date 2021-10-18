@@ -144,6 +144,7 @@ class ConvertToTorchGeoDataParDo(beam.DoFn):
     try:
       torch_data = sbm_data_to_torchgeo_data(sbm_data)
       out['torch_data'] = torch_data
+      out['gt_data'] = sbm_data.graph
       out['generator_config'] = element['generator_config']
 
       torchgeo_stats = {
