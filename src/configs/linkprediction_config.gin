@@ -2,11 +2,11 @@ import graph_world.models.basic_gnn
 include 'app/configs/sbm_generator_config.gin'
 
 GeneratorBeamHandlerWrapper.handler = @LinkPredictionBeamHandler()
-GeneratorBeamHandlerWrapper.nsamples = 2000
+GeneratorBeamHandlerWrapper.nsamples = 10000000
 
-LinkPredictionBeamHandler.training_ratio = 0.6
-LinkPredictionBeamHandler.tuning_ratio = 0.2
-LinkPredictionBeamHandler.num_tuning_rounds = 32
+LinkPredictionBeamHandler.training_ratio = 0.8
+LinkPredictionBeamHandler.tuning_ratio = 0.1
+LinkPredictionBeamHandler.num_tuning_rounds = 1
 LinkPredictionBeamHandler.tuning_metric = "test_rocauc"
 LinkPredictionBeamHandler.param_sampler_specs = %SBMSamplerSpec
 

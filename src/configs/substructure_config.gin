@@ -1,10 +1,10 @@
 import graph_world.models.basic_gnn
 
 GeneratorBeamHandlerWrapper.handler = @SubstructureBeamHandler()
-GeneratorBeamHandlerWrapper.nsamples = 2000
+GeneratorBeamHandlerWrapper.nsamples = 1000000
 SubstructureBeamHandler.substruct = %Substructure.TAILED_TRIANGLE_GRAPH
 SubstructureBeamHandler.scale_labels = True
-SubstructureBeamHandler.num_tuning_rounds = 32
+SubstructureBeamHandler.num_tuning_rounds = 1
 SubstructureBeamHandler.tuning_metric = "test_mse_scaled"
 SubstructureBeamHandler.tuning_metric_is_loss = True
 SubstructureBeamHandler.param_sampler_specs = [
