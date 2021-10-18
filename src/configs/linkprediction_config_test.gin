@@ -66,8 +66,8 @@ LinkPredictionBeamHandler.benchmarker_wrappers = [
   @GraphSAGE_/LPBenchmark,
   @GIN_/LPBenchmark,
   @GAT_/LPBenchmark,
-  @APPNP_/NNNodeBenchmark,
-  @SGC_/NNNodeBenchmark,
+  @APPNP_/LPBenchmark,
+  @SGC_/LPBenchmark,
 ]
 
 # GCN & GNN hyperparameter ranges
@@ -142,12 +142,12 @@ MLP_/LPBenchmark.h_params = {
 
 
 # APPNP setup
-APPNP_/NNNodeBenchmark.model_class = @APPNP
-APPNP_/NNNodeBenchmark.benchmark_params = {
+APPNP_/LPBenchmark.model_class = @APPNP
+APPNP_/LPBenchmark.benchmark_params = {
     'epochs' : %EPOCHS,
     'lr': %LR,
 }
-APPNP_/NNNodeBenchmark.h_params = {
+APPNP_/LPBenchmark.h_params = {
     'in_channels' : 16,
     'hidden_channels' : %HIDDEN_CHANNELS,
     'num_layers' : %NUM_LAYERS,
@@ -156,12 +156,12 @@ APPNP_/NNNodeBenchmark.h_params = {
 }
 
 # SGC setup
-SGC_/NNNodeBenchmark.model_class = @SGC
-SGC_/NNNodeBenchmark.benchmark_params = {
+SGC_/LPBenchmark.model_class = @SGC
+SGC_/LPBenchmark.benchmark_params = {
     'epochs' : %EPOCHS,
     'lr': %LR,
 }
-SGC_/NNNodeBenchmark.h_params = {
+SGC_/LPBenchmark.h_params = {
     'in_channels' : 16,
     'hidden_channels' : %HIDDEN_CHANNELS,
     'iterations': %ITERATIONS
