@@ -145,6 +145,7 @@ def NodeLabelMetrics(graph, labels, features):
   metrics = {'edge_homogeneity': edge_homogeneity(graph, labels)}
   normed_features = matrix_row_norm(features)
   in_avg, out_avg = feature_homogeneity(normed_features, labels)
-  metrics.update({'avg_in_feature_angular_distance' : in_avg,
-                  'avg_out_feature_angular_distance': out_avg})
+  metrics.update({'avg_in_feature_angular_distance': in_avg,
+                  'avg_out_feature_angular_distance': out_avg,
+                  'feature_angular_snr': in_avg/out_avg})
   return metrics
