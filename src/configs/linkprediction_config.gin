@@ -1,4 +1,5 @@
 import graph_world.models.basic_gnn
+include 'app/configs/sbm_generator_config.gin'
 
 GeneratorBeamHandlerWrapper.handler = @LinkPredictionBeamHandler()
 GeneratorBeamHandlerWrapper.nsamples = 2000
@@ -7,18 +8,7 @@ LinkPredictionBeamHandler.training_ratio = 0.6
 LinkPredictionBeamHandler.tuning_ratio = 0.2
 LinkPredictionBeamHandler.num_tuning_rounds = 32
 LinkPredictionBeamHandler.tuning_metric = "test_rocauc"
-LinkPredictionBeamHandler.param_sampler_specs = [
-  @nvertex/ParamSamplerSpec(),
-  @avg_degree/ParamSamplerSpec(),
-  @feature_center_distance/ParamSamplerSpec(),
-  @feature_dim/ParamSamplerSpec(),
-  @edge_center_distance/ParamSamplerSpec(),
-  @edge_feature_dim/ParamSamplerSpec(),
-  @p_to_q_ratio/ParamSamplerSpec(),
-  @num_clusters/ParamSamplerSpec(),
-  @cluster_size_slope/ParamSamplerSpec(),
-  @power_exponent/ParamSamplerSpec(),
-]
+LinkPredictionBeamHandler.param_sampler_specs = %SBMSamplerSpec
 
 nvertex/ParamSamplerSpec.name = "nvertex"
 nvertex/ParamSamplerSpec.min_val = 128
