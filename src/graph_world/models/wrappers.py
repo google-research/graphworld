@@ -255,9 +255,9 @@ class NNGraphBenchmarker(Benchmarker):
         total_mse, total_mse_scaled = self.test(element['torch_dataset']['test'])
       test_mse = float(total_mse)
       test_mse_scaled = float(total_mse_scaled)
-    except Exception as e:
+    except Exception:
       logging.info(f'Failed to run for sample id {sample_id}')
-      raise Exception(f'Failed to run for sample id {sample_id}') from e
+      losses = None
 
     return {'losses': losses,
             'test_metrics': {'test_mse': test_mse,
@@ -404,13 +404,14 @@ class NNNodeBenchmarker(Benchmarker):
         'test_rocauc_ovo': 0,
         'test_logloss': 0
     }
+    losses = None
     try:
       losses = self.train(torch_data)
       # Divide by zero sometimes happens with the ksample masks.
       test_accuracy = self.test(torch_data, tuning=tuning)
     except Exception as e:
       logging.info(f'Failed to run for sample id {sample_id}')
-      raise Exception(f'Failed to run for sample id {sample_id}') from e
+      out['skipped'] = True
 
     out['losses'] = losses
     out['test_metrics'].update(test_accuracy)
@@ -506,10 +507,9 @@ class NNNodeBaselineBenchmarker(Benchmarker):
     try:
       # Divide by zero sometimes happens with the ksample masks.
       test_accuracy = self.test(torch_data, gt_data, masks, tuning=tuning)
-    except Exception as e:
+    except Exception:
       logging.info(f'Failed to compute test accuracy for sample id {sample_id}')
-      raise Exception(
-          f'Failed to compute test accuracy for sample id {sample_id}') from e
+      out['skipped'] = True
 
     out['test_metrics'].update(test_accuracy)
     return out
@@ -605,13 +605,14 @@ class LPBenchmarker(Benchmarker):
         'test_rocaus': 0,
         'test_ap': 0,
     }
+    losses = None
     try:
       losses = self.train(torch_data)
       # Divide by zero sometimes happens with the ksample masks.
       test_accuracy = self.test(torch_data, tuning=tuning)
-    except Exception as e:
+    except Exception:
       logging.info(f'Failed to run for sample id {sample_id}')
-      raise Exception(f'Failed to run for sample id {sample_id}') from e
+      out['skipped'] = True
 
     out['losses'] = losses
     out['test_metrics'].update(test_accuracy)
@@ -681,10 +682,9 @@ class LPBaselineBenchmarker(Benchmarker):
     try:
       # Divide by zero sometimes happens with the ksample masks.
       test_accuracy = self.test(torch_data, tuning=tuning)
-    except Exception as e:
+    except Exception:
       logging.info(f'Failed to compute test accuracy for sample id {sample_id}')
-      raise Exception(
-          f'Failed to compute test accuracy for sample id {sample_id}') from e
+      out['skipped'] = True
 
     out['test_metrics'].update(test_accuracy)
     return out
