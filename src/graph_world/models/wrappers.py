@@ -245,10 +245,10 @@ class NNGraphBenchmarker(Benchmarker):
 
   def Benchmark(self, element, tuning=False):
     sample_id = element['sample_id']
-    mses, losses = self.train(element['torch_dataset']['train'])
     test_mse = 0.0
     test_mse_scaled = 0.0
     try:
+      mses, losses = self.train(element['torch_dataset']['train'])
       if tuning:
         total_mse, total_mse_scaled = self.test(element['torch_dataset']['tuning'])
       else:
@@ -256,8 +256,8 @@ class NNGraphBenchmarker(Benchmarker):
       test_mse = float(total_mse)
       test_mse_scaled = float(total_mse_scaled)
     except Exception as e:
-      logging.info(f'Failed to compute test mse for sample id {sample_id}')
-      raise Exception(f'Failed to compute test accuracy for sample id {sample_id}') from e
+      logging.info(f'Failed to run for sample id {sample_id}')
+      raise Exception(f'Failed to run for sample id {sample_id}') from e
 
     return {'losses': losses,
             'test_metrics': {'test_mse': test_mse,
@@ -396,7 +396,6 @@ class NNNodeBenchmarker(Benchmarker):
 
     self.SetMasks(train_mask, val_mask, test_mask)
 
-    losses = self.train(torch_data)
     test_accuracy = {
         'test_accuracy': 0,
         'test_f1_micro': 0,
@@ -406,12 +405,12 @@ class NNNodeBenchmarker(Benchmarker):
         'test_logloss': 0
     }
     try:
+      losses = self.train(torch_data)
       # Divide by zero sometimes happens with the ksample masks.
       test_accuracy = self.test(torch_data, tuning=tuning)
     except Exception as e:
-      logging.info(f'Failed to compute test accuracy for sample id {sample_id}')
-      raise Exception(
-          f'Failed to compute test accuracy for sample id {sample_id}') from e
+      logging.info(f'Failed to run for sample id {sample_id}')
+      raise Exception(f'Failed to run for sample id {sample_id}') from e
 
     out['losses'] = losses
     out['test_metrics'].update(test_accuracy)
@@ -602,18 +601,17 @@ class LPBenchmarker(Benchmarker):
       logging.info(f'Skipping benchmark for sample id {sample_id}')
       return out
 
-    losses = self.train(torch_data)
     test_accuracy = {
         'test_rocaus': 0,
         'test_ap': 0,
     }
     try:
+      losses = self.train(torch_data)
       # Divide by zero sometimes happens with the ksample masks.
       test_accuracy = self.test(torch_data, tuning=tuning)
     except Exception as e:
-      logging.info(f'Failed to compute test accuracy for sample id {sample_id}')
-      raise Exception(
-          f'Failed to compute test accuracy for sample id {sample_id}') from e
+      logging.info(f'Failed to run for sample id {sample_id}')
+      raise Exception(f'Failed to run for sample id {sample_id}') from e
 
     out['losses'] = losses
     out['test_metrics'].update(test_accuracy)
