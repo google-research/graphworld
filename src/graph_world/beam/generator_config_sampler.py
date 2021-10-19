@@ -1,3 +1,5 @@
+import random
+
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, fields
 import gin
@@ -12,6 +14,7 @@ class ParamSamplerSpec:
   sampler_fn: Any = None
   min_val: float = -np.inf
   max_val: float = np.inf
+  default_val: float = None
 
 
 class GeneratorConfigSampler:
@@ -43,11 +46,34 @@ class GeneratorConfigSampler:
       raise RuntimeError("param %s not found in input param specs" % param_name)
     self._param_sampler_specs[param_name].sampler_fn = sampler_fn
 
+  def _ChooseMarginalParam(self):
+    valid_params = [
+      param_name for
+      param_name, spec in self._param_sampler_specs.items() if
+      spec.min_val != spec.max_val]
+    if len(valid_params) == 0:
+      return None
+    return random.choice(valid_params)
+
   def __init__(self, param_sampler_specs):
     self._param_sampler_specs = {spec.name: spec for spec in param_sampler_specs}
 
-  def SampleConfig(self):
+  def SampleConfig(self, marginal=False):
     config = {}
+    marginal_param = None
+    if marginal:
+      marginal_param = self._ChooseMarginalParam()
+    fixed_params = []
     for param_name, spec in self._param_sampler_specs.items():
-      config[param_name] = spec.sampler_fn(spec)
-    return config
+      param_value = None
+      if marginal and marginal_param is not None:
+        # If the param is not a marginal param, give it its default (if possible)
+        if param_name != marginal_param:
+          if spec.default_val is not None:
+            fixed_params.append(param_name)
+            param_value = spec.default_val
+      # If the param val is still None, give it a random value.
+      if param_value is None:
+        param_value = spec.sampler_fn(spec)
+      config[param_name] = param_value
+    return config, marginal_param, fixed_params

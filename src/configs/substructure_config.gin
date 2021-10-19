@@ -4,6 +4,7 @@ GeneratorBeamHandlerWrapper.handler = @SubstructureBeamHandler()
 GeneratorBeamHandlerWrapper.nsamples = 1000000
 SubstructureBeamHandler.substruct = %Substructure.TAILED_TRIANGLE_GRAPH
 SubstructureBeamHandler.scale_labels = True
+SubstructureBeamHandler.marginal = True
 SubstructureBeamHandler.num_tuning_rounds = 1
 SubstructureBeamHandler.tuning_metric = "test_mse_scaled"
 SubstructureBeamHandler.tuning_metric_is_loss = True
@@ -22,6 +23,7 @@ num_graphs/ParamSamplerSpec.max_val = 500
 num_vertices/ParamSamplerSpec.name = "num_vertices"
 num_vertices/ParamSamplerSpec.min_val = 5
 num_vertices/ParamSamplerSpec.max_val = 30
+num_vertices/ParamSamplerSpec.default_val = 10
 
 edge_prob/ParamSamplerSpec.name = "edge_prob"
 edge_prob/ParamSamplerSpec.min_val = 0.1

@@ -18,8 +18,9 @@ from ..models.benchmarker import BenchmarkGNNParDo
 
 class SampleSbmDoFn(GeneratorConfigSampler, beam.DoFn):
 
-  def __init__(self, param_sampler_specs):
+  def __init__(self, param_sampler_specs, marginal=False):
     super(SampleSbmDoFn, self).__init__(param_sampler_specs)
+    self._marginal = marginal
     self._AddSamplerFn('nvertex', self._SampleUniformInteger)
     self._AddSamplerFn('avg_degree', self._SampleUniformFloat)
     self._AddSamplerFn('feature_center_distance', self._SampleUniformFloat)
@@ -39,7 +40,7 @@ class SampleSbmDoFn(GeneratorConfigSampler, beam.DoFn):
     # a custom container. The import will execute once then the sys.modeules
     # will be referenced to further calls.
 
-    generator_config = self.SampleConfig()
+    generator_config, marginal_param, fixed_params = self.SampleConfig(self._marginal)
     generator_config['generator_name'] = 'StochasticBlockModel'
 
     data = GenerateStochasticBlockModelWithFeatures(
@@ -58,6 +59,8 @@ class SampleSbmDoFn(GeneratorConfigSampler, beam.DoFn):
     )
 
     yield {'sample_id': sample_id,
+           'marginal_param': marginal_param,
+           'fixed_params': fixed_params,
            'generator_config': generator_config,
            'data': data}
 
@@ -138,14 +141,16 @@ class ConvertToTorchGeoDataParDo(beam.DoFn):
       'metrics' : element['metrics'],
       'torch_data': None,
       'masks': None,
-      'skipped': False
+      'skipped': False,
+      'generator_config': element['generator_config'],
+      'marginal_param': element['marginal_param'],
+      'fixed_params': element['fixed_params']
     }
 
     try:
       torch_data = sbm_data_to_torchgeo_data(sbm_data)
       out['torch_data'] = torch_data
       out['gt_data'] = sbm_data.graph
-      out['generator_config'] = element['generator_config']
 
       torchgeo_stats = {
         'nodes': torch_data.num_nodes,
@@ -190,9 +195,10 @@ class ConvertToTorchGeoDataParDo(beam.DoFn):
 class SbmBeamHandler(GeneratorBeamHandler):
 
   @gin.configurable
-  def __init__(self, param_sampler_specs, benchmarker_wrappers, num_tuning_rounds=1,
+  def __init__(self, param_sampler_specs, benchmarker_wrappers,
+               marginal=False, num_tuning_rounds=1,
                tuning_metric='', tuning_metric_is_loss=False, ktrain=5, ktuning=5):
-    self._sample_do_fn = SampleSbmDoFn(param_sampler_specs)
+    self._sample_do_fn = SampleSbmDoFn(param_sampler_specs, marginal)
     self._benchmark_par_do = BenchmarkGNNParDo(benchmarker_wrappers, num_tuning_rounds,
                                                tuning_metric, tuning_metric_is_loss)
     self._metrics_par_do = ComputeSbmGraphMetrics()

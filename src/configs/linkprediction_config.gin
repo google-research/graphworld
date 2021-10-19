@@ -4,6 +4,7 @@ include 'app/configs/sbm_generator_config.gin'
 GeneratorBeamHandlerWrapper.handler = @LinkPredictionBeamHandler()
 GeneratorBeamHandlerWrapper.nsamples = 10000000
 
+LinkPredictionBeamHandler.marginal = True
 LinkPredictionBeamHandler.training_ratio = 0.8
 LinkPredictionBeamHandler.tuning_ratio = 0.1
 LinkPredictionBeamHandler.num_tuning_rounds = 1

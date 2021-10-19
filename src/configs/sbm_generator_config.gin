@@ -18,6 +18,7 @@ nvertex/ParamSamplerSpec.max_val = 512
 p_to_q_ratio/ParamSamplerSpec.name = "p_to_q_ratio"
 p_to_q_ratio/ParamSamplerSpec.min_val = 1.0
 p_to_q_ratio/ParamSamplerSpec.max_val = 10.0
+p_to_q_ratio/ParamSamplerSpec.default_val = 2.0
 
 avg_degree/ParamSamplerSpec.name = "avg_degree"
 avg_degree/ParamSamplerSpec.min_val = 1.0

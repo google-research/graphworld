@@ -4,6 +4,7 @@ include 'app/configs/sbm_generator_config.gin'
 GeneratorBeamHandlerWrapper.handler = @SbmBeamHandler()
 GeneratorBeamHandlerWrapper.nsamples = 100000
 
+SbmBeamHandler.marginal = False
 SbmBeamHandler.num_tuning_rounds = 1
 SbmBeamHandler.tuning_metric = "test_f1_macro"
 SbmBeamHandler.tuning_metric_is_loss = False

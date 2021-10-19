@@ -16,8 +16,10 @@ from ..metrics.graph_metrics import GraphMetrics
 
 class SampleSubstructureDatasetDoFn(GeneratorConfigSampler, beam.DoFn):
 
-  def __init__(self, param_sampler_specs, substruct, scale_labels=True):
+  def __init__(self, param_sampler_specs, substruct, scale_labels=True,
+               marginal=False):
     super(SampleSubstructureDatasetDoFn, self).__init__(param_sampler_specs)
+    self._marginal = marginal
     self._AddSamplerFn('num_graphs', self._SampleUniformInteger)
     self._AddSamplerFn('num_vertices', self._SampleUniformInteger)
     self._AddSamplerFn('edge_prob', self._SampleUniformFloat)
@@ -30,7 +32,7 @@ class SampleSubstructureDatasetDoFn(GeneratorConfigSampler, beam.DoFn):
     """Sample substructure dataset.
     """
 
-    generator_config = self.SampleConfig()
+    generator_config, marginal_param, fixed_params = self.SampleConfig(self._marginal)
     generator_config['generator_name'] = 'SubstructureDataset'
 
     data = GenerateSubstructureDataset(
@@ -44,6 +46,8 @@ class SampleSubstructureDatasetDoFn(GeneratorConfigSampler, beam.DoFn):
       data['substruct_counts'] = scale(data['substruct_counts'])
 
     yield {'sample_id': sample_id,
+           'marginal_param': marginal_param,
+           'fixed_params': fixed_params,
            'generator_config': generator_config,
            'data': data}
 
@@ -124,10 +128,10 @@ class SubstructureBeamHandler(GeneratorBeamHandler):
 
   @gin.configurable
   def __init__(self, param_sampler_specs, substruct, benchmarker_wrappers, batch_size,
-               num_tuning_rounds=1, tuning_metric='', tuning_metric_is_loss=False,
-               scale_labels=False):
+               marginal=False, num_tuning_rounds=1, tuning_metric='',
+               tuning_metric_is_loss=False, scale_labels=False):
     self._sample_do_fn = SampleSubstructureDatasetDoFn(param_sampler_specs,
-                                                       substruct, scale_labels)
+                                                       substruct, scale_labels, marginal)
     self._benchmark_par_do = BenchmarkGNNParDo(benchmarker_wrappers, num_tuning_rounds,
                                                tuning_metric, tuning_metric_is_loss)
     self._metrics_par_do = ComputeSubstructureGraphMetricsParDo()
