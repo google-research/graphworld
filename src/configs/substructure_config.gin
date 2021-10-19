@@ -16,8 +16,8 @@ SubstructureBeamHandler.param_sampler_specs = [
 ]
 
 num_graphs/ParamSamplerSpec.name = "num_graphs"
-num_graphs/ParamSamplerSpec.min_val = 500
-num_graphs/ParamSamplerSpec.max_val = 5000
+num_graphs/ParamSamplerSpec.min_val = 100
+num_graphs/ParamSamplerSpec.max_val = 500
 
 num_vertices/ParamSamplerSpec.name = "num_vertices"
 num_vertices/ParamSamplerSpec.min_val = 5
@@ -35,7 +35,7 @@ tuning_prob/ParamSamplerSpec.name = "tuning_prob"
 tuning_prob/ParamSamplerSpec.min_val = 0.2
 tuning_prob/ParamSamplerSpec.max_val = 0.2
 
-SubstructureBeamHandler.batch_size = 64
+SubstructureBeamHandler.batch_size = 32
 SubstructureBeamHandler.benchmarker_wrappers = [
   @GCN_/NNGraphBenchmark,
   @GraphSAGE_/NNGraphBenchmark,
@@ -43,7 +43,7 @@ SubstructureBeamHandler.benchmarker_wrappers = [
   @GATv2_/NNGraphBenchmark,
   @ARMA_/NNGraphBenchmark,
   @FiLM_/NNGraphBenchmark,
-
+  @GIN_/NNGraphBenchmark,
   @LRGraphBenchmark,
   @MLP_/NNGraphBenchmark,
   @APPNP_/NNGraphBenchmark,
