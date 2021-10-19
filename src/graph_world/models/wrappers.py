@@ -632,21 +632,24 @@ class LPBaselineBenchmarker(Benchmarker):
 
   def test(self, data, tuning=False):
     graph = gt.Graph(directed=False)
+    graph.add_vertex(data.y.shape[0])
     graph.add_edge_list(data.train_pos_edge_index.T)
 
     if tuning:
       pos_scores = self.score(graph, data.val_pos_edge_index.T)
       neg_scores = self.score(graph, data.val_neg_edge_index.T)
+      y_true = np.ones(data.val_pos_edge_index.shape[1] +
+                       data.val_neg_edge_index.shape[1])
+      y_true[data.val_pos_edge_index.shape[1]:] = 0
     else:
       pos_scores = self.score(graph, data.test_pos_edge_index.T)
       neg_scores = self.score(graph, data.test_neg_edge_index.T)
+      y_true = np.ones(data.test_pos_edge_index.shape[1] +
+                       data.test_neg_edge_index.shape[1])
+      y_true[data.test_pos_edge_index.shape[1]:] = 0
 
     all_scores = np.hstack([pos_scores, neg_scores])
     all_scores = np.nan_to_num(all_scores, copy=False)
-
-    y_true = np.ones(data.val_pos_edge_index.shape[1] +
-                     data.val_neg_edge_index.shape[1])
-    y_true[data.val_pos_edge_index.shape[1]:] = 0
 
     return {
         'test_rocauc': sklearn.metrics.roc_auc_score(y_true, all_scores),
