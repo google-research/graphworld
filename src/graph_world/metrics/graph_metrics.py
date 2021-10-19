@@ -1,7 +1,6 @@
 #@title Imports
 import os
 import numpy as np
-import time
 
 import graph_tool
 
@@ -87,7 +86,6 @@ def sum_angular_distance_matrix_nan(X, Y, batch_size=100):
   pos1 = 0
   while pos1 < nx:
     if pos1 % batch_size == 0:
-      print('----now doing pos1 = %d' % pos1)
     end1 = min(pos1 + batch_size, nx)
     vec1 = X[pos1:end1, :]
 
@@ -118,12 +116,9 @@ def feature_homogeneity(normed_features, labels):
   for label_idx, i in enumerate(all_labels):
     idx_i = np.where(labels == i)[0]
     vecs_i = normed_features[idx_i, :]
-    print('processing i label %d w/%d examples' % (i, vecs_i.shape[0]))
     for j in all_labels[label_idx:]:
-      start_time = time.time()
       idx_j = np.where(labels == j)[0]
       vecs_j = normed_features[idx_j, :]
-      print('-processing j label %d w/%d examples' % (j, vecs_j.shape[0]))
       the_sum = sum_angular_distance_matrix_nan(vecs_i, vecs_j)
       the_count = len(idx_j) * len(idx_i)
       if i == j:
@@ -133,8 +128,6 @@ def feature_homogeneity(normed_features, labels):
         the_count /= 2
       sum_mat[i, j] = the_sum
       count_mat[i, j] = the_count
-      elapsed = time.time() - start_time
-      print('-label %d took %0.2f minutes' % (j, elapsed / 60.0))
   out_avg = np.sum(sum_mat[np.triu_indices(sum_mat.shape[0])]) / (
     np.sum(count_mat[np.triu_indices(count_mat.shape[0])]))
   in_avg = np.sum(np.diag(sum_mat)) / np.sum(np.diag(count_mat))
