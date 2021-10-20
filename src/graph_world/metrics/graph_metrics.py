@@ -85,7 +85,6 @@ def sum_angular_distance_matrix_nan(X, Y, batch_size=100):
 
   pos1 = 0
   while pos1 < nx:
-    if pos1 % batch_size == 0:
     end1 = min(pos1 + batch_size, nx)
     vec1 = X[pos1:end1, :]
 
