@@ -1,12 +1,13 @@
 import graph_world.models.basic_gnn
 include 'app/configs/sbm_generator_config.gin'
+include 'app/configs/node_classification_default_vals.gin'
 
 GeneratorBeamHandlerWrapper.handler = @SbmBeamHandler()
-GeneratorBeamHandlerWrapper.nsamples = 100000
+GeneratorBeamHandlerWrapper.nsamples = 7000
 
-SbmBeamHandler.marginal = False
-SbmBeamHandler.num_tuning_rounds = 1
-SbmBeamHandler.tuning_metric = "test_f1_macro"
+SbmBeamHandler.marginal = True
+SbmBeamHandler.num_tuning_rounds = 100
+SbmBeamHandler.tuning_metric = "test_rocauc_ovr"
 SbmBeamHandler.tuning_metric_is_loss = False
 SbmBeamHandler.ktrain = 5
 SbmBeamHandler.ktuning = 5

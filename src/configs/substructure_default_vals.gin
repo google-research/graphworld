@@ -1,0 +1,4 @@
+num_graphs/ParamSamplerSpec.default_val = 394
+num_vertices/ParamSamplerSpec.default_val = 14
+edge_prob/ParamSamplerSpec.default_val = 0.7337436969553719
+train_prob/ParamSamplerSpec.default_val = 0.2124841508494118
