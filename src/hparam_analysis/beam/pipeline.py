@@ -9,6 +9,7 @@ from apache_beam.options.pipeline_options import PipelineOptions
 from apache_beam.options.pipeline_options import SetupOptions
 
 from ..utils.config_enumeration import enumerate_configs
+from ..beam.hparam_eval import GcnTester
 
 
 def entry(argv=None):
@@ -28,6 +29,7 @@ def entry(argv=None):
     dataframe_rows = (
       p | 'Enumerate hyperparameter gridpoints.' >> beam.Create(
         enumerate_configs())
+        | 'Test GCN.' >> beam.ParDo(GcnTester())
         | 'Write JSON' >> beam.io.WriteToText(
         os.path.join(args.output, 'results.ndjson'), num_shards=10))
 
