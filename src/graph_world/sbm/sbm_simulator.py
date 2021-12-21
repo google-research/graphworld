@@ -19,6 +19,7 @@ import enum
 import math
 import random
 from typing import Dict, Sequence, List, Tuple
+from sklearn.preprocessing import normalize
 
 import dataclasses
 import graph_tool
@@ -247,7 +248,8 @@ def SimulateFeatures(sbm_data,
                      feature_dim,
                      num_groups,
                      match_type=MatchType.RANDOM,
-                     cluster_var=1.0):
+                     cluster_var=1.0,
+                     normalize_features=True):
   """Generates node features using multivate normal mixture model.
   This function does nothing and throws a warning if
   sbm_data.graph_memberships is empty. Run SimulateSbm to fill that field.
@@ -287,7 +289,10 @@ def SimulateFeatures(sbm_data,
     feature = np.random.multivariate_normal(centers[cluster_index], cluster_cov,
                                             1)[0]
     features.append(feature)
-  sbm_data.node_features = np.array(features)
+  features = np.array(features)
+  if normalize_features:
+    features = normalize(features)
+  sbm_data.node_features = features
 
 
 def SimulateEdgeFeatures(sbm_data,
@@ -349,7 +354,8 @@ def GenerateStochasticBlockModelWithFeatures(
     feature_cluster_variance=1.0,
     edge_feature_dim=0,
     edge_center_distance=0.0,
-    edge_cluster_variance=1.0):
+    edge_cluster_variance=1.0,
+    normalize_features=True):
   """Generates stochastic block model (SBM) with node features.
   Args:
     num_vertices: number of nodes in the graph.
@@ -380,8 +386,11 @@ def GenerateStochasticBlockModelWithFeatures(
   result = StochasticBlockModel()
   SimulateSbm(result, num_vertices, num_edges, pi, prop_mat, out_degs)
   SimulateFeatures(result, feature_center_distance,
-                   feature_dim, num_feature_groups,
-                   feature_group_match_type, feature_cluster_variance)
+                   feature_dim,
+                   num_feature_groups,
+                   feature_group_match_type,
+                   feature_cluster_variance,
+                   normalize_features)
   SimulateEdgeFeatures(result, edge_feature_dim,
                        edge_center_distance,
                        edge_cluster_variance)

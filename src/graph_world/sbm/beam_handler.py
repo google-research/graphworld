@@ -18,9 +18,10 @@ from ..models.benchmarker import BenchmarkGNNParDo
 
 class SampleSbmDoFn(GeneratorConfigSampler, beam.DoFn):
 
-  def __init__(self, param_sampler_specs, marginal=False):
+  def __init__(self, param_sampler_specs, marginal=False, normalize_features=True):
     super(SampleSbmDoFn, self).__init__(param_sampler_specs)
     self._marginal = marginal
+    self._normalize_features = normalize_features
     self._AddSamplerFn('nvertex', self._SampleUniformInteger)
     self._AddSamplerFn('avg_degree', self._SampleUniformFloat)
     self._AddSamplerFn('feature_center_distance', self._SampleUniformFloat)
@@ -55,7 +56,8 @@ class SampleSbmDoFn(GeneratorConfigSampler, beam.DoFn):
       edge_center_distance=generator_config['edge_center_distance'],
       edge_feature_dim=generator_config['edge_feature_dim'],
       out_degs=np.random.power(generator_config['power_exponent'],
-                               generator_config['nvertex'])
+                               generator_config['nvertex']),
+      normalize_features=self._normalize_features
     )
 
     yield {'sample_id': sample_id,
@@ -197,8 +199,9 @@ class SbmBeamHandler(GeneratorBeamHandler):
   @gin.configurable
   def __init__(self, param_sampler_specs, benchmarker_wrappers,
                marginal=False, num_tuning_rounds=1,
-               tuning_metric='', tuning_metric_is_loss=False, ktrain=5, ktuning=5):
-    self._sample_do_fn = SampleSbmDoFn(param_sampler_specs, marginal)
+               tuning_metric='', tuning_metric_is_loss=False, ktrain=5, ktuning=5,
+              normalize_features=False):
+    self._sample_do_fn = SampleSbmDoFn(param_sampler_specs, marginal, normalize_features)
     self._benchmark_par_do = BenchmarkGNNParDo(benchmarker_wrappers, num_tuning_rounds,
                                                tuning_metric, tuning_metric_is_loss)
     self._metrics_par_do = ComputeSbmGraphMetrics()
