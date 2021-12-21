@@ -2,6 +2,7 @@ import logging
 
 import apache_beam as beam
 
+import gin
 import numpy as np
 import torch
 
@@ -11,13 +12,15 @@ from ..utils.test_gcn import test_gcn
 
 class GcnTester(beam.DoFn):
 
+  def __init__(self, random_seeds):
+    self._random_seeds = random_seeds
+
   def process(self, test_config):
 
     output = test_config
     data = get_cora()
 
-    splits = [get_random_split(data, seed) for
-              seed in [42, 12345, 808]]
+    splits = [get_random_split(data, seed) for seed in self._random_seeds]
 
     val_accs = []
     test_accs = []
@@ -48,3 +51,12 @@ class GcnTester(beam.DoFn):
     output['epoch_std'] = np.std(epochs)
 
     yield output
+
+@gin.configurable
+class HparamBeamHandler:
+
+  def __init__(self, random_seeds):
+    self._random_seeds = random_seeds
+
+  def GetGcnTester(self):
+    return GcnTester(self._random_seeds)

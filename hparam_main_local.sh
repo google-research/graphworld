@@ -26,6 +26,7 @@ mkdir -p ${OUTPUT_PATH}
 docker-compose run \
   --entrypoint "python3 /app/hparam_analysis_main.py \
   --output ${OUTPUT_PATH} \
+  --gin_config=/app/configs/hparam_config.gin \
   --runner=DirectRunner" \
   research-graph-synthetic
 
