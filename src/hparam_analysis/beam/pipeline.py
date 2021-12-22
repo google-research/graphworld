@@ -16,6 +16,13 @@ from ..beam.hparam_eval import HparamBeamHandler
 def entry(argv=None):
   parser = argparse.ArgumentParser()
 
+  parser.add_argument('--dataset_path',
+                      dest='dataset_path',
+                      default='',
+                      help=('Location of input data files. '
+                            'Default behavior downloads data from web. '
+                            'GCP runs will need to input GCS dataset path. '))
+
   parser.add_argument('--output',
                       dest='output',
                       default='/tmp/graph_configs.json',
@@ -32,7 +39,7 @@ def entry(argv=None):
   pipeline_options.view_as(SetupOptions).save_main_session = True
 
   gin.parse_config_file(args.gin_config)
-  hparam_handler = HparamBeamHandler()
+  hparam_handler = HparamBeamHandler(dataset_path=args.dataset_path)
 
   with beam.Pipeline(options=pipeline_options) as p:
     dataframe_rows = (

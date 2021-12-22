@@ -2,8 +2,13 @@ from torch_geometric.datasets import Planetoid
 import numpy as np
 import torch
 
-def get_cora():
-  dataset = Planetoid(root='/tmp/Cora', name='Cora')
+from ..data_generators.load_cora_gcp import PlanetoidGcp
+
+def get_cora(dataset_path):
+  if not dataset_path:
+    dataset = Planetoid(root='/tmp/Cora', name='Cora')
+  else:
+    dataset = PlanetoidGcp(url=dataset_path, root='/tmp/Cora', name='Cora')
   data = dataset[0]
 
   # Row-normalize features

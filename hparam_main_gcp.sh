@@ -26,6 +26,7 @@ done
 TIMESTAMP="$(date +"%Y-%m-%d-%H-%M-%S")"
 JOB_NAME="hparam-${TIMESTAMP}"
 OUTPUT_PATH="gs://research-graph-synthetic/${USER}/sampling/${JOB_NAME}"
+DATASET_PATH="gs://research-graph-synthetic/datasets"
 TEMP_LOCATION="gs://research-graph-synthetic/temp"
 echo "OUTPUT_PATH: ${OUTPUT_PATH}"
 
@@ -37,6 +38,8 @@ ENTRYPOINT="python3 /app/hparam_analysis_main.py \
   --region=us-east1 \
   --max_num_workers="${MAX_NUM_WORKERS}" \
   --temp_location="${TEMP_LOCATION}" \
+  --gin_config=/app/configs/hparam_config.gin \
+  --dataset_path="${DATASET_PATH}" \
   --output="${OUTPUT_PATH}" \
   --job_name="${FULL_JOB_NAME}" \
   --no_use_public_ips \

@@ -12,13 +12,14 @@ from ..utils.test_gcn import test_gcn
 
 class GcnTester(beam.DoFn):
 
-  def __init__(self, random_seeds):
+  def __init__(self, random_seeds, dataset_path=''):
     self._random_seeds = random_seeds
+    self._dataset_path = dataset_path
 
   def process(self, test_config):
 
     output = test_config
-    data = get_cora()
+    data = get_cora(self._dataset_path)
 
     splits = [get_random_split(data, seed) for seed in self._random_seeds]
 
@@ -49,14 +50,15 @@ class GcnTester(beam.DoFn):
     output['val_acc_std'] = np.std(val_accs)
     output['test_acc_std'] = np.std(test_accs)
     output['epoch_std'] = np.std(epochs)
-
+    logging.info("got result: %s", str(output))
     yield output
 
 @gin.configurable
 class HparamBeamHandler:
 
-  def __init__(self, random_seeds):
+  def __init__(self, random_seeds, dataset_path=''):
     self._random_seeds = random_seeds
+    self._dataset_path = dataset_path
 
   def GetGcnTester(self):
-    return GcnTester(self._random_seeds)
+    return GcnTester(self._random_seeds, self._dataset_path)
