@@ -7,19 +7,23 @@ import numpy as np
 import torch
 
 from ..data_generators.cora import get_cora
+from ..data_generators.sbm import get_sbm_from_torchgeo_data
 from ..utils.splits import get_random_split
 from ..utils.test_gcn import test_gcn
 
 class GcnTester(beam.DoFn):
 
-  def __init__(self, random_seeds, dataset_path=''):
+  def __init__(self, random_seeds, sim=False, dataset_path=''):
     self._random_seeds = random_seeds
     self._dataset_path = dataset_path
+    self._sim = sim
 
   def process(self, test_config):
 
     output = test_config
     data = get_cora(self._dataset_path)
+    if self._sim:
+      data, _ = get_sbm_from_torchgeo_data(data)
 
     splits = [get_random_split(data, seed) for seed in self._random_seeds]
 
@@ -56,9 +60,10 @@ class GcnTester(beam.DoFn):
 @gin.configurable
 class HparamBeamHandler:
 
-  def __init__(self, random_seeds, dataset_path=''):
+  def __init__(self, random_seeds, sim=False, dataset_path=''):
     self._random_seeds = random_seeds
     self._dataset_path = dataset_path
+    self._sim = sim
 
   def GetGcnTester(self):
-    return GcnTester(self._random_seeds, self._dataset_path)
+    return GcnTester(self._random_seeds, self._sim, self._dataset_path)

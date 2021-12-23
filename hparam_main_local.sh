@@ -19,13 +19,21 @@
 #
 
 OUTPUT_PATH="/tmp/hparam"
+SIM=1
 
 rm -rf "${OUTPUT_PATH}"
 mkdir -p ${OUTPUT_PATH}
 
+SIM_PREFIX=''
+if [ ${SIM} = 0 ]
+then
+  SIM_PREFIX='no-';
+fi;
+
 docker-compose run \
   --entrypoint "python3 /app/hparam_analysis_main.py \
   --output ${OUTPUT_PATH} \
+  --${SIM_PREFIX}sim \
   --gin_config=/app/configs/hparam_config.gin \
   --runner=DirectRunner" \
   research-graph-synthetic

@@ -28,6 +28,10 @@ def entry(argv=None):
                       default='/tmp/graph_configs.json',
                       help='Location to write output files.')
 
+  parser.add_argument('--sim', dest='sim', action='store_true')
+  parser.add_argument('--no-sim', dest='sim', action='store_false')
+  parser.set_defaults(sim=True)
+
   parser.add_argument('--gin_config',
                       dest='gin_config',
                       default='',
@@ -39,7 +43,8 @@ def entry(argv=None):
   pipeline_options.view_as(SetupOptions).save_main_session = True
 
   gin.parse_config_file(args.gin_config)
-  hparam_handler = HparamBeamHandler(dataset_path=args.dataset_path)
+  hparam_handler = HparamBeamHandler(dataset_path=args.dataset_path,
+                                     sim=args.sim)
 
   with beam.Pipeline(options=pipeline_options) as p:
     dataframe_rows = (
