@@ -1,6 +1,9 @@
+import re
+
 import graph_tool
 import numpy as np
 
+from google.cloud import storage
 from graph_tool.all import *
 import torch
 from torch_geometric.data import Data
@@ -28,7 +31,18 @@ def _get_edge_count_matrix(data):
   edge_counts = edge_counts.astype(np.int32)
   return edge_counts
 
-def get_sbm_from_torchgeo_data(data):
+
+def get_adj_from_file(sim_adj_file):
+  gcs_client = storage.Client()
+  gcs_path_regex = re.compile(r'gs:\/\/([^\/]+)\/(.*)')
+  file_match = gcs_path_regex.match(sim_adj_file)
+  bucket = gcs_client.get_bucket(file_match.group(1))
+  blob = bucket.get_blob(file_match.group(2))
+  blob.download_to_filename('/tmp/adj')
+  adj = np.loadtxt('/tmp/adj')
+  return adj
+
+def get_sbm_from_torchgeo_data(data, sim_adj_file=None):
   adj = np.squeeze(to_dense_adj(data['edge_index']).numpy())
   labels = data.y.numpy()
   k = len(set(labels))
@@ -40,13 +54,26 @@ def get_sbm_from_torchgeo_data(data):
   )
 
   edge_set = set()
-  for e in sbm.edges():
-    a = int(e.source())
-    b = int(e.target())
-    if (a, b) in edge_set:
-      continue
-    edge_set.add((a, b))
-    edge_set.add((b, a))
+
+  # If sim_adj_file is provided, load sbm adj from disk and convert.
+  if sim_adj_file is not None:
+    sbm_adj = get_adj_from_file(sim_adj_file)
+    nonzero_a, nonzero_b = np.nonzero(sbm_adj)
+    for e_tuple in zip(nonzero_a, nonzero_b):
+      a = int(e_tuple[0])
+      b = int(e_tuple[1])
+      if (a, b) in edge_set:
+        continue
+      edge_set.add((a, b))
+      edge_set.add((b, a))
+  else:
+    for e in sbm.edges():
+      a = int(e.source())
+      b = int(e.target())
+      if (a, b) in edge_set:
+        continue
+      edge_set.add((a, b))
+      edge_set.add((b, a))
 
   edge_index1 = [0] * len(edge_set)
   edge_index2 = [0] * len(edge_set)

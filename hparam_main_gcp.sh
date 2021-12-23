@@ -13,9 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+SIM=1
 MACHINE_TYPE="n1-standard-1"
 MAX_NUM_WORKERS=1000
-while getopts m:w: flag
+while getopts :m:w: flag
 do
     case "${flag}" in
         m) MACHINE_TYPE=${OPTARG};;
@@ -32,6 +33,12 @@ echo "OUTPUT_PATH: ${OUTPUT_PATH}"
 
 FULL_JOB_NAME=$(echo "${USER}-${JOB_NAME}" | tr '_' '-')
 
+SIM_PREFIX=''
+if [ ${SIM} = 0 ]
+then
+  SIM_PREFIX='no-';
+fi;
+
 ENTRYPOINT="python3 /app/hparam_analysis_main.py \
   --runner=DataflowRunner \
   --project=research-graph \
@@ -41,6 +48,7 @@ ENTRYPOINT="python3 /app/hparam_analysis_main.py \
   --gin_config=/app/configs/hparam_config.gin \
   --dataset_path="${DATASET_PATH}" \
   --output="${OUTPUT_PATH}" \
+  --${SIM_PREFIX}sim \
   --job_name="${FULL_JOB_NAME}" \
   --no_use_public_ips \
   --network=dataflow-vpc \

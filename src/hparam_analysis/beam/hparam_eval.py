@@ -1,4 +1,4 @@
-import logging
+import os
 
 import apache_beam as beam
 
@@ -13,17 +13,20 @@ from ..utils.test_gcn import test_gcn
 
 class GcnTester(beam.DoFn):
 
-  def __init__(self, random_seeds, sim=False, dataset_path=''):
+  def __init__(self, random_seeds, sim=False, dataset_path='',
+               sim_adj_file=None):
     self._random_seeds = random_seeds
     self._dataset_path = dataset_path
     self._sim = sim
+    self._sim_adj_file = sim_adj_file
 
   def process(self, test_config):
 
     output = test_config
     data = get_cora(self._dataset_path)
     if self._sim:
-      data, _ = get_sbm_from_torchgeo_data(data)
+      data, _ = get_sbm_from_torchgeo_data(
+        data, os.path.join(self._dataset_path, self._sim_adj_file))
 
     splits = [get_random_split(data, seed) for seed in self._random_seeds]
 
@@ -54,16 +57,25 @@ class GcnTester(beam.DoFn):
     output['val_acc_std'] = np.std(val_accs)
     output['test_acc_std'] = np.std(test_accs)
     output['epoch_std'] = np.std(epochs)
-    logging.info("got result: %s", str(output))
     yield output
 
 @gin.configurable
 class HparamBeamHandler:
+  """Wrapper for hparam pipeline
 
-  def __init__(self, random_seeds, sim=False, dataset_path=''):
+  Arguments:
+    sim_adj_file: name of numpy (dense) adjacency matrix to swap in for sbm.
+      filename must be relative to 'dataset_path'.
+
+  """
+
+  def __init__(self, random_seeds, sim=False, dataset_path='',
+               sim_adj_file=None):
     self._random_seeds = random_seeds
     self._dataset_path = dataset_path
     self._sim = sim
+    self._sim_adj_file = sim_adj_file
 
   def GetGcnTester(self):
-    return GcnTester(self._random_seeds, self._sim, self._dataset_path)
+    return GcnTester(self._random_seeds, self._sim, self._dataset_path,
+                     self._sim_adj_file)
