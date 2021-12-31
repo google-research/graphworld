@@ -1,12 +1,12 @@
-# HIDDEN_CHANNELS = [8, 16, 24, 32]
-# WEIGHT_DECAYS = [0.0, 5e-6, 5e-5, 5e-4]
-# DROPOUTS = [0.0, 0.25, 0.5]
-# LRS = [1e-3, 1e-2, 1e-1]
+HIDDEN_CHANNELS = [8, 16, 24, 32]
+WEIGHT_DECAYS = [0.0, 5e-6, 5e-5, 5e-4]
+DROPOUTS = [0.0, 0.25, 0.5]
+LRS = [1e-3, 1e-2, 1e-1]
 
-HIDDEN_CHANNELS = [16]
-WEIGHT_DECAYS = [5e-5]
-DROPOUTS = [0.0, 0.5]
-LRS = [1e-2]
+# HIDDEN_CHANNELS = [16]
+# WEIGHT_DECAYS = [5e-5]
+# DROPOUTS = [0.0, 0.5]
+# LRS = [1e-2]
 
 enumerate_configs.hidden_channel_values = %HIDDEN_CHANNELS
 enumerate_configs.weight_decay_values = %WEIGHT_DECAYS
@@ -16,11 +16,11 @@ enumerate_configs.learning_rate_values = %LRS
 # Generated from:
 #  random.seed(12345)
 #  random.sample(range(pow(2, 16)), 30)
-HparamBeamHandler.random_seeds = [54607, 1332, 39143, 48288, 25383]
-                                  # 35421, 57177, 21192, 48898, 16287,
-                                  # 56745, 34221, 22851, 24485, 46517,
-                                  # 11966, 54017, 21833, 19417, 26963,
-                                  # 10202, 24899, 44769, 42210, 3082,
-                                  # 60140, 44501, 3521, 54457, 452]
+HparamBeamHandler.random_seeds = [54607, 1332, 39143, 48288, 25383,
+                                  35421, 57177, 21192, 48898, 16287,
+                                  56745, 34221, 22851, 24485, 46517,
+                                  11966, 54017, 21833, 19417, 26963,
+                                  10202, 24899, 44769, 42210, 3082,
+                                  60140, 44501, 3521, 54457, 452]
 
 HparamBeamHandler.sim_adj_file = "cora-sbm/adj1.0.txt"

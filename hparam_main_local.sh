@@ -19,7 +19,7 @@
 #
 
 OUTPUT_PATH="/tmp/hparam"
-SIM=1
+SIM=0
 
 rm -rf "${OUTPUT_PATH}"
 mkdir -p ${OUTPUT_PATH}

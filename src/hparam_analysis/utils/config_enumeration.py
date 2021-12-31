@@ -19,11 +19,12 @@ def enumerate_configs(
   ]))
 
   configs = [
-    {'hidden_channels': a,
+    {'index': i,
+     'hidden_channels': a,
      'weight_decay': b,
      'dropout': c,
      'learning_rate': d} for
-    (a, b, c, d) in configs
+    i, (a, b, c, d) in enumerate(configs)
   ]
 
   return configs
