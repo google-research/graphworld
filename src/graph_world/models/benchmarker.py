@@ -35,8 +35,14 @@ class Benchmarker(ABC):
   #      'losses': iterable of loss values over the epochs.
   #      'test_metrics': dict of named test metrics for the benchmark run.
   @abstractmethod
-  def Benchmark(self, element):
-    del element # unused
+  def Benchmark(self, element,
+                tuning: bool = False,
+                tuning_metric: str = None,
+                tuning_metric_is_loss: bool = False):
+    del element  # unused
+    del tuning  # unused
+    del tuning_metric  # unused
+    del tuning_metric_is_loss  # unused
     return {'losses': [], 'test_metrics': {}}
 
 
@@ -109,7 +115,13 @@ class BenchmarkGNNParDo(beam.DoFn):
       yield json.dumps(output_data)
 
     # for benchmarker in self._benchmarkers:
-    for benchmarker_class, benchmark_params, model_class, h_params in zip(self._benchmarker_classes, self._benchmark_params, self._model_classes, self._h_params):
+    for (benchmarker_class,
+         benchmark_params,
+         model_class,
+         h_params) in zip(self._benchmarker_classes,
+                          self._benchmark_params,
+                          self._model_classes,
+                          self._h_params):
       print(f'Running {benchmarker_class} and model f{model_class}')
       num_possible_configs = ComputeNumPossibleConfigs(benchmark_params, h_params)
       num_tuning_rounds = min(num_possible_configs, self._num_tuning_rounds)
@@ -120,7 +132,10 @@ class BenchmarkGNNParDo(beam.DoFn):
                                         model_class,
                                         benchmark_params_sample,
                                         h_params_sample)
-        benchmarker_out = benchmarker.Benchmark(element)
+        benchmarker_out = benchmarker.Benchmark(element,
+                                                tuning=False,
+                                                tuning_metric=self._tuning_metric,
+                                                tuning_metric_is_loss=self._tuning_metric_is_loss)
       else:
         configs = []
         scores = []
@@ -131,7 +146,10 @@ class BenchmarkGNNParDo(beam.DoFn):
                                           model_class,
                                           benchmark_params_sample,
                                           h_params_sample)
-          benchmarker_out = benchmarker.Benchmark(element, tuning=True)
+          benchmarker_out = benchmarker.Benchmark(element,
+                                                  tuning=True,
+                                                  tuning_metric=self._tuning_metric,
+                                                  tuning_metric_is_loss=self._tuning_metric_is_loss)
           configs.append((benchmark_params_sample, h_params_sample))
           scores.append(benchmarker_out['test_metrics'][self._tuning_metric])
         if self._tuning_metric_is_loss:

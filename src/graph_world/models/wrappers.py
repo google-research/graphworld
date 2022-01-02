@@ -93,7 +93,10 @@ class NNGraphBenchmarker(Benchmarker):
     mse_scaled = MseWrapper(predictions, labels, scale=True)
     return mse, mse_scaled
 
-  def Benchmark(self, element, tuning=False):
+  def Benchmark(self, element,
+                tuning: bool = False,
+                tuning_metric: str = None,
+                tuning_metric_is_loss: bool = False):
     sample_id = element['sample_id']
     test_mse = 0.0
     test_mse_scaled = 0.0
@@ -122,7 +125,10 @@ class LRGraphBenchmarker(Benchmarker):
                      h_params)
     self._model_name = 'LR'
 
-  def Benchmark(self, element):
+  def Benchmark(self, element,
+                tuning: bool = False,
+                tuning_metric: str = None,
+                tuning_metric_is_loss: bool = False):
     reg = LinearRegression().fit(
       element['numpy_dataset']['train']['X'],
       element['numpy_dataset']['train']['y'])
@@ -218,13 +224,26 @@ class NNNodeBenchmarker(Benchmarker):
         'test_logloss': sklearn.metrics.log_loss(correct, pred)}
     return results
 
-  def train(self, data):
+  def train(self, data,
+            tuning: bool,
+            tuning_metric: str,
+            tuning_metric_is_loss: bool):
     losses = []
-    for epoch in range(self._epochs):
+    best_val_metric = np.inf if tuning_metric_is_loss else -np.inf
+    test_metrics = None
+    for i in range(self._epochs):
       losses.append(float(self.train_step(data)))
-    return losses
+      val_metrics = self.test(data, tuning=True)
+      if ((tuning_metric_is_loss and val_metrics[tuning_metric] < best_val_metric) or
+          (not tuning_metric_is_loss and val_metrics[tuning_metric] > best_val_metric)):
+        best_val_metric = val_metrics[tuning_metric]
+        test_metrics = self.test(data, tuning=tuning)
+    return losses, test_metrics
 
-  def Benchmark(self, element, tuning=False):
+  def Benchmark(self, element,
+                tuning: bool = False,
+                tuning_metric: str = None,
+                tuning_metric_is_loss: bool = False):
     torch_data = element['torch_data']
     masks = element['masks']
     skipped = element['skipped']
@@ -246,7 +265,7 @@ class NNNodeBenchmarker(Benchmarker):
 
     self.SetMasks(train_mask, val_mask, test_mask)
 
-    test_accuracy = {
+    test_metrics = {
         'test_accuracy': 0,
         'test_f1_micro': 0,
         'test_f1_macro': 0,
@@ -256,15 +275,15 @@ class NNNodeBenchmarker(Benchmarker):
     }
     losses = None
     try:
-      losses = self.train(torch_data)
-      # Divide by zero sometimes happens with the ksample masks.
-      test_accuracy = self.test(torch_data, tuning=tuning)
+      losses, test_metrics = self.train(
+        torch_data, tuning=tuning, tuning_metric=tuning_metric,
+        tuning_metric_is_loss=tuning_metric_is_loss)
     except Exception as e:
       logging.info(f'Failed to run for sample id {sample_id}')
       out['skipped'] = True
 
     out['losses'] = losses
-    out['test_metrics'].update(test_accuracy)
+    out['test_metrics'].update(test_metrics)
     return out
 
 
@@ -327,7 +346,10 @@ class NNNodeBaselineBenchmarker(Benchmarker):
         'test_logloss': sklearn.metrics.log_loss(correct, pred)}
     return results
 
-  def Benchmark(self, element, tuning=False):
+  def Benchmark(self, element,
+                tuning: bool = False,
+                tuning_metric: str = None,
+                tuning_metric_is_loss: bool = False):
     gt_data = element['gt_data']
     torch_data = element['torch_data']
     masks = element['masks']
@@ -434,7 +456,10 @@ class LPBenchmarker(Benchmarker):
       losses.append(float(self.train_step(data)))
     return losses
 
-  def Benchmark(self, element, tuning=False):
+  def Benchmark(self, element,
+                tuning: bool = False,
+                tuning_metric: str = None,
+                tuning_metric_is_loss: bool = False):
     torch_data = element['torch_data']
     skipped = element['skipped']
     sample_id = element['sample_id']
@@ -508,7 +533,10 @@ class LPBaselineBenchmarker(Benchmarker):
   def GetModelName(self):
     return 'Baseline'
 
-  def Benchmark(self, element, tuning=False):
+  def Benchmark(self, element,
+                tuning: bool = False,
+                tuning_metric: str = None,
+                tuning_metric_is_loss: bool = False):
     torch_data = element['torch_data']
     skipped = element['skipped']
     sample_id = element['sample_id']
