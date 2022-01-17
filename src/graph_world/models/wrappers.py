@@ -706,3 +706,105 @@ class LPBenchmarkBaseline(BenchmarkerWrapper):
 
   def GetBenchmarkerClass(self):
     return LPBaselineBenchmarker
+
+
+class NodeRegressionBenchmarker(Benchmarker):
+  def __init__(self, generator_config, model_class, benchmark_params, h_params):
+    super().__init__(generator_config, model_class, benchmark_params, h_params)
+    # remove meta entries from h_params
+    self._epochs = benchmark_params['epochs']
+
+    self._model = model_class(**h_params)
+    # TODO(palowitch): make optimizer configurable.
+    self._optimizer = torch.optim.Adam(self._model.parameters(),
+                                       lr=benchmark_params['lr'],
+                                       weight_decay=5e-4)
+    self._criterion = torch.nn.MSELoss()
+    self._train_mask = None
+    self._val_mask = None
+    self._test_mask = None
+
+  def SetMasks(self, train_mask, val_mask, test_mask):
+    self._train_mask = train_mask
+    self._val_mask = val_mask
+    self._test_mask = test_mask
+
+  def train_step(self, data):
+    self._model.train()
+    self._optimizer.zero_grad()  # Clear gradients.
+    out = self._model(data.x, data.edge_index).ravel()  # Perform a single forward pass.
+    loss = self._criterion(out[self._train_mask],
+                           data.y[self._train_mask])  # Compute the loss solely based on the training nodes.
+    loss.backward()  # Derive gradients.
+    self._optimizer.step()  # Update parameters based on gradients.
+    return loss
+
+  def test(self, data, tuning=False):
+    self._model.eval()
+    out = self._model(data.x, data.edge_index).ravel()
+    if tuning:
+      pred = out[self._val_mask].detach().numpy()
+    else:
+      pred = out[self._test_mask].detach().numpy()
+
+    if tuning:
+      correct = data.y[self._val_mask].numpy()
+    else:
+      correct = data.y[self._test_mask].numpy()
+
+    results = {
+        'test_mse': float(sklearn.metrics.mean_squared_error(correct, pred)),
+    }
+    return results
+
+  def train(self, data):
+    losses = []
+    for _ in range(self._epochs):
+      losses.append(float(self.train_step(data)))
+    return losses
+
+  def Benchmark(self, element, tuning=False):
+    torch_data = element['torch_data']
+    masks = element['masks']
+    skipped = element['skipped']
+    sample_id = element['sample_id']
+
+    out = {
+        'skipped': skipped,
+        'results': None
+    }
+    out.update(element)
+    out['losses'] = None
+    out['test_metrics'] = {}
+
+    if skipped:
+      logging.info(f'Skipping benchmark for sample id {sample_id}')
+      return out
+
+    train_mask, val_mask, test_mask = masks
+
+    self.SetMasks(train_mask, val_mask, test_mask)
+
+    test_accuracy = {
+        'test_mse': -1,
+    }
+    losses = None
+    try:
+      losses = self.train(torch_data)
+      # Divide by zero sometimes happens with the ksample masks.
+      test_accuracy = self.test(torch_data, tuning=tuning)
+    except Exception as e:
+      logging.info(f'Failed to run for sample id {sample_id}')
+      out['skipped'] = True
+
+    out['losses'] = losses
+    out['test_metrics'].update(test_accuracy)
+    return out
+
+@gin.configurable
+class NodeRegressionBenchmark(BenchmarkerWrapper):
+  def GetBenchmarker(self):
+    return NodeRegressionBenchmarker(self._model_class, self._benchmark_params, self._h_params)
+
+  def GetBenchmarkerClass(self):
+    return NodeRegressionBenchmarker
