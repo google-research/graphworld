@@ -18,6 +18,7 @@ from ..models.wrappers import *
 from ..sbm.beam_handler import SbmBeamHandler
 from ..substructure.beam_handler import SubstructureBeamHandler
 from ..linkprediction.beam_handler import LinkPredictionBeamHandler
+from ..noderegression.beam_handler import NodeRegressionBeamHandler
 from ..substructure.simulator import Substructure
 
 

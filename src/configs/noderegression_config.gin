@@ -1,0 +1,32 @@
+import graph_world.models.basic_gnn
+include 'app/configs/sbm_generator_config.gin'
+include 'app/configs/node_classification_default_vals.gin' # for now
+
+GeneratorBeamHandlerWrapper.handler = @NodeRegressionBeamHandler()
+GeneratorBeamHandlerWrapper.nsamples = 100000
+
+#NodeRegressionBeamHandler.normalize_features = True
+NodeRegressionBeamHandler.marginal = False
+NodeRegressionBeamHandler.num_tuning_rounds = 1
+NodeRegressionBeamHandler.training_ratio = 0.8
+NodeRegressionBeamHandler.tuning_ratio = 0.1
+NodeRegressionBeamHandler.target = "pagerank"
+NodeRegressionBeamHandler.tuning_metric = "test_mse"
+NodeRegressionBeamHandler.tuning_metric_is_loss = True
+NodeRegressionBeamHandler.param_sampler_specs = %SBMSamplerSpec
+
+NodeRegressionBeamHandler.benchmarker_wrappers = [
+  @GCN_/NodeRegressionBenchmark,
+  #@GraphSAGE_/NodeRegressionBenchmark,
+  #@GIN_/NodeRegressionBenchmark,
+  #@GAT_/NodeRegressionBenchmark,
+  #@GATv2_/NodeRegressionBenchmark,
+  #@ARMA_/NodeRegressionBenchmark,
+  #@FiLM_/NodeRegressionBenchmark,
+
+  #@MLP_/NodeRegressionBenchmark,
+  #@APPNP_/NodeRegressionBenchmark,
+  #@SGC_/NodeRegressionBenchmark,
+]
+
+include 'app/configs/noderegression_model_config_tuning.gin'

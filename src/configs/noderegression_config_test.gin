@@ -1,0 +1,4 @@
+include 'app/configs/noderegression_config.gin'
+
+GeneratorBeamHandlerWrapper.nsamples = 5
+SbmBeamHandler.num_tuning_rounds = 1
