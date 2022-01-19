@@ -1,11 +1,12 @@
 import json
+import math
 
 from abc import ABC, abstractmethod
 import apache_beam as beam
 import gin
 import numpy as np
 
-from .utils import ComputeNumPossibleConfigs, SampleModelConfig
+from .utils import ComputeNumPossibleConfigs, SampleModelConfig, GetCartesianProduct
 
 
 class Benchmarker(ABC):
@@ -139,9 +140,23 @@ class BenchmarkGNNParDo(beam.DoFn):
       else:
         configs = []
         scores = []
-        for _ in range(num_tuning_rounds):
-          benchmark_params_sample, h_params_sample = SampleModelConfig(benchmark_params,
-                                                                       h_params)
+        full_product = False
+        if num_tuning_rounds == 0:
+          benchmark_params_product = list(GetCartesianProduct(benchmark_params))
+          num_benchmark_configs = len(benchmark_params_product)
+          h_params_product = list(GetCartesianProduct(h_params))
+          num_h_configs = len(h_params_product)
+          num_tuning_rounds = num_benchmark_configs * num_h_configs
+          full_product = True
+        for i in range(num_tuning_rounds):
+          if full_product:
+            benchmark_index = math.floor(i / num_h_configs)
+            h_index = i % num_h_configs
+            benchmark_params_sample = benchmark_params_product[benchmark_index]
+            h_params_sample = h_params_product[h_index]
+          else:
+            benchmark_params_sample, h_params_sample = SampleModelConfig(benchmark_params,
+                                                                         h_params)
           benchmarker = benchmarker_class(element['generator_config'],
                                           model_class,
                                           benchmark_params_sample,

@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from collections.abc import Iterable
+import itertools
 import random
 
 import numpy as np
@@ -76,3 +78,13 @@ def SampleModelConfig(benchmark_params, h_params):
       name, value_list_or_value in h_params.items()
     }
   return benchmark_params_sample, h_params_sample
+
+def GetCartesianProduct(param_list_dict):
+  """Generator of full product space of the param lists."""
+  sorted_names = list(sorted(param_list_dict))
+  value_lists = [param_list_dict[k] for k in sorted_names]
+  value_lists = [v if isinstance(v, Iterable) else [v] for v in value_lists]
+  for element in itertools.product(*value_lists):
+    yield dict(zip(sorted_names, element))
+
+
