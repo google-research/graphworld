@@ -14,10 +14,10 @@ SubstructureBeamHandler.benchmarker_wrappers = [
 ]
 
 
-LR = [0.01, 0.001]
+LR = [0.01]
 HIDDEN_CHANNELS = [4, 16]
 NUM_LAYERS = [2, 4]
-DROPOUT = [0, 0.3]
+DROPOUT = [0.3]
 EPOCHS = 50
 # GNN only
 ALPHA = [0.2, 0.3]

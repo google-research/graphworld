@@ -6,7 +6,7 @@ SubstructureBeamHandler.substruct = %Substructure.TAILED_TRIANGLE_GRAPH
 SubstructureBeamHandler.scale_labels = True
 SubstructureBeamHandler.marginal = True
 SubstructureBeamHandler.num_tuning_rounds = 100
-SubstructureBeamHandler.tuning_metric = "test_mse_scaled"
+SubstructureBeamHandler.tuning_metric = "mse_scaled"
 SubstructureBeamHandler.tuning_metric_is_loss = True
 SubstructureBeamHandler.param_sampler_specs = [
   @num_graphs/ParamSamplerSpec(),

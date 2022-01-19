@@ -115,10 +115,10 @@ class NNGraphBenchmarker(Benchmarker):
       losses = None
 
     return {'losses': losses,
-            'val_metrics': {'test_mse': val_mse,
-                            'test_mse_scaled': val_mse_scaled},
-            'test_metrics': {'test_mse': test_mse,
-                             'test_mse_scaled': test_mse_scaled}}
+            'val_metrics': {'mse': val_mse,
+                            'mse_scaled': val_mse_scaled},
+            'test_metrics': {'mse': test_mse,
+                             'mse_scaled': test_mse_scaled}}
 
 
 class LRGraphBenchmarker(Benchmarker):
@@ -144,10 +144,10 @@ class LRGraphBenchmarker(Benchmarker):
     test_mse = MseWrapper(y_pred_test, y_test)
     test_mse_scaled = MseWrapper(y_pred_test, y_test, scale=True)
     return {'losses': [],
-            'val_metrics': {'test_mse': val_mse,
-                            'test_mse_scaled': val_mse_scaled},
-            'test_metrics': {'test_mse': test_mse,
-                             'test_mse_scaled': test_mse_scaled}}
+            'val_metrics': {'mse': val_mse,
+                            'mse_scaled': val_mse_scaled},
+            'test_metrics': {'mse': test_mse,
+                             'mse_scaled': test_mse_scaled}}
 
 @gin.configurable
 class LRGraphBenchmark(BenchmarkerWrapper):
@@ -216,18 +216,18 @@ class NNNodeBenchmarker(Benchmarker):
     correct_onehot[np.arange(correct.shape[0]), correct] = 1
 
     results = {
-        'test_accuracy': sklearn.metrics.accuracy_score(correct, pred_best),
-        'test_f1_micro': sklearn.metrics.f1_score(correct, pred_best,
+        'accuracy': sklearn.metrics.accuracy_score(correct, pred_best),
+        'f1_micro': sklearn.metrics.f1_score(correct, pred_best,
                                                   average='micro'),
-        'test_f1_macro': sklearn.metrics.f1_score(correct, pred_best,
+        'f1_macro': sklearn.metrics.f1_score(correct, pred_best,
                                                   average='macro'),
-        'test_rocauc_ovr': sklearn.metrics.roc_auc_score(correct_onehot,
+        'rocauc_ovr': sklearn.metrics.roc_auc_score(correct_onehot,
                                                          pred_onehot,
                                                          multi_class='ovr'),
-        'test_rocauc_ovo': sklearn.metrics.roc_auc_score(correct_onehot,
+        'rocauc_ovo': sklearn.metrics.roc_auc_score(correct_onehot,
                                                          pred_onehot,
                                                          multi_class='ovo'),
-        'test_logloss': sklearn.metrics.log_loss(correct, pred)}
+        'logloss': sklearn.metrics.log_loss(correct, pred)}
     return results
 
   def train(self, data,
@@ -333,18 +333,18 @@ class NNNodeBaselineBenchmarker(Benchmarker):
     correct_onehot[np.arange(correct.shape[0]), correct] = 1
 
     results = {
-        'test_accuracy': sklearn.metrics.accuracy_score(correct, pred_best),
-        'test_f1_micro': sklearn.metrics.f1_score(correct, pred_best,
+        'accuracy': sklearn.metrics.accuracy_score(correct, pred_best),
+        'f1_micro': sklearn.metrics.f1_score(correct, pred_best,
                                                   average='micro'),
-        'test_f1_macro': sklearn.metrics.f1_score(correct, pred_best,
+        'f1_macro': sklearn.metrics.f1_score(correct, pred_best,
                                                   average='macro'),
-        'test_rocauc_ovr': sklearn.metrics.roc_auc_score(correct_onehot,
+        'rocauc_ovr': sklearn.metrics.roc_auc_score(correct_onehot,
                                                          pred_onehot,
                                                          multi_class='ovr'),
-        'test_rocauc_ovo': sklearn.metrics.roc_auc_score(correct_onehot,
+        'rocauc_ovo': sklearn.metrics.roc_auc_score(correct_onehot,
                                                          pred_onehot,
                                                          multi_class='ovo'),
-        'test_logloss': sklearn.metrics.log_loss(correct, pred)}
+        'logloss': sklearn.metrics.log_loss(correct, pred)}
     return results
 
   def Benchmark(self, element,
@@ -439,8 +439,8 @@ class LPBenchmarker(Benchmarker):
     else:
       roc_auc_score, average_precision_score = self._lp_wrapper_model.test(
         z, data.test_pos_edge_index, data.test_neg_edge_index)
-    results['test_rocauc'] = roc_auc_score
-    results['test_ap'] = average_precision_score
+    results['rocauc'] = roc_auc_score
+    results['ap'] = average_precision_score
     return results
 
   def train(self, data):
@@ -463,12 +463,12 @@ class LPBenchmarker(Benchmarker):
     out.update(element)
     out['losses'] = None
     out['val_metrics'] = {
-        'test_rocaus': 0,
-        'test_ap': 0,
+        'rocauc': 0,
+        'ap': 0,
     }
     out['test_metrics'] = {
-        'test_rocaus': 0,
-        'test_ap': 0,
+        'rocaus': 0,
+        'ap': 0,
     }
 
     if skipped:
@@ -520,8 +520,8 @@ class LPBaselineBenchmarker(Benchmarker):
     all_scores = np.nan_to_num(all_scores, copy=False)
 
     return {
-        'test_rocauc': sklearn.metrics.roc_auc_score(y_true, all_scores),
-        'test_ap': sklearn.metrics.average_precision_score(y_true, all_scores),
+        'rocauc': sklearn.metrics.roc_auc_score(y_true, all_scores),
+        'ap': sklearn.metrics.average_precision_score(y_true, all_scores),
     }
 
   def GetModelName(self):
@@ -541,12 +541,12 @@ class LPBaselineBenchmarker(Benchmarker):
     out.update(element)
     out['losses'] = None
     out['val_metrics'] = {
-        'test_rocauc': 0,
-        'test_ap': 0,
+        'rocauc': 0,
+        'ap': 0,
     }
     out['test_metrics'] = {
-        'test_rocauc': 0,
-        'test_ap': 0,
+        'rocauc': 0,
+        'ap': 0,
     }
 
     if skipped:
@@ -627,7 +627,7 @@ class NodeRegressionBenchmarker(Benchmarker):
       correct = data.y[self._test_mask].numpy()
 
     results = {
-        'test_mse': float(sklearn.metrics.mean_squared_error(correct, pred)),
+        'mse': float(sklearn.metrics.mean_squared_error(correct, pred)),
     }
     return results
 
@@ -664,10 +664,10 @@ class NodeRegressionBenchmarker(Benchmarker):
     out.update(element)
     out['losses'] = None
     out['val_metrics'] = {
-        'test_mse': -1,
+        'mse': -1,
     }
     out['test_metrics'] = {
-        'test_mse': -1,
+        'mse': -1,
     }
 
     if skipped:
