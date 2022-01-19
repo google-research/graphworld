@@ -637,11 +637,22 @@ class NodeRegressionBenchmarker(Benchmarker):
     }
     return results
 
-  def train(self, data):
+  def train(self, data,
+            test_on_val: bool,
+            tuning_metric: str,
+            tuning_metric_is_loss: bool):
     losses = []
-    for _ in range(self._epochs):
+    best_val_metric = np.inf if tuning_metric_is_loss else -np.inf
+    test_metrics = None
+    for i in range(self._epochs):
       losses.append(float(self.train_step(data)))
-    return losses
+      val_metrics = self.test(data, test_on_val=True)
+      if ((tuning_metric_is_loss and val_metrics[tuning_metric] < best_val_metric) or
+          (not tuning_metric_is_loss and val_metrics[tuning_metric] > best_val_metric)):
+        best_val_metric = val_metrics[tuning_metric]
+        test_metrics = self.test(data, test_on_val=test_on_val)
+    return losses, test_metrics
+
 
   def Benchmark(self, element,
                 test_on_val: bool = False,
@@ -668,21 +679,22 @@ class NodeRegressionBenchmarker(Benchmarker):
 
     self.SetMasks(train_mask, val_mask, test_mask)
 
-    test_accuracy = {
+    test_metrics = {
         'test_mse': -1,
     }
     losses = None
     try:
-      losses = self.train(torch_data)
-      # Divide by zero sometimes happens with the ksample masks.
-      test_accuracy = self.test(torch_data, test_on_val=test_on_val)
+      losses, test_metrics = self.train(
+        torch_data, test_on_val=test_on_val, tuning_metric=tuning_metric,
+        tuning_metric_is_loss=tuning_metric_is_loss)
     except Exception as e:
       logging.info(f'Failed to run for sample id {sample_id}')
       out['skipped'] = True
 
     out['losses'] = losses
-    out['test_metrics'].update(test_accuracy)
+    out['test_metrics'].update(test_metrics)
     return out
+
 
 @gin.configurable
 class NodeRegressionBenchmark(BenchmarkerWrapper):
