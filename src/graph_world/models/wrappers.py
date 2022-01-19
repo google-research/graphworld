@@ -94,7 +94,7 @@ class NNGraphBenchmarker(Benchmarker):
     return mse, mse_scaled
 
   def Benchmark(self, element,
-                tuning: bool = False,
+                test_on_val: bool = False,
                 tuning_metric: str = None,
                 tuning_metric_is_loss: bool = False):
     sample_id = element['sample_id']
@@ -102,7 +102,7 @@ class NNGraphBenchmarker(Benchmarker):
     test_mse_scaled = 0.0
     try:
       mses, losses = self.train(element['torch_dataset']['train'])
-      if tuning:
+      if test_on_val:
         total_mse, total_mse_scaled = self.test(element['torch_dataset']['tuning'])
       else:
         total_mse, total_mse_scaled = self.test(element['torch_dataset']['test'])
@@ -126,16 +126,18 @@ class LRGraphBenchmarker(Benchmarker):
     self._model_name = 'LR'
 
   def Benchmark(self, element,
-                tuning: bool = False,
+                test_on_val: bool = False,
                 tuning_metric: str = None,
                 tuning_metric_is_loss: bool = False):
     reg = LinearRegression().fit(
       element['numpy_dataset']['train']['X'],
       element['numpy_dataset']['train']['y'])
     y_pred = reg.predict(
+      element['numpy_dataset']['val']['X'] if test_on_val else
       element['numpy_dataset']['test']['X'])
     y_test = (
-      element['numpy_dataset']['test']['y']
+      element['numpy_dataset']['val']['y'] if test_on_val else
+      element['numpy_dataset']['test']['X']
     )
     test_mse = MseWrapper(y_pred, y_test)
     test_mse_scaled = MseWrapper(y_pred, y_test, scale=True)
@@ -241,7 +243,7 @@ class NNNodeBenchmarker(Benchmarker):
     return losses, test_metrics
 
   def Benchmark(self, element,
-                tuning: bool = False,
+                test_on_val: bool = False,
                 tuning_metric: str = None,
                 tuning_metric_is_loss: bool = False):
     torch_data = element['torch_data']
@@ -276,7 +278,7 @@ class NNNodeBenchmarker(Benchmarker):
     losses = None
     try:
       losses, test_metrics = self.train(
-        torch_data, test_on_val=tuning, tuning_metric=tuning_metric,
+        torch_data, test_on_val=test_on_val, tuning_metric=tuning_metric,
         tuning_metric_is_loss=tuning_metric_is_loss)
     except Exception as e:
       logging.info(f'Failed to run for sample id {sample_id}')
@@ -320,7 +322,7 @@ class NNNodeBaselineBenchmarker(Benchmarker):
         pred[idx, labels[nodes_train]] += pprs[nodes_train]
 
     pred_best = pred.argmax(-1)
-    if tuning:
+    if test_on_val:
       correct = labels[nodes_val]
     else:
       correct = labels[nodes_test]
@@ -347,7 +349,7 @@ class NNNodeBaselineBenchmarker(Benchmarker):
     return results
 
   def Benchmark(self, element,
-                tuning: bool = False,
+                test_on_val: bool = False,
                 tuning_metric: str = None,
                 tuning_metric_is_loss: bool = False):
     gt_data = element['gt_data']
@@ -378,7 +380,7 @@ class NNNodeBaselineBenchmarker(Benchmarker):
     }
     try:
       # Divide by zero sometimes happens with the ksample masks.
-      test_accuracy = self.test(torch_data, gt_data, masks, test_on_val=tuning)
+      test_accuracy = self.test(torch_data, gt_data, masks, test_on_val=test_on_val)
     except Exception:
       logging.info(f'Failed to compute test accuracy for sample id {sample_id}')
       out['skipped'] = True
@@ -457,7 +459,7 @@ class LPBenchmarker(Benchmarker):
     return losses
 
   def Benchmark(self, element,
-                tuning: bool = False,
+                test_on_val: bool = False,
                 tuning_metric: str = None,
                 tuning_metric_is_loss: bool = False):
     torch_data = element['torch_data']
@@ -484,7 +486,7 @@ class LPBenchmarker(Benchmarker):
     try:
       losses = self.train(torch_data)
       # Divide by zero sometimes happens with the ksample masks.
-      test_accuracy = self.test(torch_data, test_on_val=tuning)
+      test_accuracy = self.test(torch_data, test_on_val=test_on_val)
     except Exception:
       logging.info(f'Failed to run for sample id {sample_id}')
       out['skipped'] = True
@@ -534,7 +536,7 @@ class LPBaselineBenchmarker(Benchmarker):
     return 'Baseline'
 
   def Benchmark(self, element,
-                tuning: bool = False,
+                test_on_val: bool = False,
                 tuning_metric: str = None,
                 tuning_metric_is_loss: bool = False):
     torch_data = element['torch_data']
@@ -559,7 +561,7 @@ class LPBaselineBenchmarker(Benchmarker):
     }
     try:
       # Divide by zero sometimes happens with the ksample masks.
-      test_accuracy = self.test(torch_data, test_on_val=tuning)
+      test_accuracy = self.test(torch_data, test_on_val=test_on_val)
     except Exception:
       logging.info(f'Failed to compute test accuracy for sample id {sample_id}')
       out['skipped'] = True
@@ -641,7 +643,10 @@ class NodeRegressionBenchmarker(Benchmarker):
       losses.append(float(self.train_step(data)))
     return losses
 
-  def Benchmark(self, element, tuning=False):
+  def Benchmark(self, element,
+                test_on_val: bool = False,
+                tuning_metric: str = None,
+                tuning_metric_is_loss: bool = False):
     torch_data = element['torch_data']
     masks = element['masks']
     skipped = element['skipped']
@@ -670,7 +675,7 @@ class NodeRegressionBenchmarker(Benchmarker):
     try:
       losses = self.train(torch_data)
       # Divide by zero sometimes happens with the ksample masks.
-      test_accuracy = self.test(torch_data, test_on_val=tuning)
+      test_accuracy = self.test(torch_data, test_on_val=test_on_val)
     except Exception as e:
       logging.info(f'Failed to run for sample id {sample_id}')
       out['skipped'] = True

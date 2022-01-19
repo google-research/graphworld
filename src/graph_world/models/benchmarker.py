@@ -36,11 +36,11 @@ class Benchmarker(ABC):
   #      'test_metrics': dict of named test metrics for the benchmark run.
   @abstractmethod
   def Benchmark(self, element,
-                tuning: bool = False,
+                test_on_val: bool = False,
                 tuning_metric: str = None,
                 tuning_metric_is_loss: bool = False):
     del element  # unused
-    del tuning  # unused
+    del test_on_val  # unused
     del tuning_metric  # unused
     del tuning_metric_is_loss  # unused
     return {'losses': [], 'test_metrics': {}}
@@ -133,7 +133,7 @@ class BenchmarkGNNParDo(beam.DoFn):
                                         benchmark_params_sample,
                                         h_params_sample)
         benchmarker_out = benchmarker.Benchmark(element,
-                                                tuning=False,
+                                                test_on_val=False,
                                                 tuning_metric=self._tuning_metric,
                                                 tuning_metric_is_loss=self._tuning_metric_is_loss)
       else:
@@ -147,7 +147,7 @@ class BenchmarkGNNParDo(beam.DoFn):
                                           benchmark_params_sample,
                                           h_params_sample)
           benchmarker_out = benchmarker.Benchmark(element,
-                                                  tuning=True,
+                                                  test_on_val=True,
                                                   tuning_metric=self._tuning_metric,
                                                   tuning_metric_is_loss=self._tuning_metric_is_loss)
           configs.append((benchmark_params_sample, h_params_sample))
