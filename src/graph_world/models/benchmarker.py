@@ -83,7 +83,7 @@ class BenchmarkGNNParDo(beam.DoFn):
   #  - https://github.com/huggingface/transformers/issues/8453
   #  - https://github.com/huggingface/transformers/issues/8212
   def __init__(self, benchmarker_wrappers, num_tuning_rounds, tuning_metric,
-               tuning_metric_is_loss=False):
+               tuning_metric_is_loss=False, save_tuning_results=False):
     # self._benchmarkers = [benchmarker_wrapper().GetBenchmarker() for
     #                       benchmarker_wrapper in benchmarker_wrappers]
     self._benchmarker_classes = [benchmarker_wrapper().GetBenchmarkerClass() for
@@ -99,6 +99,7 @@ class BenchmarkGNNParDo(beam.DoFn):
     self._num_tuning_rounds = num_tuning_rounds
     self._tuning_metric = tuning_metric
     self._tuning_metric_is_loss = tuning_metric_is_loss
+    self._save_tuning_results = save_tuning_results
 
   def SetOutputPath(self, output_path):
     self._output_path = output_path
@@ -126,6 +127,7 @@ class BenchmarkGNNParDo(beam.DoFn):
       print(f'Running {benchmarker_class} and model f{model_class}')
       num_possible_configs = ComputeNumPossibleConfigs(benchmark_params, h_params)
       num_tuning_rounds = min(num_possible_configs, self._num_tuning_rounds)
+
       if num_tuning_rounds == 1 or self._tuning_metric == '':
         benchmark_params_sample, h_params_sample = SampleModelConfig(benchmark_params,
                                                                      h_params)
@@ -142,18 +144,34 @@ class BenchmarkGNNParDo(beam.DoFn):
         scores = []
         full_product = False
         if num_tuning_rounds == 0:
-          benchmark_params_product = list(GetCartesianProduct(benchmark_params))
+          num_tuning_rounds = 1
+          if benchmark_params is None:
+            benchmark_params_product = []
+          else:
+            benchmark_params_product = list(GetCartesianProduct(benchmark_params))
           num_benchmark_configs = len(benchmark_params_product)
-          h_params_product = list(GetCartesianProduct(h_params))
+          if num_benchmark_configs > 0:
+            num_tuning_rounds *= num_benchmark_configs
+          if h_params is None:
+            h_params_product = []
+          else:
+            h_params_product = list(GetCartesianProduct(h_params))
           num_h_configs = len(h_params_product)
-          num_tuning_rounds = num_benchmark_configs * num_h_configs
+          if num_h_configs > 0:
+            num_tuning_rounds *= num_h_configs
           full_product = True
         for i in range(num_tuning_rounds):
           if full_product:
-            benchmark_index = math.floor(i / num_h_configs)
-            h_index = i % num_h_configs
-            benchmark_params_sample = benchmark_params_product[benchmark_index]
-            h_params_sample = h_params_product[h_index]
+            if num_benchmark_configs > 0:
+              benchmark_index = math.floor(i / num_h_configs)
+              benchmark_params_sample = benchmark_params_product[benchmark_index]
+            else:
+              benchmark_params_sample = None
+            if num_h_configs > 0:
+              h_index = i % num_h_configs
+              h_params_sample = h_params_product[h_index]
+            else:
+              h_params_sample = None
           else:
             benchmark_params_sample, h_params_sample = SampleModelConfig(benchmark_params,
                                                                          h_params)
@@ -180,6 +198,9 @@ class BenchmarkGNNParDo(beam.DoFn):
 
       # Return benchmark data for next beam stage.
       output_data['%s__num_tuning_rounds' % benchmarker.GetModelName()] = num_tuning_rounds
+      if self._save_tuning_results:
+        output_data['%s__configs' % benchmarker.GetModelName()] = configs
+        output_data['%s__scores' % benchmarker.GetModelName()] = scores
 
       for key, value in benchmarker_out['test_metrics'].items():
         output_data[f'{benchmarker.GetModelName()}__{key}'] = value

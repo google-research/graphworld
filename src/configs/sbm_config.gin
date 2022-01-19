@@ -3,10 +3,11 @@ include 'app/configs/sbm_generator_config.gin'
 include 'app/configs/node_classification_default_vals.gin'
 
 GeneratorBeamHandlerWrapper.handler = @SbmBeamHandler()
-GeneratorBeamHandlerWrapper.nsamples = 7000
+GeneratorBeamHandlerWrapper.nsamples = 100000
 
-SbmBeamHandler.marginal = True
-SbmBeamHandler.num_tuning_rounds = 100
+SbmBeamHandler.marginal = False
+SbmBeamHandler.num_tuning_rounds = 0
+SbmBeamHandler.save_tuning_results = True
 SbmBeamHandler.tuning_metric = "test_rocauc_ovr"
 SbmBeamHandler.tuning_metric_is_loss = False
 SbmBeamHandler.ktrain = 5
@@ -15,18 +16,18 @@ SbmBeamHandler.param_sampler_specs = %SBMSamplerSpec
 
 SbmBeamHandler.benchmarker_wrappers = [
   @GCN_/NNNodeBenchmark,
-  @GraphSAGE_/NNNodeBenchmark,
+  #@GraphSAGE_/NNNodeBenchmark,
   @GIN_/NNNodeBenchmark,
-  @GAT_/NNNodeBenchmark,
-  @GATv2_/NNNodeBenchmark,
-  @ARMA_/NNNodeBenchmark,
-  @FiLM_/NNNodeBenchmark,
+  #@GAT_/NNNodeBenchmark,
+  #@GATv2_/NNNodeBenchmark,
+  #@ARMA_/NNNodeBenchmark,
+  #@FiLM_/NNNodeBenchmark,
 
-  @MLP_/NNNodeBenchmark,
-  @APPNP_/NNNodeBenchmark,
-  @SGC_/NNNodeBenchmark,
+  #@MLP_/NNNodeBenchmark,
+  #@APPNP_/NNNodeBenchmark,
+  #@SGC_/NNNodeBenchmark,
 
-  @Baseline_/NNNodeBaselineBenchmark,
+  #@Baseline_/NNNodeBaselineBenchmark,
 ]
 
 # GCN & GNN hyperparameter ranges

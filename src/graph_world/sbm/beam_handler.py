@@ -200,13 +200,15 @@ class SbmBeamHandler(GeneratorBeamHandler):
   def __init__(self, param_sampler_specs, benchmarker_wrappers,
                marginal=False, num_tuning_rounds=1,
                tuning_metric='', tuning_metric_is_loss=False, ktrain=5, ktuning=5,
-              normalize_features=False):
+               normalize_features=False, save_tuning_results=False):
     self._sample_do_fn = SampleSbmDoFn(param_sampler_specs, marginal, normalize_features)
     self._benchmark_par_do = BenchmarkGNNParDo(benchmarker_wrappers, num_tuning_rounds,
-                                               tuning_metric, tuning_metric_is_loss)
+                                               tuning_metric, tuning_metric_is_loss,
+                                               save_tuning_results)
     self._metrics_par_do = ComputeSbmGraphMetrics()
     self._ktrain = ktrain
     self._ktuning = ktuning
+    self._save_tuning_results = save_tuning_results
 
   def GetSampleDoFn(self):
     return self._sample_do_fn

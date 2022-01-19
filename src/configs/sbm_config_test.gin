@@ -1,4 +1,16 @@
 include 'app/configs/sbm_config.gin'
 
-GeneratorBeamHandlerWrapper.nsamples = 5
-SbmBeamHandler.num_tuning_rounds = 2
+GeneratorBeamHandlerWrapper.nsamples = 1
+SbmBeamHandler.num_tuning_rounds = 0
+SbmBeamHandler.save_tuning_results = True
+
+
+
+LR = [0.01, 0.001]
+HIDDEN_CHANNELS = [4, 16]
+NUM_LAYERS = [2, 4]
+DROPOUT = [0, 0.3] # a hack to make dropout equiprobable
+EPOCHS = 50
+# GNN only
+ALPHA = [0.1, 0.2, 0.3]
+ITERATIONS = [5, 10, 15]
