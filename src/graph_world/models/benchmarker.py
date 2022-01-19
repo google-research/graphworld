@@ -202,7 +202,7 @@ class BenchmarkGNNParDo(beam.DoFn):
           output_data['%s__val_scores' % benchmarker.GetModelName()] = val_scores
           output_data['%s__test_scores' % benchmarker.GetModelName()] = test_scores
 
-        val_metrics = test_metrics_list[best_tuning_round]
+        val_metrics = val_metrics_list[best_tuning_round]
         test_metrics = test_metrics_list[best_tuning_round]
 
       # Return benchmark data for next beam stage.
