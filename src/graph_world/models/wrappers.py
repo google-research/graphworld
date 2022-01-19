@@ -189,16 +189,16 @@ class NNNodeBenchmarker(Benchmarker):
     self._optimizer.step()  # Update parameters based on gradients.
     return loss
 
-  def test(self, data, tuning=False):
+  def test(self, data, test_on_val=False):
     self._model.eval()
     out = self._model(data.x, data.edge_index)
-    if tuning:
+    if test_on_val:
       pred = out[self._val_mask].detach().numpy()
     else:
       pred = out[self._test_mask].detach().numpy()
 
     pred_best = pred.argmax(-1)
-    if tuning:
+    if test_on_val:
       correct = data.y[self._val_mask].numpy()
     else:
       correct = data.y[self._test_mask].numpy()
@@ -225,7 +225,7 @@ class NNNodeBenchmarker(Benchmarker):
     return results
 
   def train(self, data,
-            tuning: bool,
+            test_on_val: bool,
             tuning_metric: str,
             tuning_metric_is_loss: bool):
     losses = []
@@ -233,11 +233,11 @@ class NNNodeBenchmarker(Benchmarker):
     test_metrics = None
     for i in range(self._epochs):
       losses.append(float(self.train_step(data)))
-      val_metrics = self.test(data, tuning=True)
+      val_metrics = self.test(data, test_on_val=True)
       if ((tuning_metric_is_loss and val_metrics[tuning_metric] < best_val_metric) or
           (not tuning_metric_is_loss and val_metrics[tuning_metric] > best_val_metric)):
         best_val_metric = val_metrics[tuning_metric]
-        test_metrics = self.test(data, tuning=tuning)
+        test_metrics = self.test(data, test_on_val=test_on_val)
     return losses, test_metrics
 
   def Benchmark(self, element,
@@ -276,7 +276,7 @@ class NNNodeBenchmarker(Benchmarker):
     losses = None
     try:
       losses, test_metrics = self.train(
-        torch_data, tuning=tuning, tuning_metric=tuning_metric,
+        torch_data, test_on_val=tuning, tuning_metric=tuning_metric,
         tuning_metric_is_loss=tuning_metric_is_loss)
     except Exception as e:
       logging.info(f'Failed to run for sample id {sample_id}')
@@ -297,14 +297,14 @@ class NNNodeBaselineBenchmarker(Benchmarker):
   def GetModelName(self):
     return 'PPRBaseline'
 
-  def test(self, data, graph, masks, tuning=False):
+  def test(self, data, graph, masks, test_on_val=False):
     train_mask, val_mask, test_mask = masks
     node_ids = np.arange(train_mask.shape[0])
     labels = data.y.numpy()
     nodes_train, nodes_val, nodes_test = node_ids[train_mask], node_ids[val_mask], node_ids[test_mask]
     n_classes = max(data.y.numpy()) + 1
     pers = graph.new_vertex_property("double")
-    if tuning:
+    if test_on_val:
       pred = np.zeros((len(nodes_val), n_classes))
       for idx, node in enumerate(nodes_val):
         pers.a = 0
@@ -378,7 +378,7 @@ class NNNodeBaselineBenchmarker(Benchmarker):
     }
     try:
       # Divide by zero sometimes happens with the ksample masks.
-      test_accuracy = self.test(torch_data, gt_data, masks, tuning=tuning)
+      test_accuracy = self.test(torch_data, gt_data, masks, test_on_val=tuning)
     except Exception:
       logging.info(f'Failed to compute test accuracy for sample id {sample_id}')
       out['skipped'] = True
@@ -434,13 +434,13 @@ class LPBenchmarker(Benchmarker):
     self._optimizer.step()  # Update parameters based on gradients.
     return loss
 
-  def test(self, data, tuning=False):
+  def test(self, data, test_on_val=False):
     self._model.eval()
     self._lp_wrapper_model.eval()
     results = {}
     z = self._model(data.x, data.train_pos_edge_index)
 
-    if tuning:
+    if test_on_val:
       roc_auc_score, average_precision_score = self._lp_wrapper_model.test(
         z, data.val_pos_edge_index, data.val_neg_edge_index)
     else:
@@ -484,7 +484,7 @@ class LPBenchmarker(Benchmarker):
     try:
       losses = self.train(torch_data)
       # Divide by zero sometimes happens with the ksample masks.
-      test_accuracy = self.test(torch_data, tuning=tuning)
+      test_accuracy = self.test(torch_data, test_on_val=tuning)
     except Exception:
       logging.info(f'Failed to run for sample id {sample_id}')
       out['skipped'] = True
@@ -504,12 +504,12 @@ class LPBaselineBenchmarker(Benchmarker):
     return gt.vertex_similarity(graph, sim_type=self._scorer,
                                 vertex_pairs=edge_index)
 
-  def test(self, data, tuning=False):
+  def test(self, data, test_on_val=False):
     graph = gt.Graph(directed=False)
     graph.add_vertex(data.y.shape[0])
     graph.add_edge_list(data.train_pos_edge_index.T)
 
-    if tuning:
+    if test_on_val:
       pos_scores = self.score(graph, data.val_pos_edge_index.T)
       neg_scores = self.score(graph, data.val_neg_edge_index.T)
       y_true = np.ones(data.val_pos_edge_index.shape[1] +
@@ -559,7 +559,7 @@ class LPBaselineBenchmarker(Benchmarker):
     }
     try:
       # Divide by zero sometimes happens with the ksample masks.
-      test_accuracy = self.test(torch_data, tuning=tuning)
+      test_accuracy = self.test(torch_data, test_on_val=tuning)
     except Exception:
       logging.info(f'Failed to compute test accuracy for sample id {sample_id}')
       out['skipped'] = True
@@ -617,15 +617,15 @@ class NodeRegressionBenchmarker(Benchmarker):
     self._optimizer.step()  # Update parameters based on gradients.
     return loss
 
-  def test(self, data, tuning=False):
+  def test(self, data, test_on_val=False):
     self._model.eval()
     out = self._model(data.x, data.edge_index).ravel()
-    if tuning:
+    if test_on_val:
       pred = out[self._val_mask].detach().numpy()
     else:
       pred = out[self._test_mask].detach().numpy()
 
-    if tuning:
+    if test_on_val:
       correct = data.y[self._val_mask].numpy()
     else:
       correct = data.y[self._test_mask].numpy()
@@ -670,7 +670,7 @@ class NodeRegressionBenchmarker(Benchmarker):
     try:
       losses = self.train(torch_data)
       # Divide by zero sometimes happens with the ksample masks.
-      test_accuracy = self.test(torch_data, tuning=tuning)
+      test_accuracy = self.test(torch_data, test_on_val=tuning)
     except Exception as e:
       logging.info(f'Failed to run for sample id {sample_id}')
       out['skipped'] = True
