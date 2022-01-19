@@ -1,6 +1,24 @@
 include 'app/configs/substructure_config.gin'
 
-GeneratorBeamHandlerWrapper.nsamples = 5
-SubstructureBeamHandler.num_tuning_rounds = 2
+GeneratorBeamHandlerWrapper.nsamples = 1
+SubstructureBeamHandler.num_tuning_rounds = 0
 num_graphs/ParamSamplerSpec.min_val = 50
 num_graphs/ParamSamplerSpec.max_val = 100
+
+
+
+SubstructureBeamHandler.benchmarker_wrappers = [
+  @GCN_/NNGraphBenchmark,
+  @GIN_/NNGraphBenchmark,
+  @LRGraphBenchmark,
+]
+
+
+LR = [0.01, 0.001]
+HIDDEN_CHANNELS = [4, 16]
+NUM_LAYERS = [2, 4]
+DROPOUT = [0, 0.3]
+EPOCHS = 50
+# GNN only
+ALPHA = [0.2, 0.3]
+ITERATIONS = [10, 15]

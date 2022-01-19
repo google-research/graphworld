@@ -136,12 +136,15 @@ class BenchmarkGNNParDo(beam.DoFn):
                                         benchmark_params_sample,
                                         h_params_sample)
         benchmarker_out = benchmarker.Benchmark(element,
-                                                test_on_val=False,
                                                 tuning_metric=self._tuning_metric,
                                                 tuning_metric_is_loss=self._tuning_metric_is_loss)
+        val_metrics = benchmarker_out['val_metrics']
+        test_metrics = benchmarker_out['test_metrics']
+
       else:
         configs = []
-        scores = []
+        val_metrics_list = []
+        test_metrics_list = []
         full_product = False
         if num_tuning_rounds == 0:
           num_tuning_rounds = 1
@@ -180,30 +183,35 @@ class BenchmarkGNNParDo(beam.DoFn):
                                           benchmark_params_sample,
                                           h_params_sample)
           benchmarker_out = benchmarker.Benchmark(element,
-                                                  test_on_val=True,
                                                   tuning_metric=self._tuning_metric,
                                                   tuning_metric_is_loss=self._tuning_metric_is_loss)
           configs.append((benchmark_params_sample, h_params_sample))
-          scores.append(benchmarker_out['test_metrics'][self._tuning_metric])
+          val_metrics_list.append(benchmarker_out['val_metrics'])
+          test_metrics_list.append(benchmarker_out['test_metrics'])
+
+        val_scores = [metrics[self._tuning_metric] for metrics in val_metrics_list]
+        test_scores = [metrics[self._tuning_metric] for metrics in test_metrics_list]
         if self._tuning_metric_is_loss:
-          best_tuning_round = np.argmin(scores)
+          best_tuning_round = np.argmin(val_scores)
         else:
-          best_tuning_round = np.argmax(scores)
+          best_tuning_round = np.argmax(val_scores)
         benchmark_params_sample, h_params_sample = configs[best_tuning_round]
-        benchmarker = benchmarker_class(element['generator_config'],
-                                        model_class,
-                                        benchmark_params_sample,
-                                        h_params_sample)
-        benchmarker_out = benchmarker.Benchmark(element)
+        output_data['%s__num_tuning_rounds' % benchmarker.GetModelName()] = num_tuning_rounds
+        if self._save_tuning_results:
+          output_data['%s__configs' % benchmarker.GetModelName()] = configs
+          output_data['%s__val_scores' % benchmarker.GetModelName()] = val_scores
+          output_data['%s__test_scores' % benchmarker.GetModelName()] = test_scores
+
+        val_metrics = test_metrics_list[best_tuning_round]
+        test_metrics = test_metrics_list[best_tuning_round]
 
       # Return benchmark data for next beam stage.
-      output_data['%s__num_tuning_rounds' % benchmarker.GetModelName()] = num_tuning_rounds
-      if self._save_tuning_results:
-        output_data['%s__configs' % benchmarker.GetModelName()] = configs
-        output_data['%s__scores' % benchmarker.GetModelName()] = scores
 
-      for key, value in benchmarker_out['test_metrics'].items():
-        output_data[f'{benchmarker.GetModelName()}__{key}'] = value
+      for key, value in val_metrics.items():
+        output_data[f'{benchmarker.GetModelName()}__val_{key}'] = value
+      for key, value in test_metrics.items():
+        output_data[f'{benchmarker.GetModelName()}__test_{key}'] = value
+
 
       if benchmark_params_sample is not None:
         for key, value in benchmark_params_sample.items():
