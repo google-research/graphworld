@@ -98,6 +98,8 @@ class NNGraphBenchmarker(Benchmarker):
                 tuning_metric: str = None,
                 tuning_metric_is_loss: bool = False):
     sample_id = element['sample_id']
+    val_mse = 0.0
+    val_mse_scaled = 0.0
     test_mse = 0.0
     test_mse_scaled = 0.0
     try:
@@ -270,8 +272,8 @@ class NNNodeBenchmarker(Benchmarker):
 
     self.SetMasks(train_mask, val_mask, test_mask)
 
-    val_metrics = None
-    test_metrics = None
+    val_metrics = {}
+    test_metrics = {}
     losses = None
     try:
       losses, test_metrics, val_metrics = self.train(
@@ -367,19 +369,14 @@ class NNNodeBaselineBenchmarker(Benchmarker):
       logging.info(f'Skipping benchmark for sample id {sample_id}')
       return out
 
-    val_accuracy = {}
-    test_accuracy = {}
-
     try:
       # Divide by zero sometimes happens with the ksample masks.
-      val_accuracy = self.test(torch_data, gt_data, masks, test_on_val=True)
-      test_accuracy = self.test(torch_data, gt_data, masks, test_on_val=False)
+      out['val_metrics'].update(self.test(torch_data, gt_data, masks, test_on_val=True))
+      out['test_metrics'].update(self.test(torch_data, gt_data, masks, test_on_val=False))
     except Exception:
       logging.info(f'Failed to compute test accuracy for sample id {sample_id}')
       out['skipped'] = True
 
-    out['val_metrics'].update(val_accuracy)
-    out['test_metrics'].update(test_accuracy)
     return out
 
 @gin.configurable
@@ -478,19 +475,16 @@ class LPBenchmarker(Benchmarker):
       logging.info(f'Skipping benchmark for sample id {sample_id}')
       return out
 
-    losses = None
+    out['losses'] = None
     try:
-      losses = self.train(torch_data)
+      out['losses'] = self.train(torch_data)
       # Divide by zero sometimes happens with the ksample masks.
-      val_accuracy = self.test(torch_data, test_on_val=True)
-      test_accuracy = self.test(torch_data, test_on_val=False)
+      out['val_metrics'].update(self.test(torch_data, test_on_val=True))
+      out['test_metrics'].update(self.test(torch_data, test_on_val=False))
     except Exception:
       logging.info(f'Failed to run for sample id {sample_id}')
       out['skipped'] = True
 
-    out['losses'] = losses
-    out['val_metrics'].update(val_accuracy)
-    out['test_metrics'].update(test_accuracy)
     return out
 
 
@@ -561,14 +555,12 @@ class LPBaselineBenchmarker(Benchmarker):
 
     try:
       # Divide by zero sometimes happens with the ksample masks.
-      val_accuracy = self.test(torch_data, test_on_val=True)
-      test_accuracy = self.test(torch_data, test_on_val=False)
+      out['val_metrics'].update(self.test(torch_data, test_on_val=True))
+      out['test_metrics'].update(self.test(torch_data, test_on_val=False))
     except Exception:
       logging.info(f'Failed to compute test accuracy for sample id {sample_id}')
       out['skipped'] = True
 
-    out['val_metrics'].update(val_accuracy)
-    out['test_metrics'].update(test_accuracy)
     return out
 
 @gin.configurable
@@ -686,17 +678,18 @@ class NodeRegressionBenchmarker(Benchmarker):
 
     self.SetMasks(train_mask, val_mask, test_mask)
 
-    losses = None
+    out['losses'] = None
     try:
       losses, test_metrics, val_metrics = self.train(
         torch_data, tuning_metric=tuning_metric,
         tuning_metric_is_loss=tuning_metric_is_loss)
+      out['losses'] = losses
+      out['val_metrics'].update(val_metrics)
+      out['test_metrics'].update(test_metrics)
     except Exception as e:
       logging.info(f'Failed to run for sample id {sample_id}')
       out['skipped'] = True
 
-    out['losses'] = losses
-    out['test_metrics'].update(test_metrics)
     return out
 
 
