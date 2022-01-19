@@ -25,7 +25,6 @@ class PyGBasicGraphModel(torch.nn.Module):
     super(PyGBasicGraphModel, self).__init__()
 
     # Make sure no final output conversion has been requested
-    print(h_params)
     assert 'out_channels' not in h_params
     # h_params['out_channels'] = None
 
