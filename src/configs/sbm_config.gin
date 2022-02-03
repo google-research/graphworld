@@ -3,7 +3,7 @@ include 'app/configs/sbm_generator_config.gin'
 include 'app/configs/node_classification_default_vals.gin'
 
 GeneratorBeamHandlerWrapper.handler = @SbmBeamHandler()
-GeneratorBeamHandlerWrapper.nsamples = 100000
+GeneratorBeamHandlerWrapper.nsamples = 10000
 
 SbmBeamHandler.marginal = False
 SbmBeamHandler.num_tuning_rounds = 0
@@ -17,7 +17,7 @@ SbmBeamHandler.param_sampler_specs = %SBMSamplerSpec
 SbmBeamHandler.benchmarker_wrappers = [
   @GCN_/NNNodeBenchmark,
   #@GraphSAGE_/NNNodeBenchmark,
-  @GIN_/NNNodeBenchmark,
+  #@GIN_/NNNodeBenchmark,
   #@GAT_/NNNodeBenchmark,
   #@GATv2_/NNNodeBenchmark,
   #@ARMA_/NNNodeBenchmark,
@@ -31,10 +31,10 @@ SbmBeamHandler.benchmarker_wrappers = [
 ]
 
 # GCN & GNN hyperparameter ranges
-LR = [0.01, 0.001, 0.0001]
-HIDDEN_CHANNELS = [4, 8, 16]
+LR = [0.01, 0.005, 0.001, 0.0005, 0.0001]
+HIDDEN_CHANNELS = [4, 8, 12, 16]
 NUM_LAYERS = [1, 2, 3, 4]
-DROPOUT = [0, 0, 0, 0.3, 0.5, 0.8] # a hack to make dropout equiprobable
+DROPOUT = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6] # a hack to make dropout equiprobable
 EPOCHS = 50
 # GNN only
 ALPHA = [0.1, 0.2, 0.3]

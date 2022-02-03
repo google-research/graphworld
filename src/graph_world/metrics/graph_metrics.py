@@ -133,6 +133,79 @@ def feature_homogeneity(normed_features, labels):
   return in_avg, out_avg
 
 
+def _get_edge_count_matrix(adj, labels):
+  k = len(set(labels))
+  seen_edges = set()
+  edge_counts = np.zeros((k, k))
+  edge_matrix = np.array(np.nonzero(adj))
+  for edge_index in range(edge_matrix.shape[1]):
+    v1 = edge_matrix[0, edge_index]
+    v2 = edge_matrix[1, edge_index]
+    edge_tuple = (v1, v2)
+    if edge_tuple in seen_edges:
+      continue
+    else:
+      seen_edges.add(edge_tuple)
+    k1 = labels[v1]
+    k2 = labels[v2]
+    edge_counts[k1, k2] += 1
+    if k1 == k2:
+      edge_counts[k1, k2] += 1
+  edge_counts = edge_counts.astype(np.int32)
+  return edge_counts
+
+def _get_degrees_by_labels(labels, degrees, adjusted=False):
+  if adjusted:
+    degrees_by_labels = {
+        label: np.sum(degrees[np.where(labels == label)[0]]) for
+        label in labels}
+  else:
+    degrees_by_labels = {
+        label: len(np.where(labels == label)[0]) for
+        label in labels}
+  return degrees_by_labels
+
+
+def _get_p_to_q_ratio(G, labels, degrees, adjusted=False):
+  adj = graph_tool.spectral.adjacency(G)
+  edge_count_matrix = _get_edge_count_matrix(adj, labels)
+  pi = _get_pi(labels, degrees, adjusted)
+  n = adj.shape[0]
+  num_within_pairs = np.sum(pi ** 2.0) * (n ** 2.0)
+  num_between_pairs = (n ** 2.0) - num_within_pairs
+  num_within_edges = np.sum(np.diag(edge_count_matrix))
+  num_between_edges = np.sum(edge_count_matrix) - num_within_edges
+  return ((num_within_edges / num_within_pairs) /
+          (num_between_edges / num_between_pairs))
+
+
+def _get_pareto_exponent(degrees):
+  n = len(degrees)
+  dmin = np.min(degrees)
+  alpha = n / np.sum(np.log(degrees / dmin))
+  return alpha
+
+
+def _get_pi(labels, degrees=None, adjusted=False):
+  label_counter = _get_degrees_by_labels(labels, degrees, adjusted)
+  sizes = np.array(sorted([v for v in label_counter.values()]))
+  return sizes / np.sum(sizes)
+
+
+def _get_community_size_simpsons(labels):
+  pi = _get_pi(labels)
+  return np.sum(pi ** 2.0)
+
+
+def _get_num_clusters(labels):
+  pi = _get_pi(labels)
+  return len(pi)
+
+
+def _get_average_degree(degrees):
+  return np.mean(degrees)
+
+
 def NodeLabelMetrics(graph, labels, features):
   metrics = {'edge_homogeneity': edge_homogeneity(graph, labels)}
   normed_features = matrix_row_norm(features)
@@ -140,4 +213,17 @@ def NodeLabelMetrics(graph, labels, features):
   metrics.update({'avg_in_feature_angular_distance': in_avg,
                   'avg_out_feature_angular_distance': out_avg,
                   'feature_angular_snr': in_avg/out_avg})
+
+
+
+  degrees = graph.get_out_degrees(graph.get_vertices())
+  nonzero_degrees = np.array([d for d in degrees if d > 0])
+  metrics['pareto_exponent'] = _get_pareto_exponent(nonzero_degrees)
+  metrics['average_degree'] = _get_average_degree(degrees)
+  if labels is not None:
+    metrics['community_size_simpsons'] = _get_community_size_simpsons(labels)
+    metrics['p_to_q_ratio'] = _get_p_to_q_ratio(graph, labels, degrees)
+    metrics['p_to_q_ratio_dc'] = _get_p_to_q_ratio(graph, labels, degrees,
+                                                  adjusted=True)
+    metrics['num_clusters'] = _get_num_clusters(labels)
   return metrics
