@@ -7,6 +7,8 @@ EPOCHS = 50
 # GNN only
 ALPHA = [0.1, 0.2, 0.3]
 ITERATIONS = [5, 10, 15]
+# Multihead model only
+NUM_HEADS = [1, 2, 4]
 
 Baseline_/NNNodeBaselineBenchmark.h_params = {
     'alpha' : %ALPHA,
@@ -62,6 +64,7 @@ GAT_/NNNodeBenchmark.h_params = {
     'hidden_channels' : %HIDDEN_CHANNELS,
     'num_layers' : %NUM_LAYERS,
     'dropout' : %DROPOUT,
+    'heads' : %NUM_HEADS,
 }
 
 # MLP setup
@@ -117,6 +120,7 @@ GATv2_/NNNodeBenchmark.h_params = {
     'hidden_channels' : %HIDDEN_CHANNELS,
     'num_layers' : %NUM_LAYERS,
     'dropout' : %DROPOUT,
+    'heads' : %NUM_HEADS,
 }
 
 # ARMA setup
