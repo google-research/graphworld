@@ -1,21 +1,5 @@
 include 'app/configs/linkprediction_config.gin'
 
 GeneratorBeamHandlerWrapper.nsamples = 1
-LinkPredictionBeamHandler.num_tuning_rounds = 0
-LinkPredictionBeamHandler.save_tuning_results = True
-
-LR = [0.01]
-HIDDEN_CHANNELS = [4, 16]
-NUM_LAYERS = [2, 4]
-DROPOUT = [0.3]
-EPOCHS = 50
-# GNN only
-ALPHA = [0.2, 0.3]
-ITERATIONS = [10, 15]
-
-
-LinkPredictionBeamHandler.benchmarker_wrappers = [
-  @GCN_/LPBenchmark,
-  @GIN_/LPBenchmark,
-  @Baseline_/LPBenchmarkBaseline,
-]
+LinkPredictionBeamHandler.num_tuning_rounds = 1
+LinkPredictionBeamHandler.save_tuning_results = False
