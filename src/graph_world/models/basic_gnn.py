@@ -14,7 +14,7 @@ import torch.nn.functional as F
 from torch.nn import ModuleList, Sequential, Linear, BatchNorm1d, ReLU
 
 from torch_geometric.nn.conv import GCNConv, SAGEConv, GINConv, GATConv, \
-    SGConv, GATv2Conv, ARMAConv, FiLMConv
+    SGConv, GATv2Conv, ARMAConv, FiLMConv, SuperGATConv, TransformerConv
 from torch_geometric.nn.models.jumping_knowledge import JumpingKnowledge
 
 from torch_geometric.nn.conv import APPNP as APPNPConv
@@ -438,3 +438,51 @@ class FiLM(BasicGNN):
         for _ in range(1, num_layers):
             self.convs.append(
                 FiLMConv(hidden_channels, hidden_channels, **kwargs))
+
+
+@gin.configurable
+class Transformer(BasicGNN):
+    def __init__(self, in_channels: int, hidden_channels: int, num_layers: int,
+        out_channels: Optional[int] = None, dropout: float = 0.0,
+        act: Optional[Callable] = ReLU(inplace=True),
+        norm: Optional[torch.nn.Module] = None, jk: str = 'last',
+        **kwargs):
+        super().__init__(in_channels, hidden_channels, num_layers,
+                         out_channels, dropout, act, norm, jk)
+
+        if 'concat' in kwargs:
+            del kwargs['concat']
+
+        if 'heads' in kwargs:
+            assert hidden_channels % kwargs['heads'] == 0
+
+        out_channels = hidden_channels // kwargs.get('heads', 1)
+
+        self.convs.append(
+            TransformerConv(in_channels, out_channels, dropout=dropout, **kwargs))
+        for _ in range(1, num_layers):
+            self.convs.append(TransformerConv(hidden_channels, out_channels, **kwargs))
+
+
+@gin.configurable
+class SuperGAT(BasicGNN):
+    def __init__(self, in_channels: int, hidden_channels: int, num_layers: int,
+        out_channels: Optional[int] = None, dropout: float = 0.0,
+        act: Optional[Callable] = ReLU(inplace=True),
+        norm: Optional[torch.nn.Module] = None, jk: str = 'last',
+        **kwargs):
+        super().__init__(in_channels, hidden_channels, num_layers,
+                         out_channels, dropout, act, norm, jk)
+
+        if 'concat' in kwargs:
+            del kwargs['concat']
+
+        if 'heads' in kwargs:
+            assert hidden_channels % kwargs['heads'] == 0
+
+        out_channels = hidden_channels // kwargs.get('heads', 1)
+
+        self.convs.append(
+            SuperGATConv(in_channels, out_channels, dropout=dropout, **kwargs))
+        for _ in range(1, num_layers):
+            self.convs.append(SuperGATConv(hidden_channels, out_channels, **kwargs))
