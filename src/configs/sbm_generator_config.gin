@@ -12,16 +12,16 @@ SBMSamplerSpec = [
 ]
 
 nvertex/ParamSamplerSpec.name = "nvertex"
-nvertex/ParamSamplerSpec.min_val = 512
-nvertex/ParamSamplerSpec.max_val = 2048
+nvertex/ParamSamplerSpec.min_val = 128
+nvertex/ParamSamplerSpec.max_val = 512
 
 p_to_q_ratio/ParamSamplerSpec.name = "p_to_q_ratio"
 p_to_q_ratio/ParamSamplerSpec.min_val = 1.0
-p_to_q_ratio/ParamSamplerSpec.max_val = 64.0
+p_to_q_ratio/ParamSamplerSpec.max_val = 16.0
 
 avg_degree/ParamSamplerSpec.name = "avg_degree"
-avg_degree/ParamSamplerSpec.min_val = 2.0
-avg_degree/ParamSamplerSpec.max_val = 64.0
+avg_degree/ParamSamplerSpec.min_val = 1.0
+avg_degree/ParamSamplerSpec.max_val = 20.0
 
 # We must have min_val = max_val = in_channels for all models here,
 # until we dynamically pass the data's feature dimension within the
@@ -43,8 +43,8 @@ edge_feature_dim/ParamSamplerSpec.min_val = 2.0
 edge_feature_dim/ParamSamplerSpec.max_val = 2.0
 
 num_clusters/ParamSamplerSpec.name = "num_clusters"
-num_clusters/ParamSamplerSpec.min_val = 3.0
-num_clusters/ParamSamplerSpec.max_val = 10.0
+num_clusters/ParamSamplerSpec.min_val = 2.0
+num_clusters/ParamSamplerSpec.max_val = 6.0
 
 cluster_size_slope/ParamSamplerSpec.name = "cluster_size_slope"
 cluster_size_slope/ParamSamplerSpec.min_val = 0.0

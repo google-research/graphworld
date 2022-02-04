@@ -1,12 +1,17 @@
-HIDDEN_CHANNELS = [8, 16, 24, 32]
-WEIGHT_DECAYS = [0.0, 5e-6, 5e-5, 5e-4]
-DROPOUTS = [0.0, 0.25, 0.5]
-LRS = [1e-3, 1e-2, 1e-1]
+# HIDDEN_CHANNELS = [8, 16, 24, 32]
+# WEIGHT_DECAYS = [0.0, 5e-6, 5e-5, 5e-4]
+# DROPOUTS = [0.0, 0.25, 0.5]
+# LRS = [1e-3, 1e-2, 1e-1]
 
 # HIDDEN_CHANNELS = [16]
 # WEIGHT_DECAYS = [5e-5]
 # DROPOUTS = [0.0, 0.5]
 # LRS = [1e-2]
+
+LRS = [0.01, 0.005, 0.001, 0.0005, 0.0001]
+WEIGHT_DECAYS = [5e-5]
+HIDDEN_CHANNELS = [4, 8, 12, 16]
+DROPOUTS = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6] # a hack to make dropout equiprobable
 
 enumerate_configs.hidden_channel_values = %HIDDEN_CHANNELS
 enumerate_configs.weight_decay_values = %WEIGHT_DECAYS
