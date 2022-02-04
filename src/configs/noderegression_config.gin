@@ -30,6 +30,8 @@ NodeRegressionBeamHandler.benchmarker_wrappers = [
   @MLP_/NodeRegressionBenchmark,
   @APPNP_/NodeRegressionBenchmark,
   @SGC_/NodeRegressionBenchmark,
+  @SuperGAT_/NodeRegressionBenchmark,
+  @Transformer_/NodeRegressionBenchmark,
 ]
 
 include 'app/configs/noderegression_model_config_tuning.gin'

@@ -154,3 +154,32 @@ FiLM_/NodeRegressionBenchmark.h_params = {
     'num_layers' : %NUM_LAYERS,
     'dropout' : %DROPOUT,
 }
+
+
+# SuperGAT setup
+SuperGAT_/NNGraphBenchmark.model_class = @SuperGAT
+SuperGAT_/NNGraphBenchmark.benchmark_params = {
+    'epochs' : %EPOCHS,
+    'lr': %LR,
+}
+SuperGAT_/NNNodeBenchmark.h_params = {
+    'in_channels' : 1,
+    'hidden_channels' : %HIDDEN_CHANNELS,
+    'num_layers' : %NUM_LAYERS,
+    'dropout' : %DROPOUT,
+    'heads' : %NUM_HEADS,
+}
+
+# Transformer setup
+Transformer_/NNGraphBenchmark.model_class = @Transformer
+Transformer_/NNGraphBenchmark.benchmark_params = {
+    'epochs' : %EPOCHS,
+    'lr': %LR,
+}
+Transformer_/NNGraphBenchmark.h_params = {
+    'in_channels' : 1,
+    'hidden_channels' : %HIDDEN_CHANNELS,
+    'num_layers' : %NUM_LAYERS,
+    'dropout' : %DROPOUT,
+    'heads' : %NUM_HEADS,
+}
