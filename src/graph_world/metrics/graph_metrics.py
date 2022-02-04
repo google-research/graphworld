@@ -219,11 +219,11 @@ def NodeLabelMetrics(graph, labels, features):
   degrees = graph.get_out_degrees(graph.get_vertices())
   nonzero_degrees = np.array([d for d in degrees if d > 0])
   metrics['pareto_exponent'] = _get_pareto_exponent(nonzero_degrees)
-  metrics['average_degree'] = _get_average_degree(degrees)
+  metrics['avg_degree_est'] = _get_average_degree(degrees)
   if labels is not None:
     metrics['community_size_simpsons'] = _get_community_size_simpsons(labels)
-    metrics['p_to_q_ratio'] = _get_p_to_q_ratio(graph, labels, degrees)
-    metrics['p_to_q_ratio_dc'] = _get_p_to_q_ratio(graph, labels, degrees,
+    metrics['p_to_q_ratio_est'] = _get_p_to_q_ratio(graph, labels, degrees)
+    metrics['p_to_q_ratio__est_dc'] = _get_p_to_q_ratio(graph, labels, degrees,
                                                   adjusted=True)
     metrics['num_clusters'] = _get_num_clusters(labels)
   return metrics
