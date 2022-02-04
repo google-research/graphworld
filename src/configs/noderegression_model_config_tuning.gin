@@ -110,12 +110,12 @@ SGC_/NodeRegressionBenchmark.h_params = {
 
 
 # GATv2 setup
-GATv2_/NNNodeBenchmark.model_class = @GATv2
-GATv2_/NNNodeBenchmark.benchmark_params = {
+GATv2_/NodeRegressionBenchmark.model_class = @GATv2
+GATv2_/NodeRegressionBenchmark.benchmark_params = {
     'epochs' : %EPOCHS,
     'lr': %LR,
 }
-GATv2_/NNNodeBenchmark.h_params = {
+GATv2_/NodeRegressionBenchmark.h_params = {
     'in_channels' : 16,
     'out_channels' : 1,
     'hidden_channels' : %HIDDEN_CHANNELS,
@@ -124,12 +124,12 @@ GATv2_/NNNodeBenchmark.h_params = {
 }
 
 # ARMA setup
-ARMA_/NNNodeBenchmark.model_class = @ARMA
-ARMA_/NNNodeBenchmark.benchmark_params = {
+ARMA_/NodeRegressionBenchmark.model_class = @ARMA
+ARMA_/NodeRegressionBenchmark.benchmark_params = {
     'epochs' : %EPOCHS,
     'lr': %LR,
 }
-ARMA_/NNNodeBenchmark.h_params = {
+ARMA_/NodeRegressionBenchmark.h_params = {
     'in_channels' : 16,
     'out_channels' : 1,
     'hidden_channels' : %HIDDEN_CHANNELS,
@@ -138,12 +138,12 @@ ARMA_/NNNodeBenchmark.h_params = {
 }
 
 # FiLM setup
-FiLM_/NNNodeBenchmark.model_class = @FiLM
-FiLM_/NNNodeBenchmark.benchmark_params = {
+FiLM_/NodeRegressionBenchmark.model_class = @FiLM
+FiLM_/NodeRegressionBenchmark.benchmark_params = {
     'epochs' : %EPOCHS,
     'lr': %LR,
 }
-FiLM_/NNNodeBenchmark.h_params = {
+FiLM_/NodeRegressionBenchmark.h_params = {
     'in_channels' : 16,
     'out_channels' : 1,
     'hidden_channels' : %HIDDEN_CHANNELS,

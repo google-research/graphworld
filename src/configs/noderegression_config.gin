@@ -1,11 +1,13 @@
 import graph_world.models.basic_gnn
 include 'app/configs/sbm_generator_config.gin'
-include 'app/configs/node_classification_default_vals.gin' # for now
 
 GeneratorBeamHandlerWrapper.handler = @NodeRegressionBeamHandler()
 GeneratorBeamHandlerWrapper.nsamples = 100000
 
-#NodeRegressionBeamHandler.normalize_features = True
+# TARGETS = ['pagerank', 'betweenness', 'eigenvector', 'katz', 'hits_authority', 'hits_hub', 'local_clustering', 'kcore']
+# There is no good way to insert variable parameters to BeamHandler :(
+
+NodeRegressionBeamHandler.normalize_target = True
 NodeRegressionBeamHandler.marginal = False
 NodeRegressionBeamHandler.num_tuning_rounds = 0
 NodeRegressionBeamHandler.save_tuning_results = True
@@ -18,16 +20,16 @@ NodeRegressionBeamHandler.param_sampler_specs = %SBMSamplerSpec
 
 NodeRegressionBeamHandler.benchmarker_wrappers = [
   @GCN_/NodeRegressionBenchmark,
-  #@GraphSAGE_/NodeRegressionBenchmark,
+  @GraphSAGE_/NodeRegressionBenchmark,
   @GIN_/NodeRegressionBenchmark,
-  #@GAT_/NodeRegressionBenchmark,
-  #@GATv2_/NodeRegressionBenchmark,
-  #@ARMA_/NodeRegressionBenchmark,
-  #@FiLM_/NodeRegressionBenchmark,
+  @GAT_/NodeRegressionBenchmark,
+  @GATv2_/NodeRegressionBenchmark,
+  @ARMA_/NodeRegressionBenchmark,
+  @FiLM_/NodeRegressionBenchmark,
 
-  #@MLP_/NodeRegressionBenchmark,
-  #@APPNP_/NodeRegressionBenchmark,
-  #@SGC_/NodeRegressionBenchmark,
+  @MLP_/NodeRegressionBenchmark,
+  @APPNP_/NodeRegressionBenchmark,
+  @SGC_/NodeRegressionBenchmark,
 ]
 
 include 'app/configs/noderegression_model_config_tuning.gin'
