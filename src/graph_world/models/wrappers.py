@@ -137,8 +137,8 @@ class LRGraphBenchmarker(Benchmarker):
       element['numpy_dataset']['train']['y'])
     y_pred_val = reg.predict(element['numpy_dataset']['tuning']['X'])
     y_pred_test = reg.predict(element['numpy_dataset']['test']['X'])
-    y_val = element['numpy_dataset']['tuning']['X']
-    y_test = element['numpy_dataset']['test']['X']
+    y_val = element['numpy_dataset']['tuning']['y']
+    y_test = element['numpy_dataset']['test']['y']
     val_mse = MseWrapper(y_pred_val, y_val)
     val_mse_scaled = MseWrapper(y_pred_val, y_val, scale=True)
     test_mse = MseWrapper(y_pred_test, y_test)
