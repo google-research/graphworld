@@ -1,0 +1,138 @@
+EPOCHS = 50
+
+Baseline_/NNNodeBaselineBenchmark.h_params = {
+    'alpha' : 0.3,
+}
+
+# GCN setup
+GCN_/NNNodeBenchmark.model_class = @GCN
+GCN_/NNNodeBenchmark.benchmark_params = {
+    'epochs' : %EPOCHS,
+    'lr': 0.1,
+}
+GCN_/NNNodeBenchmark.h_params = {
+    'in_channels' : 16,
+    'hidden_channels' : 16,
+    'num_layers' : 2,
+    'dropout' : 0,
+}
+
+# GraphSAGE setup
+GraphSAGE_/NNNodeBenchmark.model_class = @GraphSAGE
+GraphSAGE_/NNNodeBenchmark.benchmark_params = {
+    'epochs' : %EPOCHS,
+    'lr': 0.1,
+}
+GraphSAGE_/NNNodeBenchmark.h_params = {
+    'in_channels' : 16,
+    'hidden_channels' : 16,
+    'num_layers' : 1,
+    'dropout' : 0.5,
+}
+
+# GIN setup
+GIN_/NNNodeBenchmark.model_class = @GIN
+GIN_/NNNodeBenchmark.benchmark_params = {
+    'epochs' : %EPOCHS,
+    'lr': 0.1,
+}
+GIN_/NNNodeBenchmark.h_params = {
+    'in_channels' : 16,
+    'hidden_channels' : 16,
+    'num_layers' : 1,
+    'dropout' : 0.5,
+}
+
+# GAT setup
+GAT_/NNNodeBenchmark.model_class = @GAT
+GAT_/NNNodeBenchmark.benchmark_params = {
+    'epochs' : %EPOCHS,
+    'lr': 0.1,
+}
+GAT_/NNNodeBenchmark.h_params = {
+    'in_channels' : 16,
+    'hidden_channels' : 16,
+    'num_layers' : 1,
+    'dropout' : 0.5,
+}
+
+# MLP setup
+MLP_/NNNodeBenchmark.model_class = @MLP
+MLP_/NNNodeBenchmark.benchmark_params = {
+    'epochs' : %EPOCHS,
+    'lr': 0.1,
+}
+MLP_/NNNodeBenchmark.h_params = {
+    'in_channels' : 16,
+    'hidden_channels' : 16,
+    'num_layers' : 1,
+    'dropout' : 0.5,
+}
+
+# APPNP setup
+APPNP_/NNNodeBenchmark.model_class = @APPNP
+APPNP_/NNNodeBenchmark.benchmark_params = {
+    'epochs' : %EPOCHS,
+    'lr': 0.1,
+}
+APPNP_/NNNodeBenchmark.h_params = {
+    'in_channels' : 16,
+    'hidden_channels' : 16,
+    'num_layers' : 2,
+    'alpha': 0.3,
+    'iterations': 15,
+    'dropout' : 0.3,
+}
+
+# SGC setup
+SGC_/NNNodeBenchmark.model_class = @SGC
+SGC_/NNNodeBenchmark.benchmark_params = {
+    'epochs' : %EPOCHS,
+    'lr': 0.1,
+}
+SGC_/NNNodeBenchmark.h_params = {
+    'in_channels' : 16,
+    'hidden_channels' : 4,
+    'iterations': 5,
+    'dropout' : 0,
+}
+
+
+# GATv2 setup
+GATv2_/NNNodeBenchmark.model_class = @GATv2
+GATv2_/NNNodeBenchmark.benchmark_params = {
+    'epochs' : %EPOCHS,
+    'lr': 0.1,
+}
+GATv2_/NNNodeBenchmark.h_params = {
+    'in_channels' : 16,
+    'hidden_channels' : 16,
+    'num_layers' : 1,
+    'dropout' : 0.3,
+}
+
+# ARMA setup
+ARMA_/NNNodeBenchmark.model_class = @ARMA
+ARMA_/NNNodeBenchmark.benchmark_params = {
+    'epochs' : %EPOCHS,
+    'lr': 0.1,
+}
+ARMA_/NNNodeBenchmark.h_params = {
+    'in_channels' : 16,
+    'hidden_channels' : 16,
+    'num_layers' : 1,
+    'dropout' : 0.3,
+}
+
+# FiLM setup
+FiLM_/NNNodeBenchmark.model_class = @FiLM
+FiLM_/NNNodeBenchmark.benchmark_params = {
+    'epochs' : %EPOCHS,
+    'lr': 0.1,
+}
+FiLM_/NNNodeBenchmark.h_params = {
+    'in_channels' : 16,
+    'hidden_channels' : 16,
+    'num_layers' : 1,
+    'dropout' : 0.5,
+}

@@ -111,6 +111,8 @@ class BenchmarkGNNParDo(beam.DoFn):
     output_data['fixed_params'] = element['fixed_params']
     output_data.update(element['metrics'])
     output_data['skipped'] = element['skipped']
+    if 'target' in element:
+      output_data['target'] = element['target']
     output_data['sample_id'] = element['sample_id']
 
     if element['skipped']:

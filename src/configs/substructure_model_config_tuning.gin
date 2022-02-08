@@ -11,85 +11,80 @@ ITERATIONS = [5, 10, 15]
 NUM_HEADS = [1, 2, 4]
 
 # GCN setup
-GCN_/NodeRegressionBenchmark.model_class = @GCN
-GCN_/NodeRegressionBenchmark.benchmark_params = {
+GCN_/NNGraphBenchmark.model_class = @GCN
+GCN_/NNGraphBenchmark.benchmark_params = {
     'epochs' : %EPOCHS,
     'lr': %LR,
 }
-GCN_/NodeRegressionBenchmark.h_params = {
-    'in_channels' : 16,
-    'out_channels' : 1,
+GCN_/NNGraphBenchmark.h_params = {
+    'in_channels' : 1,
     'hidden_channels' : %HIDDEN_CHANNELS,
     'num_layers' : %NUM_LAYERS,
     'dropout' : %DROPOUT,
 }
 
 # GraphSAGE setup
-GraphSAGE_/NodeRegressionBenchmark.model_class = @GraphSAGE
-GraphSAGE_/NodeRegressionBenchmark.benchmark_params = {
+GraphSAGE_/NNGraphBenchmark.model_class = @GraphSAGE
+GraphSAGE_/NNGraphBenchmark.benchmark_params = {
     'epochs' : %EPOCHS,
     'lr': %LR,
 }
-GraphSAGE_/NodeRegressionBenchmark.h_params = {
-    'in_channels' : 16,
-    'out_channels' : 1,
+GraphSAGE_/NNGraphBenchmark.h_params = {
+    'in_channels' : 1,
     'hidden_channels' : %HIDDEN_CHANNELS,
     'num_layers' : %NUM_LAYERS,
     'dropout' : %DROPOUT,
-}
-
-# GIN setup
-GIN_/NodeRegressionBenchmark.model_class = @GIN
-GIN_/NodeRegressionBenchmark.benchmark_params = {
-    'epochs' : %EPOCHS,
-    'lr': %LR,
-}
-GIN_/NodeRegressionBenchmark.h_params = {
-    'in_channels' : 16,
-    'out_channels' : 1,
-    'hidden_channels' : %HIDDEN_CHANNELS,
-    'num_layers' : %NUM_LAYERS,
-    'dropout' : %DROPOUT,
+    'root_weight' : False,
 }
 
 # GAT setup
-GAT_/NodeRegressionBenchmark.model_class = @GAT
-GAT_/NodeRegressionBenchmark.benchmark_params = {
+GAT_/NNGraphBenchmark.model_class = @GAT
+GAT_/NNGraphBenchmark.benchmark_params = {
     'epochs' : %EPOCHS,
     'lr': %LR,
 }
-GAT_/NodeRegressionBenchmark.h_params = {
-    'in_channels' : 16,
-    'out_channels' : 1,
+GAT_/NNGraphBenchmark.h_params = {
+    'in_channels' : 1,
     'hidden_channels' : %HIDDEN_CHANNELS,
     'num_layers' : %NUM_LAYERS,
     'dropout' : %DROPOUT,
     'heads' : %NUM_HEADS,
 }
 
-# MLP setup
-MLP_/NodeRegressionBenchmark.model_class = @MLP
-MLP_/NodeRegressionBenchmark.benchmark_params = {
+# GIN setup
+GIN_/NNGraphBenchmark.model_class = @GIN
+GIN_/NNGraphBenchmark.benchmark_params = {
     'epochs' : %EPOCHS,
     'lr': %LR,
 }
-MLP_/NodeRegressionBenchmark.h_params = {
-    'in_channels' : 16,
-    'out_channels' : 1,
+GIN_/NNGraphBenchmark.h_params = {
+    'in_channels' : 1,
+    'hidden_channels' : %HIDDEN_CHANNELS,
+    'num_layers' : %NUM_LAYERS,
+    'dropout' : %DROPOUT,
+}
+
+# MLP setup
+MLP_/NNGraphBenchmark.model_class = @MLP
+MLP_/NNGraphBenchmark.benchmark_params = {
+    'epochs' : %EPOCHS,
+    'lr': %LR,
+}
+MLP_/NNGraphBenchmark.h_params = {
+    'in_channels' : 1,
     'hidden_channels' : %HIDDEN_CHANNELS,
     'num_layers' : %NUM_LAYERS,
     'dropout' : %DROPOUT,
 }
 
 # APPNP setup
-APPNP_/NodeRegressionBenchmark.model_class = @APPNP
-APPNP_/NodeRegressionBenchmark.benchmark_params = {
+APPNP_/NNGraphBenchmark.model_class = @APPNP
+APPNP_/NNGraphBenchmark.benchmark_params = {
     'epochs' : %EPOCHS,
     'lr': %LR,
 }
-APPNP_/NodeRegressionBenchmark.h_params = {
-    'in_channels' : 16,
-    'out_channels' : 1,
+APPNP_/NNGraphBenchmark.h_params = {
+    'in_channels' : 1,
     'hidden_channels' : %HIDDEN_CHANNELS,
     'num_layers' : %NUM_LAYERS,
     'alpha': %ALPHA,
@@ -98,29 +93,26 @@ APPNP_/NodeRegressionBenchmark.h_params = {
 }
 
 # SGC setup
-SGC_/NodeRegressionBenchmark.model_class = @SGC
-SGC_/NodeRegressionBenchmark.benchmark_params = {
+SGC_/NNGraphBenchmark.model_class = @SGC
+SGC_/NNGraphBenchmark.benchmark_params = {
     'epochs' : %EPOCHS,
     'lr': %LR,
 }
-SGC_/NodeRegressionBenchmark.h_params = {
-    'in_channels' : 16,
-    'out_channels' : 1,
+SGC_/NNGraphBenchmark.h_params = {
+    'in_channels' : 1,
     'hidden_channels' : %HIDDEN_CHANNELS,
     'iterations': %ITERATIONS,
     'dropout' : %DROPOUT,
 }
 
-
 # GATv2 setup
-GATv2_/NodeRegressionBenchmark.model_class = @GATv2
-GATv2_/NodeRegressionBenchmark.benchmark_params = {
+GATv2_/NNGraphBenchmark.model_class = @GATv2
+GATv2_/NNGraphBenchmark.benchmark_params = {
     'epochs' : %EPOCHS,
     'lr': %LR,
 }
-GATv2_/NodeRegressionBenchmark.h_params = {
-    'in_channels' : 16,
-    'out_channels' : 1,
+GATv2_/NNGraphBenchmark.h_params = {
+    'in_channels' : 1,
     'hidden_channels' : %HIDDEN_CHANNELS,
     'num_layers' : %NUM_LAYERS,
     'dropout' : %DROPOUT,
@@ -128,33 +120,30 @@ GATv2_/NodeRegressionBenchmark.h_params = {
 }
 
 # ARMA setup
-ARMA_/NodeRegressionBenchmark.model_class = @ARMA
-ARMA_/NodeRegressionBenchmark.benchmark_params = {
+ARMA_/NNGraphBenchmark.model_class = @ARMA
+ARMA_/NNGraphBenchmark.benchmark_params = {
     'epochs' : %EPOCHS,
     'lr': %LR,
 }
-ARMA_/NodeRegressionBenchmark.h_params = {
-    'in_channels' : 16,
-    'out_channels' : 1,
+ARMA_/NNGraphBenchmark.h_params = {
+    'in_channels' : 1,
     'hidden_channels' : %HIDDEN_CHANNELS,
     'num_layers' : %NUM_LAYERS,
     'dropout' : %DROPOUT,
 }
 
 # FiLM setup
-FiLM_/NodeRegressionBenchmark.model_class = @FiLM
-FiLM_/NodeRegressionBenchmark.benchmark_params = {
+FiLM_/NNGraphBenchmark.model_class = @FiLM
+FiLM_/NNGraphBenchmark.benchmark_params = {
     'epochs' : %EPOCHS,
     'lr': %LR,
 }
-FiLM_/NodeRegressionBenchmark.h_params = {
-    'in_channels' : 16,
-    'out_channels' : 1,
+FiLM_/NNGraphBenchmark.h_params = {
+    'in_channels' : 1,
     'hidden_channels' : %HIDDEN_CHANNELS,
     'num_layers' : %NUM_LAYERS,
     'dropout' : %DROPOUT,
 }
-
 
 # SuperGAT setup
 SuperGAT_/NNGraphBenchmark.model_class = @SuperGAT
