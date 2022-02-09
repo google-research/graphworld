@@ -177,7 +177,7 @@ class NNNodeBenchmarker(Benchmarker):
     self._test_mask = None
 
   def AdjustParams(self, generator_config):
-    if 'num_clusters' in generator_config:
+    if 'num_clusters' in generator_config and self._h_params is not None:
       self._h_params['out_channels'] = generator_config['num_clusters']
 
   def SetMasks(self, train_mask, val_mask, test_mask):
