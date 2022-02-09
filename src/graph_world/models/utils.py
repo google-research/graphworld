@@ -52,10 +52,14 @@ def ComputeNumPossibleConfigs(benchmark_params, h_params):
 
 
 def _SampleValue(value_list_or_value):
-  try:
-    value = random.choice(value_list_or_value)
-  except TypeError:
+  value = None
+  if isinstance(value_list_or_value, str):
     value = value_list_or_value
+  else:
+    try:
+      value = random.choice(value_list_or_value)
+    except TypeError:
+      value = value_list_or_value
   return value
 
 
