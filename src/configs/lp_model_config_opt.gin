@@ -3,137 +3,139 @@ EPOCHS = 50
 SCORERS = ['inv-log-weight']
 
 Baseline_/LPBenchmarkBaseline.h_params = {
-    'scorer' : %SCORERS,
+    'alpha': 0.3000000000017847
 }
 
 # GCN setup
 GCN_/LPBenchmark.model_class = @GCN
 GCN_/LPBenchmark.benchmark_params = {
-    'epochs' : %EPOCHS,
-    'lr': 0.01,
+    'epochs': 50,
+    'lr': 0.010000000000001438,
 }
 GCN_/LPBenchmark.h_params = {
     'in_channels' : 16,
-    'hidden_channels' : 16,
-    'num_layers' : 1,
-    'dropout' : 0,
+    'hidden_channels': 16,
+    'num_layers': 1,
+    'dropout': 0.0,
 }
 
 # GraphSAGE setup
 GraphSAGE_/LPBenchmark.model_class = @GraphSAGE
 GraphSAGE_/LPBenchmark.benchmark_params = {
-    'epochs' : %EPOCHS,
-    'lr': 0.01,
+    'epochs': 50,
+    'lr': 0.010000000000001433,
 }
 GraphSAGE_/LPBenchmark.h_params = {
     'in_channels' : 16,
-    'hidden_channels' : 16,
-    'num_layers' : 1,
-    'dropout' : 0,
+    'hidden_channels': 16,
+    'num_layers': 1,
+    'dropout': 0.0,
 }
 
 # GIN setup
 GIN_/LPBenchmark.model_class = @GIN
 GIN_/LPBenchmark.benchmark_params = {
-    'epochs' : %EPOCHS,
-    'lr': 0.01,
+    'epochs': 50,
+    'lr': 0.009999999999999872
 }
 GIN_/LPBenchmark.h_params = {
     'in_channels' : 16,
-    'hidden_channels' : 16,
-    'num_layers' : 1,
-    'dropout' : 0.5,
+    'hidden_channels': 16,
+    'num_layers': 1,
+    'dropout': 0.2999999999999744,
 }
 
 # GAT setup
 GAT_/LPBenchmark.model_class = @GAT
 GAT_/LPBenchmark.benchmark_params = {
-    'epochs' : %EPOCHS,
-    'lr': 0.01,
+    'epochs': 50,
+    'lr': 0.009999999999999887,
 }
 GAT_/LPBenchmark.h_params = {
     'in_channels' : 16,
-    'hidden_channels' : 16,
-    'num_layers' : 1,
-    'dropout' : 0,
+    'hidden_channels': 16,
+    'num_layers': 1,
+    'dropout': 0.0,
+    'heads': 4,
 }
 
 # MLP setup
 MLP_/LPBenchmark.model_class = @MLP
 MLP_/LPBenchmark.benchmark_params = {
-    'epochs' : %EPOCHS,
-    'lr': 0.01,
+    'epochs': 50,
+    'lr': 0.009999999999999861,
 }
 MLP_/LPBenchmark.h_params = {
     'in_channels' : 16,
-    'hidden_channels' : 16,
-    'num_layers' : 2,
-    'dropout' : 0,
+    'hidden_channels': 16,
+    'num_layers': 1,
+    'dropout': 0.2999999999999743,
 }
 
 # APPNP setup
 APPNP_/LPBenchmark.model_class = @APPNP
 APPNP_/LPBenchmark.benchmark_params = {
-    'epochs' : %EPOCHS,
-    'lr': 0.01,
+    'epochs': 50,
+    'lr': 0.009999999999999872,
 }
 APPNP_/LPBenchmark.h_params = {
     'in_channels' : 16,
-    'hidden_channels' : 16,
-    'num_layers' : 1,
-    'alpha': 0.1,
-    'iterations': 15,
-    'dropout' : 0,
+    'hidden_channels': 16,
+    'num_layers': 1,
+    'dropout': 0.30000000000000054,
+    'alpha': 0.30000000000000054,
+    'iterations': 10,
 }
 
 # SGC setup
 SGC_/LPBenchmark.model_class = @SGC
 SGC_/LPBenchmark.benchmark_params = {
-    'epochs' : %EPOCHS,
-    'lr': 0.01,
+    'epochs': 50,
+    'lr': 0.00999999999999941
 }
 SGC_/LPBenchmark.h_params = {
     'in_channels' : 16,
-    'hidden_channels' : 16,
+    'hidden_channels': 16,
+    'dropout': 0.29999999999996946,
     'iterations': 5,
-    'dropout' : 0,
 }
 
 # GATv2 setup
 GATv2_/LPBenchmark.model_class = @GATv2
 GATv2_/LPBenchmark.benchmark_params = {
-    'epochs' : %EPOCHS,
-    'lr': 0.01,
+    'epochs': 50,
+    'lr': 0.009999999999999854,
 }
 GATv2_/LPBenchmark.h_params = {
     'in_channels' : 16,
-    'hidden_channels' : 16,
-    'num_layers' : 1,
-    'dropout' : 0,
+    'hidden_channels': 16,
+    'num_layers': 1,
+    'dropout': 0.0,
+    'heads': 1,
 }
 
 # ARMA setup
 ARMA_/LPBenchmark.model_class = @ARMA
 ARMA_/LPBenchmark.benchmark_params = {
-    'epochs' : %EPOCHS,
-    'lr': 0.01,
+    'epochs': 50,
+    'lr': 0.009999999999999886,
 }
 ARMA_/LPBenchmark.h_params = {
     'in_channels' : 16,
-    'hidden_channels' : 16,
-    'num_layers' : 2,
-    'dropout' : 0.3,
+    'hidden_channels': 16,
+    'num_layers': 1,
+    'dropout': 0.2999999999999745,
 }
 
 # FiLM setup
 FiLM_/LPBenchmark.model_class = @FiLM
 FiLM_/LPBenchmark.benchmark_params = {
-    'epochs' : %EPOCHS,
-    'lr': 0.01,
+    'epochs': 50,
+    'lr': 0.010000000000001244,
 }
 FiLM_/LPBenchmark.h_params = {
     'in_channels' : 16,
-    'hidden_channels' : 16,
-    'num_layers' : 2,
-    'dropout' : 0,
+    'hidden_channels': 16,
+    'num_layers': 1,
+    'dropout': 0.0,
 }

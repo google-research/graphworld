@@ -3,12 +3,12 @@ include 'app/configs/sbm_generator_config.gin'
 include 'app/configs/link_prediction_default_vals.gin'
 
 GeneratorBeamHandlerWrapper.handler = @LinkPredictionBeamHandler()
-GeneratorBeamHandlerWrapper.nsamples = 100000
+GeneratorBeamHandlerWrapper.nsamples = 7000
 
-LinkPredictionBeamHandler.marginal = False
+LinkPredictionBeamHandler.marginal = True
 LinkPredictionBeamHandler.training_ratio = 0.8
 LinkPredictionBeamHandler.tuning_ratio = 0.1
-LinkPredictionBeamHandler.num_tuning_rounds = 1
+LinkPredictionBeamHandler.num_tuning_rounds = 100
 LinkPredictionBeamHandler.save_tuning_results = False
 LinkPredictionBeamHandler.tuning_metric = "rocauc"
 LinkPredictionBeamHandler.param_sampler_specs = %SBMSamplerSpec
@@ -25,8 +25,8 @@ LinkPredictionBeamHandler.benchmarker_wrappers = [
 
   @APPNP_/LPBenchmark,
   @SGC_/LPBenchmark,
-  @SuperGAT_/LPBenchmark,
-  @Transformer_/LPBenchmark,
+  # @SuperGAT_/LPBenchmark,
+  # @Transformer_/LPBenchmark,
 
   @Baseline_/LPBenchmarkBaseline,
 ]
