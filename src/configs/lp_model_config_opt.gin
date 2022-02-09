@@ -3,7 +3,8 @@ EPOCHS = 50
 SCORERS = ['inv-log-weight']
 
 Baseline_/LPBenchmarkBaseline.h_params = {
-    'alpha': 0.3000000000017847
+    'alpha': 0.3000000000017847,
+    'scorer': 'inv-log-weight',
 }
 
 # GCN setup

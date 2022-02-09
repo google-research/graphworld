@@ -5,7 +5,7 @@ include 'app/configs/link_prediction_default_vals.gin'
 GeneratorBeamHandlerWrapper.handler = @LinkPredictionBeamHandler()
 GeneratorBeamHandlerWrapper.nsamples = 7000
 
-LinkPredictionBeamHandler.marginal = True
+LinkPredictionBeamHandler.marginal = False
 LinkPredictionBeamHandler.training_ratio = 0.8
 LinkPredictionBeamHandler.tuning_ratio = 0.1
 LinkPredictionBeamHandler.num_tuning_rounds = 100
