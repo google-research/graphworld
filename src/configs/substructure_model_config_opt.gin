@@ -4,26 +4,26 @@ EPOCHS = 50
 GCN_/NNGraphBenchmark.model_class = @GCN
 GCN_/NNGraphBenchmark.benchmark_params = {
     'epochs': 50,
-    'lr': 9.99999999999925e-05,
+    'lr': 0.000999999999999975,
 }
 GCN_/NNGraphBenchmark.h_params = {
     'in_channels' : 1,
-    'hidden_channels': 4,
+    'hidden_channels': 16,
     'num_layers': 1,
-    'dropout': 0.5,
+    'dropout': 0.29999999999997423,
 }
 
 # GraphSAGE setup
 GraphSAGE_/NNGraphBenchmark.model_class = @GraphSAGE
 GraphSAGE_/NNGraphBenchmark.benchmark_params = {
     'epochs': 50,
-    'lr': 9.999999999999251e-05
+    'lr': 0.009999999999999882,
 }
 GraphSAGE_/NNGraphBenchmark.h_params = {
     'in_channels' : 1,
-    'hidden_channels': 4,
-    'num_layers': 1,
-    'dropout': 0.2999999999999743,
+    'hidden_channels': 16,
+    'num_layers': 2,
+    'dropout': 0.8000000000000622,
     'root_weight': False,
 }
 
@@ -31,53 +31,53 @@ GraphSAGE_/NNGraphBenchmark.h_params = {
 GAT_/NNGraphBenchmark.model_class = @GAT
 GAT_/NNGraphBenchmark.benchmark_params = {
     'epochs': 50,
-    'lr': 9.999999999999258e-05,
+    'lr': 0.0009999999999999818,
 }
 GAT_/NNGraphBenchmark.h_params = {
     'in_channels' : 1,
-    'hidden_channels': 4,
+    'hidden_channels': 16,
     'num_layers': 1,
-    'dropout': 0.2999999999999746,
+    'dropout': 0.5,
 }
 
 # GIN setup
 GIN_/NNGraphBenchmark.model_class = @GIN
 GIN_/NNGraphBenchmark.benchmark_params = {
     'epochs': 50,
-    'lr': 9.999999999999017e-05,
+    'lr': 0.009999999999999901,
 }
 GIN_/NNGraphBenchmark.h_params = {
     'in_channels' : 1,
-    'hidden_channels': 4,
-    'num_layers': 4,
-    'dropout': 0.0,
+    'hidden_channels': 16,
+    'num_layers': 2,
+    'dropout': 0.5,
 }
 
 # MLP setup
 MLP_/NNGraphBenchmark.model_class = @MLP
 MLP_/NNGraphBenchmark.benchmark_params = {
     'epochs': 50,
-    'lr': 9.99999999999925e-05,
+    'lr': 9.999999999999259e-05,
 }
 MLP_/NNGraphBenchmark.h_params = {
     'in_channels' : 1,
-    'hidden_channels': 4,
-    'num_layers': 1,
-    'dropout': 0.8000000000000639,
+    'hidden_channels': 16,
+    'num_layers': 3,
+    'dropout': 0.29999999999997473,
 }
 
 # APPNP setup
 APPNP_/NNGraphBenchmark.model_class = @APPNP
 APPNP_/NNGraphBenchmark.benchmark_params = {
     'epochs': 50,
-    'lr': 0.00010000000000000093,
+    'lr': 0.00010000000000000068,
 }
 APPNP_/NNGraphBenchmark.h_params = {
     'in_channels' : 1,
-    'hidden_channels': 4,
-    'num_layers': 1,
-    'dropout': 0.3000000000000006,
-    'alpha': 0.3000000000000006,
+    'hidden_channels': 16,
+    'num_layers': 4,
+    'dropout': 0.29999999999999927,
+    'alpha': 0.29999999999999927,
     'iterations': 15,
 }
 
@@ -85,50 +85,50 @@ APPNP_/NNGraphBenchmark.h_params = {
 SGC_/NNGraphBenchmark.model_class = @SGC
 SGC_/NNGraphBenchmark.benchmark_params = {
     'epochs': 50,
-    'lr': 9.999999999999167e-05,
+    'lr': 0.001000000000000061,
 }
 SGC_/NNGraphBenchmark.h_params = {
     'in_channels' : 1,
-    'hidden_channels': 4,
-    'dropout': 0.8000000000000916,
-    'iterations': 15,
+    'hidden_channels': 16,
+    'dropout': 0.5,
+    'iterations': 10,
 }
 
 # GATv2 setup
 GATv2_/NNGraphBenchmark.model_class = @GATv2
 GATv2_/NNGraphBenchmark.benchmark_params = {
     'epochs': 50,
-    'lr': 9.999999999999254e-05,
+    'lr': 9.999999999999247e-05,
 }
 GATv2_/NNGraphBenchmark.h_params = {
     'in_channels' : 1,
-    'hidden_channels': 4,
-    'num_layers': 1,
-    'dropout': 0.29999999999997445,
+    'hidden_channels': 16,
+    'num_layers': 4,
+    'dropout': 0.5,
 }
 
 # ARMA setup
 ARMA_/NNGraphBenchmark.model_class = @ARMA
 ARMA_/NNGraphBenchmark.benchmark_params = {
     'epochs': 50,
-    'lr': 9.999999999999259e-05,
+    'lr': 0.009999999999999875,
 }
 ARMA_/NNGraphBenchmark.h_params = {
     'in_channels' : 1,
-    'hidden_channels': 4,
-    'num_layers': 1,
-    'dropout': 0.5,
+    'hidden_channels': 16,
+    'num_layers': 4,
+    'dropout': 0.2999999999999744,
 }
 
 # FiLM setup
 FiLM_/NNGraphBenchmark.model_class = @FiLM
 FiLM_/NNGraphBenchmark.benchmark_params = {
     'epochs': 50,
-    'lr': 9.999999999999254e-05,
+    'lr': 0.00999999999999988,
 }
 FiLM_/NNGraphBenchmark.h_params = {
     'in_channels' : 1,
-    'hidden_channels': 4,
-    'num_layers': 4,
-    'dropout': 0.8000000000000625,
+    'hidden_channels': 16,
+    'num_layers': 3,
+    'dropout': 0.29999999999997445,
 }
