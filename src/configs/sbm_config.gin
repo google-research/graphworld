@@ -32,4 +32,4 @@ SbmBeamHandler.benchmarker_wrappers = [
   @Baseline_/NNNodeBaselineBenchmark,
 ]
 
-include 'app/configs/sbm_model_config_opt.gin'
+include 'app/configs/sbm_model_config_tuning.gin'

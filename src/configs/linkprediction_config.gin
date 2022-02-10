@@ -31,4 +31,4 @@ LinkPredictionBeamHandler.benchmarker_wrappers = [
   @Baseline_/LPBenchmarkBaseline,
 ]
 
-include 'app/configs/lp_model_config_opt.gin'
+include 'app/configs/lp_model_config_tuning.gin'

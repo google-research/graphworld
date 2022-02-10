@@ -53,4 +53,4 @@ SubstructureBeamHandler.benchmarker_wrappers = [
   @Transformer_/NNGraphBenchmark,
 ]
 
-include 'app/configs/substructure_model_config_opt.gin'
+include 'app/configs/substructure_model_config_tuning.gin'

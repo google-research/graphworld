@@ -151,7 +151,7 @@ SuperGAT_/NNGraphBenchmark.benchmark_params = {
     'epochs' : %EPOCHS,
     'lr': %LR,
 }
-SuperGAT_/NNNodeBenchmark.h_params = {
+SuperGAT_/NNGraphBenchmark.h_params = {
     'in_channels' : 1,
     'hidden_channels' : %HIDDEN_CHANNELS,
     'num_layers' : %NUM_LAYERS,
