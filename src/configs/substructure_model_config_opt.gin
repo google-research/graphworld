@@ -132,3 +132,31 @@ FiLM_/NNGraphBenchmark.h_params = {
     'num_layers': 3,
     'dropout': 0.29999999999997445,
 }
+
+# Transformer setup
+Transformer_/NNGraphBenchmark.model_class = @Transformer
+Transformer_/NNGraphBenchmark.benchmark_params = {
+    'epochs': 50,
+    'lr': 0.00999999999999982,
+}
+Transformer_/NNGraphBenchmark.h_params = {
+    'in_channels' : 1,
+    'hidden_channels': 16,
+    'num_layers': 4,
+    'dropout': 0.3000000000000078,
+    'heads': 1,
+}
+
+# SuperGAT setup
+SuperGAT_/NNGraphBenchmark.model_class = @SuperGAT
+SuperGAT_/NNGraphBenchmark.benchmark_params = {
+    'epochs': 50,
+    'lr': 9.999999999999956e-05,
+}
+SuperGAT_/NNGraphBenchmark.h_params = {
+    'in_channels' : 1,
+    'hidden_channels': 16,
+    'num_layers': 4,
+    'dropout': 0.30000000000000765,
+    'heads': 4,
+}

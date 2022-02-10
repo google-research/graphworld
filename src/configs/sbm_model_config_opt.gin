@@ -138,3 +138,31 @@ FiLM_/NNNodeBenchmark.h_params = {
     'num_layers': 1,
     'dropout': 0.0,
 }
+
+# Transformer setup
+Transformer_/NNNodeBenchmark.model_class = @Transformer
+Transformer_/NNNodeBenchmark.benchmark_params = {
+    'epochs': 50,
+    'lr': 0.009999999999999816,
+}
+Transformer_/NNNodeBenchmark.h_params = {
+    'in_channels' : 16,
+    'hidden_channels': 16,
+    'num_layers': 1,
+    'dropout': 0.30000000000000754,
+    'heads': 4,
+}
+
+# SuperGAT setup
+SuperGAT_/NNNodeBenchmark.model_class = @SuperGAT
+SuperGAT_/NNNodeBenchmark.benchmark_params = {
+    'epochs': 50,
+    'lr': 0.009999999999999898,
+}
+SuperGAT_/NNNodeBenchmark.h_params = {
+    'in_channels' : 16,
+    'hidden_channels': 16,
+    'num_layers': 1,
+    'dropout': 0.0,
+    'heads': 2,
+}

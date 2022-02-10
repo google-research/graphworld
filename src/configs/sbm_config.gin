@@ -26,10 +26,10 @@ SbmBeamHandler.benchmarker_wrappers = [
   @MLP_/NNNodeBenchmark,
   @APPNP_/NNNodeBenchmark,
   @SGC_/NNNodeBenchmark,
-  # @SuperGAT_/NNNodeBenchmark,
-  # @Transformer_/NNNodeBenchmark,
+  @SuperGAT_/NNNodeBenchmark,
+  @Transformer_/NNNodeBenchmark,
 
   @Baseline_/NNNodeBaselineBenchmark,
 ]
 
-include 'app/configs/sbm_model_config_tuning.gin'
+include 'app/configs/sbm_model_config_opt.gin'

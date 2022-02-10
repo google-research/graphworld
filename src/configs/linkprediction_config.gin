@@ -25,10 +25,10 @@ LinkPredictionBeamHandler.benchmarker_wrappers = [
 
   @APPNP_/LPBenchmark,
   @SGC_/LPBenchmark,
-  # @SuperGAT_/LPBenchmark,
-  # @Transformer_/LPBenchmark,
+  @SuperGAT_/LPBenchmark,
+  @Transformer_/LPBenchmark,
 
   @Baseline_/LPBenchmarkBaseline,
 ]
 
-include 'app/configs/lp_model_config_tuning.gin'
+include 'app/configs/lp_model_config_opt.gin'
