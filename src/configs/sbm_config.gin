@@ -3,10 +3,10 @@ include 'app/configs/sbm_generator_config.gin'
 include 'app/configs/node_classification_default_vals.gin'
 
 GeneratorBeamHandlerWrapper.handler = @SbmBeamHandler()
-GeneratorBeamHandlerWrapper.nsamples = 7000
+GeneratorBeamHandlerWrapper.nsamples = 700000
 
 SbmBeamHandler.marginal = True
-SbmBeamHandler.num_tuning_rounds = 100
+SbmBeamHandler.num_tuning_rounds = 1
 SbmBeamHandler.save_tuning_results = False
 SbmBeamHandler.tuning_metric = "rocauc_ovr"
 SbmBeamHandler.normalize_features = True
@@ -32,4 +32,4 @@ SbmBeamHandler.benchmarker_wrappers = [
   @Baseline_/NNNodeBaselineBenchmark,
 ]
 
-include 'app/configs/sbm_model_config_tuning.gin'
+include 'app/configs/sbm_model_config_opt.gin'
