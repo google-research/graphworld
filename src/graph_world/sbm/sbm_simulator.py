@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# @title Internal code for SBM generator class
-# pasted from https://github.com/google-research/google-research/blob/master/graph_embedding/simulations/sbm_simulator.py
 import collections
 import enum
 import math
