@@ -17,7 +17,7 @@
 # Utilize docker-compose to run beam-pipeline locally in the same environment
 # as the remote workers.
 #
-
+BUILD_NAME="research-graph-synthetic"
 GENERATOR="sbm"
 
 OUTPUT_PATH="/tmp/${GENERATOR}"
@@ -30,7 +30,7 @@ docker-compose run \
   --output ${OUTPUT_PATH} \
   --gin_config=/app/configs/${GENERATOR}_config_test.gin \
   --runner=DirectRunner" \
-  research-graph-synthetic 
+  ${BUILD_NAME}
 
 
 

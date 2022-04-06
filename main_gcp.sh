@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+PROJECT_NAME="research-graph"
+BUILD_NAME="research-graph-synthetic"
 GENERATOR="substructure"
 MACHINE_TYPE="n1-standard-1"
 MAX_NUM_WORKERS=1000
@@ -31,15 +33,15 @@ echo "TAG: $TAG";
 
 TIMESTAMP="$(date +"%Y-%m-%d-%H-%M-%S")"
 JOB_NAME="${GENERATOR}-${TIMESTAMP}-${TAG}"
-OUTPUT_PATH="gs://research-graph-synthetic/${USER}/sampling/${JOB_NAME}"
-TEMP_LOCATION="gs://research-graph-synthetic/temp"
+OUTPUT_PATH="gs://${BUILD_NAME}/${USER}/sampling/${JOB_NAME}"
+TEMP_LOCATION="gs://${BUILD_NAME}/temp"
 echo "OUTPUT_PATH: ${OUTPUT_PATH}"
 
 FULL_JOB_NAME=$(echo "${USER}-${JOB_NAME}" | tr '_' '-')
 
 ENTRYPOINT="python3 /app/beam_benchmark_main.py \
   --runner=DataflowRunner \
-  --project=research-graph \
+  --project=${PROJECT_NAME} \
   --region=us-east1 \
   --max_num_workers="${MAX_NUM_WORKERS}" \
   --temp_location="${TEMP_LOCATION}" \
@@ -52,8 +54,8 @@ ENTRYPOINT="python3 /app/beam_benchmark_main.py \
   --experiments=use_monitoring_state_manager \
   --experiments=enable_execution_details_collection \
   --experiment=use_runner_v2 \
-  --worker_harness_container_image=gcr.io/research-graph/research-graph-synthetic:latest"
+  --worker_harness_container_image=gcr.io/${PROJECT_NAME}/${BUILD_NAME}:latest"
 
 echo "entrypoint: ${ENTRYPOINT}"
 
-docker-compose run --entrypoint "${ENTRYPOINT}" research-graph-synthetic
+docker-compose run --entrypoint "${ENTRYPOINT}" ${BUILD_NAME}

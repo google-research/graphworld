@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Build and tag the research-graph-synthic image.
+# Build and tag the build image.
 # Same as ./build_local.sh just don't use the cached layers and start from scratch.
 
-docker build --no-cache . -t research-graph-synthetic:latest -t gcr.io/research-graph/research-graph-synthetic:latest
+PROJECT_NAME="research-graph"
+BUILD_NAME="research-graph-synthetic"
+
+docker build --no-cache . -t ${BUILD_NAME}:latest -t gcr.io/${PROJECT_NAME}/${BUILD_NAME}:latest

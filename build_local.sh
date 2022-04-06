@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Build and tag the research-graph-synthic image.
+# Build and tag the build image.
+PROJECT_NAME="research-graph"
+BUILD_NAME="research-graph-synthetic"
 
-docker build . -t research-graph-synthetic:latest -t gcr.io/research-graph/research-graph-synthetic:latest
+docker build . -t ${BUILD_NAME}:latest -t gcr.io/${PROJECT_NAME}/${BUILD_NAME}:latest

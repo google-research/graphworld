@@ -17,7 +17,7 @@
 # Utilize docker-compose to run beam-pipeline locally in the same environment
 # as the remote workers.
 #
-
+BUILD_NAME="research-graph-synthetic"
 OUTPUT_PATH="/tmp/hparam"
 SIM=0
 
@@ -36,7 +36,7 @@ docker-compose run \
   --${SIM_PREFIX}sim \
   --gin_config=/app/configs/hparam_config.gin \
   --runner=DirectRunner" \
-  research-graph-synthetic
+  ${BUILD_NAME}
 
 
 

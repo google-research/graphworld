@@ -12,13 +12,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+BUILD_NAME="research-graph-synthetic"
 
 docker run -p 8888:8888 \
   -v ${PWD}/src:/app \
   -v /tmp:/tmp \
   --entrypoint /opt/venv/bin/jupyter \
-  research-graph-synthetic:latest \
+  ${BUILD_NAME}:latest \
   notebook --allow-root --no-browser --port=8888 \
   --notebook-dir="/app/notebooks" --ip=0.0.0.0 
   
