@@ -14,7 +14,7 @@
 # limitations under the License.
 
 # Build and tag the build image.
-PROJECT_NAME="research-graph"
-BUILD_NAME="research-graph-synthetic"
+PROJECT_NAME="gcp-project-name"
+BUILD_NAME="graphworld"
 
 docker build . -t ${BUILD_NAME}:latest -t gcr.io/${PROJECT_NAME}/${BUILD_NAME}:latest

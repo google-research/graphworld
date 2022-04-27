@@ -15,7 +15,7 @@
 version: '3'
 
 services:
-  research-graph-synthetic:
+  graphworld:
     build:
       context: .
     stdin_open: true
@@ -23,7 +23,7 @@ services:
     environment:
       - GOOGLE_APPLICATION_CREDENTIALS=/root/.config/gcloud/application_default_credentials.json
     image:
-      research-graph-synthetic:latest
+      graphworld:latest
     ports:
       - "8888:8888"
     volumes:

@@ -15,7 +15,7 @@
 
 # Kick off a build on GCP.
 #
-PROJECT_NAME="research-graph"
-BUILD_NAME="research-graph-synthetic"
+PROJECT_NAME="gcp-project-name"
+BUILD_NAME="graphworld"
 
 gcloud builds submit --tag gcr.io/${PROJECT_NAME}/${BUILD_NAME} --timeout=3600

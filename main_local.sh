@@ -17,7 +17,7 @@
 # Utilize docker-compose to run beam-pipeline locally in the same environment
 # as the remote workers.
 #
-BUILD_NAME="research-graph-synthetic"
+BUILD_NAME="graphworld"
 GENERATOR="sbm"
 
 OUTPUT_PATH="/tmp/${GENERATOR}"

@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-PROJECT_NAME="research-graph"
-BUILD_NAME="research-graph-synthetic"
+PROJECT_NAME="gcp-project-name"
+BUILD_NAME="graphworld"
 SIM=1
 MACHINE_TYPE="n1-standard-1"
 MAX_NUM_WORKERS=1000

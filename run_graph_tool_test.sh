@@ -12,6 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-BUILD_NAME="research-graph-synthetic"
+BUILD_NAME="graphworld"
 
 docker run ${BUILD_NAME}:latest python3 /app/test_graph_tool.py
