@@ -1,5 +1,5 @@
 dataclasses # Incase we're not use py >=3.7
-numpy==1.19.0
+numpy==1.21.0
 scipy==1.4.0
 absl-py
 gcsfs
