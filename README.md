@@ -21,7 +21,7 @@ which standard benchmark datasets are just individual points. GraphWorld also
 trains and tests any number of (user-)specified GNN models on each synthetic
 dataset, and outputs easily-consumable tabular data for analyzing the results.
 This allows researchers to test GNNs far outside the statistical realm of the
-usual datasets! Check out our official [Google AI blog post](goo.gle/3wdl8rU)
+usual datasets! Check out our official [Google AI blog post](https://goo.gle/3wdl8rU)
 for more detail!
 
 The animation below was constructed from a GraphWorld node classification
