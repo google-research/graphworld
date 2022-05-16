@@ -10,6 +10,7 @@ networkx
 notebook
 matplotlib
 pycairo
+seaborn
 ujson
 scikit-learn
 
