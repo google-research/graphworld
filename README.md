@@ -1,8 +1,9 @@
 # GraphWorld
 
-Welcome! GraphWorld [(arxiv)](https://arxiv.org/abs/2203.00112) is a method and
+Welcome! GraphWorld is a method and
 toolbox for graph learning researchers to systematically test new models on
-*synthetic* graph datasets.
+*synthetic* graph datasets. Our [full paper](https://arxiv.org/abs/2203.00112)
+hass been accepted to KDD 2022.
 
 Why synthetic?
 Graph learning experimentation over time has depended largely on the same
