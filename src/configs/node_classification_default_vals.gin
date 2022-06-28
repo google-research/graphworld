@@ -1,7 +1,0 @@
-avg_degree/ParamSamplerSpec.default_val = 1.7581888184184218
-cluster_size_slope/ParamSamplerSpec.default_val = 0.0799106318430618
-feature_center_distance/ParamSamplerSpec.default_val = 0.1999532941660851
-num_clusters/ParamSamplerSpec.default_val = 5
-nvertex/ParamSamplerSpec.default_val = 343
-p_to_q_ratio/ParamSamplerSpec.default_val = 3.9851426506883327
-power_exponent/ParamSamplerSpec.default_val = 0.9999998985285983
