@@ -1,0 +1,34 @@
+import graph_world.models.basic_gnn
+include 'app/configs/sbm_generator_config.gin'
+include 'app/configs/link_prediction_default_vals.gin'
+
+GeneratorBeamHandlerWrapper.handler = @LinkPredictionBeamHandler()
+GeneratorBeamHandlerWrapper.nsamples = 700000
+
+LinkPredictionBeamHandler.marginal = True
+LinkPredictionBeamHandler.training_ratio = 0.8
+LinkPredictionBeamHandler.tuning_ratio = 0.1
+LinkPredictionBeamHandler.num_tuning_rounds = 1
+LinkPredictionBeamHandler.save_tuning_results = False
+LinkPredictionBeamHandler.tuning_metric = "rocauc"
+LinkPredictionBeamHandler.param_sampler_specs = %SBMSamplerSpec
+
+LinkPredictionBeamHandler.benchmarker_wrappers = [
+  @MLP_/LPBenchmark,
+  @GCN_/LPBenchmark,
+  @GraphSAGE_/LPBenchmark,
+  @GIN_/LPBenchmark,
+  @GAT_/LPBenchmark,
+  @GATv2_/LPBenchmark,
+  @ARMA_/LPBenchmark,
+  @FiLM_/LPBenchmark,
+
+  @APPNP_/LPBenchmark,
+  @SGC_/LPBenchmark,
+  @SuperGAT_/LPBenchmark,
+  @Transformer_/LPBenchmark,
+
+  @Baseline_/LPBenchmarkBaseline,
+]
+
+include 'app/configs/lp_model_config_opt.gin'

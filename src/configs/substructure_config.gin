@@ -1,0 +1,56 @@
+import graph_world.models.basic_gnn
+
+GeneratorBeamHandlerWrapper.handler = @SubstructureBeamHandler()
+GeneratorBeamHandlerWrapper.nsamples = 400000
+SubstructureBeamHandler.substruct = %Substructure.TAILED_TRIANGLE_GRAPH
+SubstructureBeamHandler.scale_labels = True
+SubstructureBeamHandler.marginal = True
+SubstructureBeamHandler.num_tuning_rounds = 1
+SubstructureBeamHandler.tuning_metric = "mse_scaled"
+SubstructureBeamHandler.tuning_metric_is_loss = True
+SubstructureBeamHandler.param_sampler_specs = [
+  @num_graphs/ParamSamplerSpec(),
+  @num_vertices/ParamSamplerSpec(),
+  @edge_prob/ParamSamplerSpec(),
+  @train_prob/ParamSamplerSpec(),
+  @tuning_prob/ParamSamplerSpec()
+]
+
+num_graphs/ParamSamplerSpec.name = "num_graphs"
+num_graphs/ParamSamplerSpec.min_val = 100
+num_graphs/ParamSamplerSpec.max_val = 500
+
+num_vertices/ParamSamplerSpec.name = "num_vertices"
+num_vertices/ParamSamplerSpec.min_val = 5
+num_vertices/ParamSamplerSpec.max_val = 30
+
+edge_prob/ParamSamplerSpec.name = "edge_prob"
+edge_prob/ParamSamplerSpec.min_val = 0.1
+edge_prob/ParamSamplerSpec.max_val = 0.75
+
+train_prob/ParamSamplerSpec.name = "train_prob"
+train_prob/ParamSamplerSpec.min_val = 0.2
+train_prob/ParamSamplerSpec.max_val = 0.7
+
+tuning_prob/ParamSamplerSpec.name = "tuning_prob"
+tuning_prob/ParamSamplerSpec.min_val = 0.2
+tuning_prob/ParamSamplerSpec.max_val = 0.2
+
+SubstructureBeamHandler.batch_size = 32
+SubstructureBeamHandler.benchmarker_wrappers = [
+  @GCN_/NNGraphBenchmark,
+  @GraphSAGE_/NNGraphBenchmark,
+  @GAT_/NNGraphBenchmark,
+  @GATv2_/NNGraphBenchmark,
+  @ARMA_/NNGraphBenchmark,
+  @FiLM_/NNGraphBenchmark,
+  @GIN_/NNGraphBenchmark,
+  @LRGraphBenchmark,
+  @MLP_/NNGraphBenchmark,
+  @APPNP_/NNGraphBenchmark,
+  @SGC_/NNGraphBenchmark,
+  @SuperGAT_/NNGraphBenchmark,
+  @Transformer_/NNGraphBenchmark,
+]
+
+include 'app/configs/substructure_model_config_opt.gin'

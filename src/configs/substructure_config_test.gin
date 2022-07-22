@@ -1,0 +1,4 @@
+include 'app/configs/substructure_config.gin'
+
+GeneratorBeamHandlerWrapper.nsamples = 2
+SubstructureBeamHandler.num_tuning_rounds = 1
