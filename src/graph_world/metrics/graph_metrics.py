@@ -11,69 +11,107 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import os
+from typing import Dict
+import graph_tool
+import networkx as nx
 import numpy as np
 
-import graph_tool
+
+def _degrees(graph: nx.Graph) -> np.ndarray:
+  """Returns degrees of the input graph."""
+  return np.array([d for _, d in graph.degree()]).astype(np.float32)
 
 
-def gini(array):
-    array = array.astype(np.float32)
-    array += np.finfo(np.float32).eps
-    array = np.sort(array)
-    n = array.shape[0]
-    index = np.arange(1, n + 1)
-    return np.sum((2 * index - n  - 1) * array) / (n * np.sum(array))
+def _counts(graph: nx.Graph) -> Dict[str, float]:
+  """Returns a dict of count statistics on a graph.
+
+  Arguments:
+    graph: a networkx Graph object.
+  Returns:
+    dict with the following keys and values:
+      num_nodes: count of nodes in graph
+      num_edges: number of edges in graph
+      edge_density: num_edges / {num_nodes choose 2}
+  """
+  num_nodes = float(graph.number_of_nodes())
+  num_edges = float(graph.number_of_edges()) * 2.0  # count both directions
+  edge_density = 0.0
+  if num_nodes > 1.0:
+    edge_density = num_edges / num_nodes / (num_nodes - 1.0)
+  return {'num_nodes': num_nodes, 'num_edges': num_edges,
+          'edge_density': edge_density}
 
 
-def diameter_lb(graph, n_tries=100):
-  max_diameter = -1
-  nodes = np.random.choice(list(graph.vertices()), n_tries)
-  for node in nodes:
-    diameter = graph_tool.topology.pseudo_diameter(graph, node)[0]
-    if diameter > max_diameter:
-      max_diameter = diameter
-  return max_diameter
+def _gini_coefficient(array: np.ndarray) -> float:
+  """Computes the Gini coefficient of a 1-D input array."""
+  if array.size == 0:  # pylint: disable=g-explicit-length-test  (numpy arrays have no truth value)
+    return 0.0
+  array = array.astype(np.float32)
+  array += np.finfo(np.float32).eps
+  array = np.sort(array)
+  n = array.shape[0]
+  index = np.arange(1, n + 1)
+  return np.sum((2 * index - n  - 1) * array) / (n * np.sum(array))
 
 
-def bfs_sp(graph, source, others):
-  others = set(others)
-  for edge in graph_tool.search.bfs_iterator(graph, source):
-    if edge.target() in others:
-      return graph_tool.topology.shortest_distance(graph, source, edge.target())
-  return -1
+def _diameter(graph: nx.Graph) -> float:
+  """Computes diameter of the graph."""
+  if graph.number_of_nodes() == 0:
+    return 0.0
+  if not nx.is_connected(graph):
+    return np.inf
+  return float(nx.diameter(graph))
 
 
-def average_cc_sp_length(G_comp):
-  sp_lengths = 0
-  sp_distances = graph_tool.topology.shortest_distance(G_comp, directed=False)
-  for vtx in G_comp.vertices():
-    sp_lengths += np.sum(sp_distances[vtx].a)
-  return sp_lengths / G_comp.num_vertices() / (G_comp.num_vertices() - 1)
+def _largest_connected_component_size(graph: nx.Graph) -> float:
+  """Computes the relative size of the largest graph connected component."""
+  if graph.number_of_nodes() == 0:
+    return 0.0
+  if graph.number_of_nodes() == 1:
+    return 1.0
+  components = nx.connected_components(graph)
+  return np.max(list(map(len, components))) / graph.number_of_nodes()
 
 
-def matrix_row_norm(X):
-  return X / np.linalg.norm(X, axis=1)[:, None]
+def graph_metrics_nx(graph: nx.Graph) -> Dict[str, float]:
+  """Computes graph metrics on a networkx graph object.
 
-
-def GraphMetrics(G):
-  result = {}
-  result['n_nodes'] = G.num_vertices()
-  result['n_edges'] = G.num_edges()
-  result['edge_density'] = G.num_edges() / G.num_vertices() / (G.num_vertices() - 1)
-  result['avg_in_degree'] = np.mean(G.get_in_degrees(G.get_vertices()))
-  result['edge_reciprocity'] = graph_tool.topology.edge_reciprocity(G)
-  result['avg_undirected_degree'] = np.mean(G.get_out_degrees(G.get_vertices())) / 2
-  result['degree_gini'] = gini(G.get_out_degrees(G.get_vertices()))
-  result['pseudo_diameter'] = diameter_lb(G)
-  coreness = np.array(graph_tool.topology.kcore_decomposition(G).a)
-  result['coreness_eq_1'] = np.sum(coreness == 1) / G.num_vertices()
-  result['coreness_geq_2'] = np.sum(coreness >= 2) / G.num_vertices()
-  result['coreness_geq_5'] = np.sum(coreness >= 5) / G.num_vertices()
-  result['coreness_geq_10'] = np.sum(coreness >= 10) / G.num_vertices()
-  result['coreness_gini'] = gini(coreness)
-  result['avg_local_cc'] = np.mean(np.array(graph_tool.clustering.local_clustering(G).a))
-  result['global_cc'] = graph_tool.clustering.global_clustering(G)[0]
-  comp = graph_tool.topology.label_largest_component(G)
-  result['cc_size'] = int(comp.a.sum()) / G.num_vertices()
+  Arguments:
+    graph: networkx graph.
+  Returns:
+    dict from metric names to metric values.
+  """
+  result = _counts(graph)
+  degrees = _degrees(graph)
+  result['degree_gini'] = _gini_coefficient(degrees)
+  result['approximate_diameter'] = _diameter(graph)
+  if graph.number_of_nodes() == 0:  # avoid np.mean of empty slice
+    result['avg_degree'] = 0.0
+    return result
+  result['avg_degree'] = float(np.mean(degrees))
+  core_numbers = np.array(list(nx.core_number(graph).values()))
+  result['coreness_eq_1'] = float(np.mean(core_numbers == 1))
+  result['coreness_geq_2'] = float(np.mean(core_numbers >= 2))
+  result['coreness_geq_5'] = float(np.mean(core_numbers >= 5))
+  result['coreness_geq_10'] = float(np.mean(core_numbers >= 10))
+  result['coreness_gini'] = float(_gini_coefficient(core_numbers))
+  result['avg_cc'] = float(np.mean(list(nx.clustering(graph).values())))
+  result['transitivity'] = float(nx.transitivity(graph))
+  result['num_triangles'] = float(
+      np.sum(list(nx.triangles(graph).values())) / 3.0)
+  result['cc_size'] = float(_largest_connected_component_size(graph))
   return result
+
+
+def graph_metrics(graph: graph_tool.Graph) -> Dict[str, float]:
+  """Computes graph metrics on a graph_tool graph object.
+
+  Arguments:
+    graph: graph_tool graph.
+  Returns:
+    dict from metric names to metric values.
+  """
+  nx_graph = nx.Graph()
+  edge_list = [(int(e.source()), int(e.target())) for e in graph.edges()]
+  nx_graph.add_edges_from(edge_list)
+  return graph_metrics_nx(nx_graph)

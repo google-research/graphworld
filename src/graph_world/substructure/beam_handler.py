@@ -26,7 +26,7 @@ from ..beam.generator_config_sampler import GeneratorConfigSampler, ParamSampler
 from ..models.benchmarker import Benchmarker, BenchmarkGNNParDo
 from .simulator import GenerateSubstructureDataset, GetSubstructureGraph, Substructure
 from .utils import substructure_graph_to_torchgeo_data
-from ..metrics.graph_metrics import GraphMetrics
+from ..metrics.graph_metrics import graph_metrics
 
 class SampleSubstructureDatasetDoFn(GeneratorConfigSampler, beam.DoFn):
 
@@ -82,7 +82,7 @@ class ComputeSubstructureGraphMetricsParDo(beam.DoFn):
     out = element
     graph_metrics_data = []
     graph_metrics_df = pd.DataFrame(
-      data=[GraphMetrics(graph) for graph in element['data']['graphs']])
+      data=[graph_metrics(graph) for graph in element['data']['graphs']])
     out['metrics'] = dict(graph_metrics_df.mean())
     yield out
 
