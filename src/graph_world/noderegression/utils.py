@@ -16,7 +16,7 @@ import numpy as np
 import graph_tool
 from graph_tool.all import *
 
-from ..sbm.sbm_simulator import StochasticBlockModel
+from ..nodeclassification.sbm_simulator import StochasticBlockModel
 
 def sample_masks(n_elements: int, n_train: float, n_tune: float):
   indices = np.arange(n_elements, dtype=int)

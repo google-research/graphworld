@@ -29,11 +29,11 @@ from ..beam.generator_config_sampler import ParamSamplerSpec
 from ..models.wrappers import *
 
 # Generator-specific imports
-from ..sbm.beam_handler import SbmBeamHandler
-from ..substructure.beam_handler import SubstructureBeamHandler
+from ..nodeclassification.beam_handler import SbmBeamHandler
+from ..graphregression.beam_handler import SubstructureBeamHandler
 from ..linkprediction.beam_handler import LinkPredictionBeamHandler
 from ..noderegression.beam_handler import NodeRegressionBeamHandler
-from ..substructure.simulator import Substructure
+from ..graphregression.simulator import Substructure
 
 
 def entry(argv=None):

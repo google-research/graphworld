@@ -27,9 +27,9 @@ from ..beam.generator_beam_handler import GeneratorBeamHandler
 from ..beam.generator_config_sampler import GeneratorConfigSampler, \
   ParamSamplerSpec
 from ..models.benchmarker import Benchmarker, BenchmarkGNNParDo
-from ..sbm.beam_handler import SampleSbmDoFn, WriteSbmDoFn, \
+from ..nodeclassification.beam_handler import SampleSbmDoFn, WriteSbmDoFn, \
   ComputeSbmGraphMetrics
-from ..sbm.utils import sbm_data_to_torchgeo_data
+from ..nodeclassification.utils import sbm_data_to_torchgeo_data
 from .utils import calculate_target, sample_masks
 
 

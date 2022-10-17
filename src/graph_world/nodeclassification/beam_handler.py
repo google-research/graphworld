@@ -26,8 +26,8 @@ from ..beam.generator_beam_handler import GeneratorBeamHandler
 from ..beam.generator_config_sampler import GeneratorConfigSampler
 from ..metrics.graph_metrics import graph_metrics
 from ..metrics.node_label_metrics import NodeLabelMetrics
-from ..sbm.sbm_simulator import GenerateStochasticBlockModelWithFeatures, MatchType
-from ..sbm.utils import sbm_data_to_torchgeo_data, get_kclass_masks, MakePropMat, MakePi
+from ..nodeclassification.sbm_simulator import GenerateStochasticBlockModelWithFeatures, MatchType
+from ..nodeclassification.utils import sbm_data_to_torchgeo_data, get_kclass_masks, MakePropMat, MakePi
 from ..models.benchmarker import BenchmarkGNNParDo
 
 
