@@ -5,7 +5,7 @@ absl-py
 gcsfs
 gin-config
 fsspec
-apache-beam[gcp]==2.31.0
+apache-beam[gcp]
 networkx
 notebook
 matplotlib

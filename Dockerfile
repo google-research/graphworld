@@ -42,7 +42,7 @@ RUN apt-get -y update \
 
 
 
-# # Set up venv to avoid root installing/running python.
+# Set up venv to avoid root installing/running python.
 ENV VIRTUAL_ENV=/opt/venv
 RUN python3 -m venv --system-site-packages ${VIRTUAL_ENV}
 ENV PATH="${VIRTUAL_ENV}/bin:/app:$PATH"
