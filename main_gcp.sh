@@ -13,23 +13,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-PROJECT_NAME="gcp-project-name"
+PROJECT_NAME="project"
 BUILD_NAME="graphworld"
 GENERATOR="substructure"
 MACHINE_TYPE="n1-standard-1"
 MAX_NUM_WORKERS=1000
 TAG=""
-while getopts g:t:m:w: flag
+while getopts p:b:g:t:m:w: flag
 do
     case "${flag}" in
+        p) PROJECT_NAME=${OPTARG};;
+        b) BUILD_NAME=${OPTARG};;
         g) GENERATOR=${OPTARG};;
         t) TAG=${OPTARG};;
         m) MACHINE_TYPE=${OPTARG};;
         w) MAX_NUM_WORKERS=${OPTARG};;
     esac
 done
-echo "GENERATOR: $GENERATOR";
-echo "TAG: $TAG";
 
 TIMESTAMP="$(date +"%Y-%m-%d-%H-%M-%S")"
 JOB_NAME="${GENERATOR}-${TIMESTAMP}-${TAG}"

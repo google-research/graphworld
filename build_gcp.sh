@@ -15,7 +15,14 @@
 
 # Kick off a build on GCP.
 #
-PROJECT_NAME="gcp-project-name"
+PROJECT_NAME="project"
 BUILD_NAME="graphworld"
+while getopts p:b: flag
+do
+    case "${flag}" in
+        p) PROJECT_NAME=${OPTARG};;
+        b) BUILD_NAME=${OPTARG};;
+    esac
+done
 
 gcloud builds submit --tag gcr.io/${PROJECT_NAME}/${BUILD_NAME} --timeout=3600

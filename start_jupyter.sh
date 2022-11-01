@@ -13,6 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 BUILD_NAME="graphworld"
+while getopts b: flag
+do
+    case "${flag}" in
+        b) BUILD_NAME=${OPTARG};;
+    esac
+done
 
 docker run -p 8888:8888 \
   -v ${PWD}/src:/app \
@@ -20,5 +26,4 @@ docker run -p 8888:8888 \
   --entrypoint /opt/venv/bin/jupyter \
   ${BUILD_NAME}:latest \
   notebook --allow-root --no-browser --port=8888 \
-  --notebook-dir="/app/notebooks" --ip=0.0.0.0 
-  
+  --notebook-dir="/app/notebooks" --ip=0.0.0.0

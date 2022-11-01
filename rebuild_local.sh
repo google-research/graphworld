@@ -16,7 +16,14 @@
 # Build and tag the build image.
 # Same as ./build_local.sh just don't use the cached layers and start from scratch.
 
-PROJECT_NAME="gcp-project-name"
+PROJECT_NAME="project"
 BUILD_NAME="graphworld"
+while getopts p:b: flag
+do
+    case "${flag}" in
+        p) PROJECT_NAME=${OPTARG};;
+        b) BUILD_NAME=${OPTARG};;
+    esac
+done
 
 docker build --no-cache . -t ${BUILD_NAME}:latest -t gcr.io/${PROJECT_NAME}/${BUILD_NAME}:latest

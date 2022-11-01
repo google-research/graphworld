@@ -18,6 +18,12 @@
 # as the remote workers.
 #
 BUILD_NAME="graphworld"
+while getopts b: flag
+do
+    case "${flag}" in
+        b) BUILD_NAME=${OPTARG};;
+    esac
+done
 
 OUTPUT_PATH="/tmp/mwe"
 

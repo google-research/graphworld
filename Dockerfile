@@ -48,8 +48,6 @@ RUN python3 -m venv --system-site-packages ${VIRTUAL_ENV}
 ENV PATH="${VIRTUAL_ENV}/bin:/app:$PATH"
 ENV PYTHONPATH "/app:$PYTHONPATH"
 
-COPY ./src /app
-
 # Used --no-cache-dir to save resources when using Docker Desktop on OSX.
 # Otherwise the install failed on my local machine.
 # torch MUST be installed prior to installing torch-geometric.
@@ -62,9 +60,13 @@ COPY ./src /app
 RUN pip3 install --upgrade pip \
         && pip install --no-cache-dir torch==1.9.0+cpu -f https://download.pytorch.org/whl/torch_stable.html \
         && pip3 install --no-index --no-cache-dir torch-sparse torch-scatter -f https://pytorch-geometric.com/whl/torch-1.9.0+cpu.html \
-        && pip3 install --no-cache-dir torch-geometric==1.7.2 \
-        && pip3 install -U --no-cache-dir -r /app/requirements.txt \
-        && pip3 cache purge
+        && pip3 install --no-cache-dir torch-geometric==1.7.2
+
+COPY ./src/requirements.txt /app/requirements.txt
+RUN pip3 install -U --no-cache-dir -r /app/requirements.txt
+RUN pip3 cache purge
+
+COPY ./src /app
 
 # Install apache beam sdk
 # Example: https://github.com/GoogleCloudPlatform/python-docs-samples/blob/master/dataflow/gpu-workers/Dockerfile

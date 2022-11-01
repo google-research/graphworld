@@ -14,7 +14,14 @@
 # limitations under the License.
 
 # Build and tag the build image.
-PROJECT_NAME="gcp-project-name"
+PROJECT_NAME="project"
 BUILD_NAME="graphworld"
+while getopts p:b: flag
+do
+    case "${flag}" in
+        p) PROJECT_NAME=${OPTARG};;
+        b) BUILD_NAME=${OPTARG};;
+    esac
+done
 
 docker build . -t ${BUILD_NAME}:latest -t gcr.io/${PROJECT_NAME}/${BUILD_NAME}:latest

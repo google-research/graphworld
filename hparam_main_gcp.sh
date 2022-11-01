@@ -13,14 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-PROJECT_NAME="gcp-project-name"
+PROJECT_NAME="project"
 BUILD_NAME="graphworld"
 SIM=1
 MACHINE_TYPE="n1-standard-1"
 MAX_NUM_WORKERS=1000
-while getopts :m:w: flag
+while getopts p:b:m:w: flag
 do
     case "${flag}" in
+        p) PROJECT_NAME=${OPTARG};;
+        b) BUILD_NAME=${OPTARG};;
         m) MACHINE_TYPE=${OPTARG};;
         w) MAX_NUM_WORKERS=${OPTARG};;
     esac

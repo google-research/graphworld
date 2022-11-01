@@ -18,7 +18,14 @@
 # as the remote workers.
 #
 BUILD_NAME="graphworld"
-GENERATOR="sbm"
+GENERATOR="substructure"
+while getopts b:g: flag
+do
+    case "${flag}" in
+        b) BUILD_NAME=${OPTARG};;
+        g) GENERATOR=${OPTARG};;
+    esac
+done
 
 OUTPUT_PATH="/tmp/${GENERATOR}"
 
@@ -31,6 +38,3 @@ docker-compose run \
   --gin_config=/app/configs/${GENERATOR}_config_test.gin \
   --runner=DirectRunner" \
   ${BUILD_NAME}
-
-
-
