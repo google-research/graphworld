@@ -18,55 +18,25 @@ import apache_beam as beam
 import gin
 import numpy as np
 import pandas as pd
-from sklearn.preprocessing import scale
 from torch_geometric.data import DataLoader
 
-from ..beam.benchmarker import Benchmarker, BenchmarkGNNParDo
+from ..beam.benchmarker import BenchmarkGNNParDo
 from ..beam.generator_beam_handler import GeneratorBeamHandler
-from ..beam.generator_config_sampler import GeneratorConfigSampler, ParamSamplerSpec
-from .simulator import GenerateSubstructureDataset, GetSubstructureGraph, Substructure
-from .utils import substructure_graph_to_torchgeo_data
+from .utils import graph_regression_dataset_example_to_torch_geo_data
 from ..metrics.graph_metrics import graph_metrics
 
-class SampleSubstructureDatasetDoFn(GeneratorConfigSampler, beam.DoFn):
 
-  def __init__(self, param_sampler_specs, substruct, scale_labels=True,
-               marginal=False):
-    super(SampleSubstructureDatasetDoFn, self).__init__(param_sampler_specs)
-    self._marginal = marginal
-    self._AddSamplerFn('num_graphs', self._SampleUniformInteger)
-    self._AddSamplerFn('num_vertices', self._SampleUniformInteger)
-    self._AddSamplerFn('edge_prob', self._SampleUniformFloat)
-    self._AddSamplerFn('train_prob', self._SampleUniformFloat)
-    self._AddSamplerFn('tuning_prob', self._SampleUniformFloat)
-    self._substruct = substruct
-    self._scale_labels = scale_labels
+class SampleGraphRegressionDatasetDoFn(beam.DoFn):
+
+  def __init__(self, generator_wrapper):
+    self._generator_wrapper = generator_wrapper
 
   def process(self, sample_id):
-    """Sample substructure dataset.
-    """
-
-    generator_config, marginal_param, fixed_params = self.SampleConfig(self._marginal)
-    generator_config['generator_name'] = 'SubstructureDataset'
-
-    data = GenerateSubstructureDataset(
-      num_graphs=generator_config['num_graphs'],
-      num_vertices=generator_config['num_vertices'],
-      edge_prob=generator_config['edge_prob'],
-      substruct_graph=GetSubstructureGraph(self._substruct)
-    )
-
-    if self._scale_labels:
-      data['substruct_counts'] = scale(data['substruct_counts'])
-
-    yield {'sample_id': sample_id,
-           'marginal_param': marginal_param,
-           'fixed_params': fixed_params,
-           'generator_config': generator_config,
-           'data': data}
+    """Sample generator outputs."""
+    yield self._generator_wrapper.Generate(sample_id)
 
 
-class WriteSubstructureDoFn(beam.DoFn):
+class WriteGraphRegressionDatasetDoFn(beam.DoFn):
 
   def __init__(self, output_path):
     self._output_path = output_path
@@ -76,13 +46,12 @@ class WriteSubstructureDoFn(beam.DoFn):
     yield element
 
 
-class ComputeSubstructureGraphMetricsParDo(beam.DoFn):
+class ComputeGraphRegressionMetricsParDo(beam.DoFn):
 
   def process(self, element):
     out = element
-    graph_metrics_data = []
     graph_metrics_df = pd.DataFrame(
-      data=[graph_metrics(graph) for graph in element['data']['graphs']])
+      data=[graph_metrics(graph) for graph in element['data'].graphs])
     out['metrics'] = dict(graph_metrics_df.mean())
     yield out
 
@@ -100,21 +69,25 @@ class ConvertToTorchGeoDataParDo(beam.DoFn):
     X = []
     y = []
     sample_id = element['sample_id']
-    try:
-      for graph, substruct_count in zip(
-          element['data']['graphs'], element['data']['substruct_counts']):
-        edge_density = 0.0
-        if graph.num_edges() > 0:
-          edge_density = graph.num_vertices() / graph.num_edges() ** 2.0
-        X.append([edge_density])
-        y.append(substruct_count)
-        torch_examples.append(
-          substructure_graph_to_torchgeo_data(graph, substruct_count))
-    except:
-      out['skipped'] = True
-      print(f'failed to convert {sample_id}')
-      logging.info(f'Failed to convert sbm_data to torchgeo for sample id {sample_id}')
-      yield out
+    # try:
+    for graph, features, target in zip(
+        element['data'].graphs,
+        element['data'].graph_node_features,
+        element['data'].graph_regression_target):
+      edge_density = 0.0
+      if graph.num_edges() > 0:
+        edge_density = graph.num_vertices() / graph.num_edges() ** 2.0
+      X.append([edge_density])
+      y.append(target)
+      torch_examples.append(
+        graph_regression_dataset_example_to_torch_geo_data(
+            graph, target, features))
+    # except:
+    #   out['skipped'] = True
+    #   print(f'failed to convert {sample_id}')
+    #   logging.info(
+    #       f'Failed to convert sbm_data to torchgeo for sample id {sample_id}')
+    #   yield out
     X = np.array(X)
     y = np.array(y)
     num_train = int(len(torch_examples) * element['generator_config']['train_prob'])
@@ -138,17 +111,17 @@ class ConvertToTorchGeoDataParDo(beam.DoFn):
 
 
 @gin.configurable
-class SubstructureBeamHandler(GeneratorBeamHandler):
+class GraphRegressionBeamHandler(GeneratorBeamHandler):
 
   @gin.configurable
-  def __init__(self, param_sampler_specs, substruct, benchmarker_wrappers, batch_size,
-               marginal=False, num_tuning_rounds=1, tuning_metric='',
-               tuning_metric_is_loss=False, scale_labels=False):
-    self._sample_do_fn = SampleSubstructureDatasetDoFn(param_sampler_specs,
-                                                       substruct, scale_labels, marginal)
-    self._benchmark_par_do = BenchmarkGNNParDo(benchmarker_wrappers, num_tuning_rounds,
-                                               tuning_metric, tuning_metric_is_loss)
-    self._metrics_par_do = ComputeSubstructureGraphMetricsParDo()
+  def __init__(self, benchmarker_wrappers, generator_wrapper, batch_size,
+               num_tuning_rounds=1, tuning_metric='',
+               tuning_metric_is_loss=False):
+    self._sample_do_fn = SampleGraphRegressionDatasetDoFn(generator_wrapper)
+    self._benchmark_par_do = BenchmarkGNNParDo(
+        benchmarker_wrappers, num_tuning_rounds, tuning_metric,
+        tuning_metric_is_loss)
+    self._metrics_par_do = ComputeGraphRegressionMetricsParDo()
     self._batch_size = batch_size
 
   def GetSampleDoFn(self):
@@ -168,6 +141,7 @@ class SubstructureBeamHandler(GeneratorBeamHandler):
 
   def SetOutputPath(self, output_path):
     self._output_path = output_path
-    self._write_do_fn = WriteSubstructureDoFn(output_path)
-    self._convert_par_do = ConvertToTorchGeoDataParDo(output_path, self._batch_size)
+    self._write_do_fn = WriteGraphRegressionDatasetDoFn(output_path)
+    self._convert_par_do = ConvertToTorchGeoDataParDo(output_path,
+                                                      self._batch_size)
     self._benchmark_par_do.SetOutputPath(output_path)

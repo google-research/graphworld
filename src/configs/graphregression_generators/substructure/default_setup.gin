@@ -1,0 +1,25 @@
+import graph_world.graphregression.generator_wrappers
+
+include 'app/configs/graphregression_generators/substructure/default_param_ranges.gin'
+
+# Include if you are running "marginal" GraphWorld, otherwise comment out.
+include 'app/configs/graphregression_generators/substructure/default_param_values.gin'
+
+GraphRegressionBeamHandler.generator_wrapper = @SubstructureGeneratorWrapper()
+
+# Set to 'True' if GraphWorld is running in marginal mode (see above include)
+SubstructureGeneratorWrapper.marginal = True
+
+# The assigned value below comes from ./default_param_ranges.gin.
+# If ./default_param_values.gin is also included, that file sets the default
+# value for each sampler spec, which is used to run "marginal" GraphWorld.
+SubstructureGeneratorWrapper.param_sampler_specs = %SubstructureSamplerSpec
+
+# Choice of substructure to count
+SubstructureGeneratorWrapper.substruct = %Substructure.TAILED_TRIANGLE_GRAPH
+
+# Whether to standard-normalize the regression values
+SubstructureGeneratorWrapper.normalize_target = True
+
+# Include this file if you are running GraphWorld in Mode 2.
+include 'app/configs/graphregression_generators/substructure/optimal_model_hparams.gin'

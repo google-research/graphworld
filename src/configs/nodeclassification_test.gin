@@ -1,0 +1,5 @@
+include 'app/configs/nodeclassification.gin'
+
+GeneratorBeamHandlerWrapper.nsamples = 5
+NodeClassificationBeamHandler.num_tuning_rounds = 1
+NodeClassificationBeamHandler.save_tuning_results = False

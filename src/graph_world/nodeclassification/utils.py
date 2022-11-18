@@ -11,14 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 import collections
 import copy
+import dataclasses
 import enum
 import math
 from typing import Dict, List, Optional, Sequence, Tuple
 import random
 
+import graph_tool
 import numpy as np
 import torch
 from torch_geometric.data import Data
@@ -26,26 +27,46 @@ from torch_geometric.utils import from_networkx
 
 import networkx as nx
 
-from .sbm_simulator import StochasticBlockModel
+
+@dataclasses.dataclass
+class NodeClassificationDataset:
+  """Stores data for node classification tasks.
+  Attributes:
+    graph: graph-tool Graph object.
+    graph_memberships: list of integer node classes.
+    node_features: numpy array of node features.
+    feature_memberships: list of integer node feature classes.
+    edge_features: map from edge tuple to numpy array. Only stores undirected
+      edges, i.e. (0, 1) will be in the map, but (1, 0) will not be.
+  """
+  graph: graph_tool.Graph = Ellipsis
+  graph_memberships: np.ndarray = Ellipsis
+  node_features: np.ndarray = Ellipsis
+  feature_memberships: np.ndarray = Ellipsis
+  edge_features: Dict[Tuple[int, int], np.ndarray] = Ellipsis
 
 
-def sbm_data_to_torchgeo_data(sbm_data: StochasticBlockModel) -> Data:
-  nx_graph = nx.Graph()
+def nodeclassification_data_to_torchgeo_data(
+    nodeclassification_data: NodeClassificationDataset) -> Data:
   edge_tuples = []
   edge_feature_data = []
-  for edge in sbm_data.graph.iter_edges():
+  for edge in nodeclassification_data.graph.iter_edges():
     edge_tuples.append([edge[0], edge[1]])
     edge_tuples.append([edge[1], edge[0]])
     ordered_tuple = (edge[0], edge[1])
     if edge[0] > edge[1]:
       ordered_tuple = (edge[1], edge[0])
-    edge_feature_data.append(sbm_data.edge_features[ordered_tuple])
-    edge_feature_data.append(sbm_data.edge_features[ordered_tuple])
+    edge_feature_data.append(
+        nodeclassification_data.edge_features[ordered_tuple])
+    edge_feature_data.append(
+        nodeclassification_data.edge_features[ordered_tuple])
 
-  node_features = torch.tensor(sbm_data.node_features, dtype=torch.float)
+  node_features = torch.tensor(nodeclassification_data.node_features,
+                               dtype=torch.float)
   edge_index = torch.tensor(edge_tuples, dtype=torch.long)
   edge_attr = torch.tensor(edge_feature_data, dtype=torch.float)
-  labels = torch.tensor(sbm_data.graph_memberships, dtype=torch.long)
+  labels = torch.tensor(nodeclassification_data.graph_memberships,
+                        dtype=torch.long)
   return Data(x=node_features, edge_index=edge_index.t().contiguous(),
               edge_attr=edge_attr, y=labels)
 
@@ -96,18 +117,19 @@ def sample_kclass_train_sets(example_indices: List[int],
           random_indices[(num_train + num_val):])
 
 
-def get_kclass_masks(sbm_data: StochasticBlockModel,
+def get_kclass_masks(nodeclassification_data: NodeClassificationDataset,
                      k_train: int = 30, k_val: int = 20) -> \
     Tuple[List[int], List[int], List[int]]:
   # Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
   # Get graph ground-truth clusters.
   clusters = collections.defaultdict(list)
-  for node_index, cluster_index in enumerate(sbm_data.graph_memberships):
+  for node_index, cluster_index in enumerate(
+      nodeclassification_data.graph_memberships):
     clusters[cluster_index].append(node_index)
   # Sample train and val sets.
-  training_mask = [False] * len(sbm_data.graph_memberships)
-  validate_mask = [False] * len(sbm_data.graph_memberships)
-  test_mask = [False] * len(sbm_data.graph_memberships)
+  training_mask = [False] * len(nodeclassification_data.graph_memberships)
+  validate_mask = [False] * len(nodeclassification_data.graph_memberships)
+  test_mask = [False] * len(nodeclassification_data.graph_memberships)
   for cluster_index, cluster in clusters.items():
     cluster_train_set, cluster_val_set, cluster_test_set = \
       sample_kclass_train_sets(cluster, k_train, k_val)
@@ -123,22 +145,3 @@ def get_kclass_masks(sbm_data: StochasticBlockModel,
   return (torch.as_tensor(training_mask).reshape(-1),
           torch.as_tensor(validate_mask).reshape(-1),
           torch.as_tensor(test_mask).reshape(-1))
-
-
-# This function creates the "Pi" vector for the model (the
-# ${num_communities}-simplex vector giving relative community sizes) from
-# the `community_size_slope` config field. See the config proto for details.
-def MakePi(num_communities: int, community_size_slope: float) -> np.ndarray:
-  pi = np.array(range(num_communities)) * community_size_slope
-  pi += np.ones(num_communities)
-  pi /= np.sum(pi)
-  return pi
-
-
-# This function creates the "PropMat" matrix for the model (the square matrix
-# giving inter-community Poisson means) from the config parameters, particularly
-# `p_to_q_ratio`. See the config proto for details.
-def MakePropMat(num_communities: int, p_to_q_ratio: float) -> np.ndarray:
-  prop_mat = np.ones((num_communities, num_communities))
-  np.fill_diagonal(prop_mat, p_to_q_ratio)
-  return prop_mat

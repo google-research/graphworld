@@ -15,24 +15,24 @@
 
 PROJECT_NAME="project"
 BUILD_NAME="graphworld"
-GENERATOR="substructure"
+TASK="nodeclassification"
 MACHINE_TYPE="n1-standard-1"
 MAX_NUM_WORKERS=1000
-TAG=""
-while getopts p:b:g:t:m:w: flag
+JOBTAG=""
+while getopts p:b:t:j:m:w: flag
 do
     case "${flag}" in
         p) PROJECT_NAME=${OPTARG};;
         b) BUILD_NAME=${OPTARG};;
-        g) GENERATOR=${OPTARG};;
-        t) TAG=${OPTARG};;
+        t) TASK=${OPTARG};;
+        j) JOBTAG=${OPTARG};;
         m) MACHINE_TYPE=${OPTARG};;
         w) MAX_NUM_WORKERS=${OPTARG};;
     esac
 done
 
 TIMESTAMP="$(date +"%Y-%m-%d-%H-%M-%S")"
-JOB_NAME="${GENERATOR}-${TIMESTAMP}-${TAG}"
+JOB_NAME="${GENERATOR}-${TIMESTAMP}-${JOBTAG}"
 OUTPUT_PATH="gs://${BUILD_NAME}/${USER}/sampling/${JOB_NAME}"
 TEMP_LOCATION="gs://${BUILD_NAME}/temp"
 echo "OUTPUT_PATH: ${OUTPUT_PATH}"
@@ -45,7 +45,7 @@ ENTRYPOINT="python3 /app/beam_benchmark_main.py \
   --region=us-east1 \
   --max_num_workers="${MAX_NUM_WORKERS}" \
   --temp_location="${TEMP_LOCATION}" \
-  --gin_config=/app/configs/${GENERATOR}_config.gin \
+  --gin_config=/app/configs/${TASK}.gin \
   --output="${OUTPUT_PATH}" \
   --job_name="${FULL_JOB_NAME}" \
   --no_use_public_ips \

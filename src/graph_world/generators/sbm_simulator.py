@@ -393,3 +393,22 @@ def GenerateStochasticBlockModelWithFeatures(
                        edge_center_distance,
                        edge_cluster_variance)
   return result
+
+
+# Helper function to create the "Pi" vector for the SBM model (the
+# ${num_communities}-simplex vector giving relative community sizes) from
+# the `community_size_slope` config field. See the config proto for details.
+def MakePi(num_communities: int, community_size_slope: float) -> np.ndarray:
+  pi = np.array(range(num_communities)) * community_size_slope
+  pi += np.ones(num_communities)
+  pi /= np.sum(pi)
+  return pi
+
+
+# Helper function to create the "PropMat" matrix for the SBM model (square
+# matrix giving inter-community Poisson means) from the config parameters,
+# particularly `p_to_q_ratio`. See the config proto for details.
+def MakePropMat(num_communities: int, p_to_q_ratio: float) -> np.ndarray:
+  prop_mat = np.ones((num_communities, num_communities))
+  np.fill_diagonal(prop_mat, p_to_q_ratio)
+  return prop_mat

@@ -1,0 +1,20 @@
+import graph_world.models.basic_gnn
+
+GeneratorBeamHandlerWrapper.handler = @NodeClassificationBeamHandler()
+GeneratorBeamHandlerWrapper.nsamples = 500
+
+NodeClassificationBeamHandler.num_tuning_rounds = 1
+NodeClassificationBeamHandler.save_tuning_results = False
+NodeClassificationBeamHandler.tuning_metric = "rocauc_ovr"
+NodeClassificationBeamHandler.ktrain = 5
+NodeClassificationBeamHandler.ktuning = 5
+
+NodeClassificationBeamHandler.benchmarker_wrappers = [
+  @GCN_/NNNodeBenchmark,
+  @GraphSAGE_/NNNodeBenchmark,
+]
+
+include 'app/configs/nodeclassification_model_tuning_mwe.gin'
+
+# Import the appropriate generator setup file.
+include 'app/configs/nodeclassification_generators/sbm/mwe_setup.gin'

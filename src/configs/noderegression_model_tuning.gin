@@ -157,12 +157,12 @@ FiLM_/NodeRegressionBenchmark.h_params = {
 
 
 # SuperGAT setup
-SuperGAT_/NNGraphBenchmark.model_class = @SuperGAT
-SuperGAT_/NNGraphBenchmark.benchmark_params = {
+SuperGAT_/NodeRegressionBenchmark.model_class = @SuperGAT
+SuperGAT_/NodeRegressionBenchmark.benchmark_params = {
     'epochs' : %EPOCHS,
     'lr': %LR,
 }
-SuperGAT_/NNNodeBenchmark.h_params = {
+SuperGAT_/NodeRegressionBenchmark.h_params = {
     'in_channels' : 1,
     'hidden_channels' : %HIDDEN_CHANNELS,
     'num_layers' : %NUM_LAYERS,
@@ -171,12 +171,12 @@ SuperGAT_/NNNodeBenchmark.h_params = {
 }
 
 # Transformer setup
-Transformer_/NNGraphBenchmark.model_class = @Transformer
-Transformer_/NNGraphBenchmark.benchmark_params = {
+Transformer_/NodeRegressionBenchmark.model_class = @Transformer
+Transformer_/NodeRegressionBenchmark.benchmark_params = {
     'epochs' : %EPOCHS,
     'lr': %LR,
 }
-Transformer_/NNGraphBenchmark.h_params = {
+Transformer_/NodeRegressionBenchmark.h_params = {
     'in_channels' : 1,
     'hidden_channels' : %HIDDEN_CHANNELS,
     'num_layers' : %NUM_LAYERS,

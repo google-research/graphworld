@@ -1,22 +1,15 @@
 import graph_world.models.basic_gnn
-include 'app/configs/sbm_generator_config.gin'
 
 GeneratorBeamHandlerWrapper.handler = @NodeRegressionBeamHandler()
 GeneratorBeamHandlerWrapper.nsamples = 100000
 
-# TARGETS = ['pagerank', 'betweenness', 'eigenvector', 'katz', 'hits_authority', 'hits_hub', 'local_clustering', 'kcore']
-# There is no good way to insert variable parameters to BeamHandler :(
-
-NodeRegressionBeamHandler.normalize_target = True
 NodeRegressionBeamHandler.marginal = False
 NodeRegressionBeamHandler.num_tuning_rounds = 0
 NodeRegressionBeamHandler.save_tuning_results = True
 NodeRegressionBeamHandler.training_ratio = 0.8
 NodeRegressionBeamHandler.tuning_ratio = 0.1
-NodeRegressionBeamHandler.target = "pagerank"
 NodeRegressionBeamHandler.tuning_metric = "mse"
 NodeRegressionBeamHandler.tuning_metric_is_loss = True
-NodeRegressionBeamHandler.param_sampler_specs = %SBMSamplerSpec
 
 NodeRegressionBeamHandler.benchmarker_wrappers = [
   @GCN_/NodeRegressionBenchmark,
@@ -34,4 +27,7 @@ NodeRegressionBeamHandler.benchmarker_wrappers = [
   @Transformer_/NodeRegressionBenchmark,
 ]
 
-include 'app/configs/noderegression_model_config_tuning.gin'
+include 'app/configs/noderegression_model_tuning.gin'
+
+# Import the appropriate generator setup file.
+include 'app/configs/noderegression_generators/sbm/default_setup.gin'

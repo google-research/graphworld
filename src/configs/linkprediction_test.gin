@@ -1,4 +1,4 @@
-include 'app/configs/linkprediction_config.gin'
+include 'app/configs/linkprediction.gin'
 
 GeneratorBeamHandlerWrapper.nsamples = 1
 LinkPredictionBeamHandler.num_tuning_rounds = 1

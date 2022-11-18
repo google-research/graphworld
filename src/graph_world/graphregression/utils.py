@@ -15,37 +15,37 @@
 import math
 import random
 
+import dataclasses
+from typing import Dict, List, Optional, Tuple
 import graph_tool
 import numpy as np
 import torch
 from torch_geometric.data import Data
 
 
-def substructure_graph_to_torchgeo_data(
-    substruct_graph: graph_tool.Graph, substruct_count: float) -> Data:
+@dataclasses.dataclass
+class GraphRegressionDataset:
+  """Stores data for graph regression tasks.
+  Attributes:
+    graphs: a list of graph-tool Graph objects
+    graph_node_features: a list numpy node feature matrices, one for each graph
+    graph_regression_target: float-convertible np vector of graph values.
+  """
+  graphs: List[graph_tool.Graph] = Ellipsis
+  graph_node_features: List[np.ndarray] = Ellipsis
+  graph_regression_target: np.ndarray = Ellipsis
+
+
+def graph_regression_dataset_example_to_torch_geo_data(
+    graph: graph_tool.Graph, target: float,
+    features: Optional[np.ndarray] = None) -> Data:
   edge_tuples = []
-  for edge in substruct_graph.iter_edges():
+  for edge in graph.iter_edges():
     edge_tuples.append([edge[0], edge[1]])
     edge_tuples.append([edge[1], edge[0]])
 
-  node_features = torch.ones([substruct_graph.num_vertices(), 1], dtype=torch.float)
+  node_features = torch.from_numpy(features)
   edge_index = torch.tensor(edge_tuples, dtype=torch.long)
   return Data(x=node_features, edge_index=edge_index.t().contiguous(),
-              y=float(substruct_count))
+              y=float(target))
 
-
-def erdos_graph(num_vertices, edge_prob):
-  num_edges = np.random.binomial
-  g = graph_tool.Graph(directed=False)
-  if edge_prob == 0.0:
-    return graph_tool.Graph(directed=False)
-  _ = g.add_vertex(num_vertices)
-  for u in range(num_vertices - 1):
-    v = u + 1
-    while v < num_vertices:
-      r = random.uniform(0.0, 1.0)
-      v = v + int(math.floor(math.log(r) / math.log(1.0 - edge_prob)))
-      if v < num_vertices:
-        g.add_edge(u, v)
-        v = v + 1
-  return g

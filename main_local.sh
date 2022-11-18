@@ -18,16 +18,16 @@
 # as the remote workers.
 #
 BUILD_NAME="graphworld"
-GENERATOR="substructure"
-while getopts b:g: flag
+TASK="nodeclassification"
+while getopts b:t: flag
 do
     case "${flag}" in
         b) BUILD_NAME=${OPTARG};;
-        g) GENERATOR=${OPTARG};;
+        t) TASK=${OPTARG};;
     esac
 done
 
-OUTPUT_PATH="/tmp/${GENERATOR}"
+OUTPUT_PATH="/tmp/${TASK}"
 
 rm -rf "${OUTPUT_PATH}"
 mkdir -p ${OUTPUT_PATH}
@@ -35,6 +35,6 @@ mkdir -p ${OUTPUT_PATH}
 docker-compose run \
   --entrypoint "python3 /app/beam_benchmark_main.py \
   --output ${OUTPUT_PATH} \
-  --gin_config=/app/configs/${GENERATOR}_config_test.gin \
+  --gin_config=/app/configs/${TASK}_test.gin \
   --runner=DirectRunner" \
   ${BUILD_NAME}

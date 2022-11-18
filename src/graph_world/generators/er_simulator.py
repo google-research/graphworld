@@ -1,4 +1,3 @@
-#!/bin/bash
 # Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,30 +11,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import math
+import random
 
-#
-# Utilize docker-compose to run beam-pipeline locally in the same environment
-# as the remote workers.
-#
-BUILD_NAME="graphworld"
-while getopts b: flag
-do
-    case "${flag}" in
-        b) BUILD_NAME=${OPTARG};;
-    esac
-done
-
-OUTPUT_PATH="/tmp/mwe"
-
-rm -rf "${OUTPUT_PATH}"
-mkdir -p ${OUTPUT_PATH}
-
-docker-compose run \
-  --entrypoint "python3 /app/beam_benchmark_main.py \
-  --output ${OUTPUT_PATH} \
-  --gin_config=/app/configs/nodeclassification_mwe.gin \
-  --runner=DirectRunner" \
-  ${BUILD_NAME}
+import graph_tool
+import numpy as np
 
 
-
+def erdos_graph(num_vertices, edge_prob):
+  g = graph_tool.Graph(directed=False)
+  if edge_prob == 0.0:
+    return graph_tool.Graph(directed=False)
+  _ = g.add_vertex(num_vertices)
+  for u in range(num_vertices - 1):
+    v = u + 1
+    while v < num_vertices:
+      r = random.uniform(0.0, 1.0)
+      v = v + int(math.floor(math.log(r) / math.log(1.0 - edge_prob)))
+      if v < num_vertices:
+        g.add_edge(u, v)
+        v = v + 1
+  return g
