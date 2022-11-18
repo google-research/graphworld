@@ -21,9 +21,9 @@ import pandas as pd
 from sklearn.preprocessing import scale
 from torch_geometric.data import DataLoader
 
+from ..beam.benchmarker import Benchmarker, BenchmarkGNNParDo
 from ..beam.generator_beam_handler import GeneratorBeamHandler
 from ..beam.generator_config_sampler import GeneratorConfigSampler, ParamSamplerSpec
-from ..models.benchmarker import Benchmarker, BenchmarkGNNParDo
 from .simulator import GenerateSubstructureDataset, GetSubstructureGraph, Substructure
 from .utils import substructure_graph_to_torchgeo_data
 from ..metrics.graph_metrics import graph_metrics

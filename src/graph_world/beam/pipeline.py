@@ -26,7 +26,7 @@ from apache_beam.options.pipeline_options import SetupOptions
 # Generator-agnostic imports
 from ..beam.generator_beam_handler import GeneratorBeamHandlerWrapper
 from ..beam.generator_config_sampler import ParamSamplerSpec
-from ..models.wrappers import *
+from .task_benchmarkers import *
 
 # Generator-specific imports
 from ..nodeclassification.beam_handler import SbmBeamHandler

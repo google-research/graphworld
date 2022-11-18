@@ -23,10 +23,10 @@ import torch
 from torch_geometric.data import DataLoader
 from sklearn.preprocessing import StandardScaler
 
+from ..beam.benchmarker import Benchmarker, BenchmarkGNNParDo
 from ..beam.generator_beam_handler import GeneratorBeamHandler
 from ..beam.generator_config_sampler import GeneratorConfigSampler, \
   ParamSamplerSpec
-from ..models.benchmarker import Benchmarker, BenchmarkGNNParDo
 from ..nodeclassification.beam_handler import SampleSbmDoFn, WriteSbmDoFn, \
   ComputeSbmGraphMetrics
 from ..nodeclassification.utils import sbm_data_to_torchgeo_data

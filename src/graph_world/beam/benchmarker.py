@@ -20,7 +20,7 @@ import apache_beam as beam
 import gin
 import numpy as np
 
-from .utils import ComputeNumPossibleConfigs, SampleModelConfig, GetCartesianProduct
+from ..models.utils import ComputeNumPossibleConfigs, SampleModelConfig, GetCartesianProduct
 
 
 class Benchmarker(ABC):
