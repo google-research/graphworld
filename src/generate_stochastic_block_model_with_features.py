@@ -25,7 +25,11 @@ import gin
 
 import numpy as np
 
+<<<<<<< HEAD
 from graph_world.nodeclassification.sbm_simulator import GenerateStochasticBlockModelWithFeatures
+=======
+from graph_world.generators.sbm_simulator import GenerateStochasticBlockModelWithFeatures
+>>>>>>> f9af83f (adding node feature generation to cabam)
 
 FLAGS = flags.FLAGS
 
