@@ -17,6 +17,8 @@ import numpy as np
 
 from ..beam.generator_config_sampler import GeneratorConfigSampler
 from ..generators.sbm_simulator import GenerateStochasticBlockModelWithFeatures, MatchType, MakePi, MakePropMat
+from ..generators.cabam_simulator import GenerateCABAMGraph, GenerateAssortativityDict
+
 from ..nodeclassification.utils import NodeClassificationDataset
 
 
@@ -80,3 +82,43 @@ class SbmGeneratorWrapper(GeneratorConfigSampler):
                 node_features=sbm_data.node_features,
                 feature_memberships=sbm_data.feature_memberships,
                 edge_features=sbm_data.edge_features)}
+
+@gin.configurable
+class CABAMGeneratorWrapper(GeneratorConfigSampler):
+
+  def __init__(self, param_sampler_specs, marginal=False,
+               normalize_features=True):
+    super(CABAMGeneratorWrapper, self).__init__(param_sampler_specs)
+    self._marginal = marginal
+    self._normalize_features = normalize_features
+    self._AddSamplerFn('nvertex', self._SampleUniformInteger)
+    self._AddSamplerFn('m', self._SampleUniformInteger)
+    self._AddSamplerFn('assortativity_type', self._SampleUniformInteger)
+    self._AddSamplerFn('c_probs_in', self._SampleUniformFloat)
+    self._AddSamplerFn('c_probs_out', self._SampleUniformFloat)
+
+
+  def Generate(self, sample_id):
+    """Sample and save CABAM outputs given a configuration filepath.
+    """
+    generator_config, marginal_param, fixed_params = self.SampleConfig(
+        self._marginal)
+    generator_config['generator_name'] = 'CABAM'
+
+    cabam_data = GenerateCABAMGraph(
+      n=generator_config['nvertex'],
+      m=generator_config['m'],
+      p_in=generator_config['c_probs_in'],
+      p_out=generator_config['c_probs_out']
+    )
+
+    return {'sample_id': sample_id,
+            'marginal_param': marginal_param,
+            'fixed_params': fixed_params,
+            'generator_config': generator_config,
+            'data': NodeClassificationDataset(
+                graph=cabam_data.graph,
+                graph_memberships=cabam_data.graph_memberships,
+                node_features=cabam_data.node_features,
+                feature_memberships=cabam_data.feature_memberships,
+                edge_features=cabam_data.edge_features)}

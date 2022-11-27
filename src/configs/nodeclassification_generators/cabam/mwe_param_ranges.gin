@@ -1,0 +1,28 @@
+CABAMSamplerSpec = [
+  @nvertex/ParamSamplerSpec(),
+  @m/ParamSamplerSpec(),
+  @assortativity_type/ParamSamplerSpec(),
+  @c_probs_in/ParamSamplerSpec(),
+  @c_probs_out/ParamSamplerSpec(),
+]
+
+nvertex/ParamSamplerSpec.name = "nvertex"
+nvertex/ParamSamplerSpec.min_val = 128
+nvertex/ParamSamplerSpec.max_val = 512
+
+m/ParamSamplerSpec.name = "m"
+m/ParamSamplerSpec.min_val = 2
+m/ParamSamplerSpec.max_val = 10
+
+assortativity_type/ParamSamplerSpec.name = "assortativity_type"
+assortativity_type/ParamSamplerSpec.min_val = 1
+assortativity_type/ParamSamplerSpec.max_val = 1
+
+c_probs_in/ParamSamplerSpec.name = "c_probs_in"
+c_probs_in/ParamSamplerSpec.min_val = 0.05
+c_probs_in/ParamSamplerSpec.max_val = 0.05
+
+c_probs_out/ParamSamplerSpec.name = "c_probs_out"
+c_probs_out/ParamSamplerSpec.min_val = 0.95
+c_probs_out/ParamSamplerSpec.max_val = 0.95
+

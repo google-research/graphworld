@@ -30,4 +30,4 @@ NodeClassificationBeamHandler.benchmarker_wrappers = [
 include 'app/configs/nodeclassification_model_tuning.gin'
 
 # Import the appropriate generator setup file.
-include 'app/configs/nodeclassification_generators/sbm/default_setup.gin'
+include 'app/configs/nodeclassification_generators/cabam/default_setup.gin'
