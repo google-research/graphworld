@@ -38,7 +38,8 @@ RUN apt-get -y update \
         python3-venv \
         python3-decorator \
         python3-cairo \
-        python3-graph-tool 
+        python3-graph-tool \
+        git 
 
 
 
@@ -65,6 +66,7 @@ RUN pip3 install --upgrade pip \
 COPY ./src/requirements.txt /app/requirements.txt
 RUN pip3 install -U --no-cache-dir -r /app/requirements.txt
 RUN pip3 cache purge
+RUN git clone https://github.com/muzz-yasir/cabam-graph-generation.git ./src/cabam_graph_generation/
 
 COPY ./src /app
 

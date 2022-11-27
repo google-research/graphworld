@@ -17,6 +17,7 @@ import numpy as np
 
 from ..beam.generator_config_sampler import GeneratorConfigSampler
 from ..generators.sbm_simulator import GenerateStochasticBlockModelWithFeatures, MatchType, MakePi, MakePropMat
+from ..generators.cabam_simulator import GenerateCABAMGraphWithFeatures
 from ..nodeclassification.utils import NodeClassificationDataset
 
 
@@ -58,7 +59,7 @@ class SbmGeneratorWrapper(GeneratorConfigSampler):
                 generator_config['cluster_size_slope']),
       prop_mat=MakePropMat(generator_config['num_clusters'],
                            generator_config['p_to_q_ratio']),
-                           
+
       num_feature_groups=generator_config['num_clusters'],
       feature_group_match_type=MatchType.GROUPED,
       feature_center_distance=generator_config['feature_center_distance'],
@@ -69,7 +70,7 @@ class SbmGeneratorWrapper(GeneratorConfigSampler):
                                generator_config['nvertex']),
       normalize_features=self._normalize_features
     )
-
+    
     return {'sample_id': sample_id,
             'marginal_param': marginal_param,
             'fixed_params': fixed_params,
@@ -80,3 +81,54 @@ class SbmGeneratorWrapper(GeneratorConfigSampler):
                 node_features=sbm_data.node_features,
                 feature_memberships=sbm_data.feature_memberships,
                 edge_features=sbm_data.edge_features)}
+
+@gin.configurable
+class CABAMGeneratorWrapper(GeneratorConfigSampler):
+
+  def __init__(self, param_sampler_specs, marginal=False,
+               normalize_features=False):
+    super(CABAMGeneratorWrapper, self).__init__(param_sampler_specs)
+    self._marginal = marginal
+    self._normalize_features = normalize_features
+    self._AddSamplerFn('nvertex', self._SampleUniformInteger)
+    self._AddSamplerFn('m', self._SampleUniformInteger)
+    self._AddSamplerFn('assortativity_type', self._SampleUniformInteger)
+    self._AddSamplerFn('c_probs_in', self._SampleUniformFloat)
+    self._AddSamplerFn('feature_center_distance', self._SampleUniformFloat)
+    self._AddSamplerFn('feature_dim', self._SampleUniformInteger)
+    self._AddSamplerFn('num_clusters', self._SampleUniformInteger)
+    self._AddSamplerFn('cluster_size_slope', self._SampleUniformFloat)
+    self._AddSamplerFn('temperature', self._SampleUniformInteger)
+
+
+  def Generate(self, sample_id):
+    """Sample and save CABAM outputs given a configuration filepath.
+    """
+    generator_config, marginal_param, fixed_params = self.SampleConfig(
+        self._marginal)
+    generator_config['generator_name'] = 'CABAM'
+
+    cabam_data = GenerateCABAMGraphWithFeatures(
+      n=generator_config['nvertex'],
+      m=generator_config['m'],
+      p_in=generator_config['c_probs_in'],
+      num_feature_groups=generator_config['num_clusters'],
+      feature_group_match_type=MatchType.RANDOM,
+      feature_center_distance=generator_config['feature_center_distance'],
+      feature_dim=generator_config['feature_dim'],
+      pi=MakePi(generator_config['num_clusters'],
+                generator_config['cluster_size_slope']),
+      assortativity_type=generator_config['assortativity_type'],
+      temperature=generator_config['temperature'],
+    )
+
+    return {'sample_id': sample_id,
+            'marginal_param': marginal_param,
+            'fixed_params': fixed_params,
+            'generator_config': generator_config,
+            'data': NodeClassificationDataset(
+                graph=cabam_data.graph,
+                graph_memberships=cabam_data.graph_memberships,
+                node_features=cabam_data.node_features,
+                feature_memberships=cabam_data.feature_memberships,
+                edge_features=cabam_data.edge_features)}
