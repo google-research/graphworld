@@ -25,13 +25,13 @@ do
     esac
 done
 
-OUTPUT_PATH="tmp/codespaces_logs/mwe"
+OUTPUT_PATH="/tmp/mwe"
 
 rm -rf "${OUTPUT_PATH}"
 mkdir -p ${OUTPUT_PATH}
 
 docker-compose run \
-  --entrypoint "python3 /app/beam_benchmark_main.py \
+  --entrypoint "python3 /app/generate_stochastic_block_model_with_features.py \
   --output ${OUTPUT_PATH} \
   --gin_config=/app/configs/nodeclassification_mwe.gin \
   --runner=DirectRunner" \

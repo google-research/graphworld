@@ -1,7 +1,7 @@
 import graph_world.models.basic_gnn
 
 GeneratorBeamHandlerWrapper.handler = @NodeClassificationBeamHandler()
-GeneratorBeamHandlerWrapper.nsamples = 500
+GeneratorBeamHandlerWrapper.nsamples = 50
 
 NodeClassificationBeamHandler.num_tuning_rounds = 1
 NodeClassificationBeamHandler.save_tuning_results = False

@@ -56,15 +56,19 @@ def nodeclassification_data_to_torchgeo_data(
     ordered_tuple = (edge[0], edge[1])
     if edge[0] > edge[1]:
       ordered_tuple = (edge[1], edge[0])
-    edge_feature_data.append(
-        nodeclassification_data.edge_features[ordered_tuple])
-    edge_feature_data.append(
-        nodeclassification_data.edge_features[ordered_tuple])
-
+    if nodeclassification_data.edge_features:
+      edge_feature_data.append(
+          nodeclassification_data.edge_features[ordered_tuple])
+      edge_feature_data.append(
+          nodeclassification_data.edge_features[ordered_tuple])
   node_features = torch.tensor(nodeclassification_data.node_features,
                                dtype=torch.float)
   edge_index = torch.tensor(edge_tuples, dtype=torch.long)
-  edge_attr = torch.tensor(edge_feature_data, dtype=torch.float)
+
+  if nodeclassification_data.edge_features:
+    edge_attr = torch.tensor(edge_feature_data, dtype=torch.float)
+  else: 
+    edge_attr = None
   labels = torch.tensor(nodeclassification_data.graph_memberships,
                         dtype=torch.long)
   return Data(x=node_features, edge_index=edge_index.t().contiguous(),

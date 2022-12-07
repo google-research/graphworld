@@ -8,7 +8,7 @@ include 'app/configs/nodeclassification_generators/cabam/default_param_ranges.gi
 NodeClassificationBeamHandler.generator_wrapper = @CABAMGeneratorWrapper()
 
 # Set to 'True' if GraphWorld is running in marginal mode (see above include)
-SbmGeneratorWrapper.marginal = True
+CABAMGeneratorWrapper.marginal = True
 
 # The assigned value below comes from ./default_param_ranges.gin.
 # If ./default_param_values.gin is also included, that file sets the default

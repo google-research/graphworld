@@ -28,6 +28,12 @@ from tqdm.notebook import tqdm
 
 
 from graph_tool.all import *
+from graph_world.generators.sbm_simulator import SimulateFeatures, MatchType
+    #SBM class called within Generate method, we may only need the helper functions to create the features
+    #if we need entire generate method, modify to make this file just use SBM class 
+    #if method needs modifications, extend SBM class 
+
+#from sbm_simulator import StochasticBlockModel
 
 class AssortativityType(enum.Enum):
   """Indicates type of assortativity to use in graph generation.
@@ -52,19 +58,14 @@ class CABAM:
       edge_features: map from edge tuple to numpy array. Only stores undirected
         edges, i.e. (0, 1) will be in the map, but (1, 0) will not be.
     """
-    graph: graph_tool.Graph = Ellipsis # ok
-    graph_memberships: np.ndarray = Ellipsis # we have - node labels
-    node_features: np.ndarray = Ellipsis # node features are also our labels
-    feature_memberships: np.ndarray = Ellipsis # index i contains feature group of node i so this is also node labels
-    edge_features: Dict[Tuple[int, int], np.ndarray] = Ellipsis # edge set but what is the map?
-    # do i even need these or is it enough to have just graph
-    # i think they are used for paramterising certain parts of SBM generation - where my case only requires 
-    # a singular generation fn - no nevernind they are used also in node classification utils
+    graph: graph_tool.Graph = Ellipsis # ok - converted graph from CABAM
+    graph_memberships: np.ndarray = Ellipsis # ok - node labels from CABAM
+    node_features: np.ndarray = Ellipsis # GENERATE
+    feature_memberships: np.ndarray = Ellipsis # GENERATE
+    edge_features: Dict[Tuple[int, int], np.ndarray] = Ellipsis # LEAVE EMPTY
     
-def nxToGraphWorldData(G, node_labels, cabam_data):
-  cabam_data.graph_memberships = list(node_labels) # Memberships is integer node class list
-  cabam_data.node_features = np.array(sorted(list(set(node_labels)))) # Node features are set of possible labels
-  cabam_data.feature_memberships = list(node_labels) # which feature does each node belong to? features are labels here so this is also node label class list
+def NetworkxToGraphWorldData(G, node_labels, cabam_data):
+  cabam_data.graph_memberships = list(node_labels) # memberships is integer node class list
 
   # Manipulate G into cabam_data.graph gt object
   nx_edges = list(G.edges())
@@ -82,25 +83,38 @@ def nxToGraphWorldData(G, node_labels, cabam_data):
       # Look up the vertex structs from our vertices mapping and add edge.
       e = cabam_data.graph.add_edge(vertices[src], vertices[dst])
 
-  # Add null edge features
-  cabam_data.edge_features = {}
-  for edge in cabam_data.graph.edges():
-    vertex1 = int(edge.source())
-    vertex2 = int(edge.target())
-    edge_tuple = tuple(sorted((vertex1, vertex2)))
-    cabam_data.edge_features[edge_tuple] = 0
+    # null the edge features
+  cabam_data.edge_features = None 
+  
   return cabam_data
 
 def GenerateAssortativityDict(p_in, p_out):
     return {0: p_in, 1:p_out}
 
-def GenerateCABAMGraph(n, m, p_in, p_out):
+def GenerateCABAMGraphWithFeatures(
+    n, m, p_in, p_out,
+    feature_center_distance=0.0,
+    feature_dim=0,
+    num_feature_groups=1,
+    feature_group_match_type=MatchType.RANDOM,
+    feature_cluster_variance=1.0,
+    normalize_features=True):
+
   result = CABAM()
-  G, node_labels = cabam_graph_generation(n=n, m=m, c_probs=GenerateAssortativityDict(p_in,p_out) )
-  nxToGraphWorldData(G, node_labels, result)
+  G, node_labels = GenerateCABAMGraph(n=n, m=m, c_probs=GenerateAssortativityDict(p_in,p_out) )
+  NetworkxToGraphWorldData(G, node_labels, result)
+
+# borrowing node feature generation from SBM
+  SimulateFeatures(result, feature_center_distance,
+                   feature_dim,
+                   num_feature_groups,
+                   feature_group_match_type,
+                   feature_cluster_variance,
+                   normalize_features)
+
   return result
 
-def cabam_graph_generation(n, m, c=2, native_probs=[0.5, 0.5], c_probs={1: 0.5, 0: 0.5}, logger=None):
+def GenerateCABAMGraph(n, m, c=2, native_probs=[0.5, 0.5], c_probs={1: 0.5, 0: 0.5}, logger=None):
     '''
     Main function for CABAM graph generation. Taken directly from https://github.com/nshah171/cabam-graph-generation/blob/master/cabam_utils.py
     

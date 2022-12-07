@@ -1,8 +1,0 @@
-import graph_world.nodeclassification.generator_wrappers
-
-include 'app/configs/nodeclassification_generators/sbm/mwe_param_ranges.gin'
-
-NodeClassificationBeamHandler.generator_wrapper = @SbmGeneratorWrapper()
-
-# The assigned value below comes from ./mwe_param_ranges.gin.
-SbmGeneratorWrapper.param_sampler_specs = %SBMSamplerSpec

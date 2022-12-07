@@ -17,8 +17,7 @@ import numpy as np
 
 from ..beam.generator_config_sampler import GeneratorConfigSampler
 from ..generators.sbm_simulator import GenerateStochasticBlockModelWithFeatures, MatchType, MakePi, MakePropMat
-from ..generators.cabam_simulator import GenerateCABAMGraph, GenerateAssortativityDict
-
+from ..generators.cabam_simulator import GenerateCABAMGraphWithFeatures
 from ..nodeclassification.utils import NodeClassificationDataset
 
 
@@ -87,7 +86,7 @@ class SbmGeneratorWrapper(GeneratorConfigSampler):
 class CABAMGeneratorWrapper(GeneratorConfigSampler):
 
   def __init__(self, param_sampler_specs, marginal=False,
-               normalize_features=True):
+               normalize_features=False):
     super(CABAMGeneratorWrapper, self).__init__(param_sampler_specs)
     self._marginal = marginal
     self._normalize_features = normalize_features
@@ -96,6 +95,10 @@ class CABAMGeneratorWrapper(GeneratorConfigSampler):
     self._AddSamplerFn('assortativity_type', self._SampleUniformInteger)
     self._AddSamplerFn('c_probs_in', self._SampleUniformFloat)
     self._AddSamplerFn('c_probs_out', self._SampleUniformFloat)
+    self._AddSamplerFn('feature_center_distance', self._SampleUniformFloat)
+    self._AddSamplerFn('feature_dim', self._SampleUniformInteger)
+    self._AddSamplerFn('num_clusters', self._SampleUniformInteger)
+
 
 
   def Generate(self, sample_id):
@@ -105,11 +108,15 @@ class CABAMGeneratorWrapper(GeneratorConfigSampler):
         self._marginal)
     generator_config['generator_name'] = 'CABAM'
 
-    cabam_data = GenerateCABAMGraph(
+    cabam_data = GenerateCABAMGraphWithFeatures(
       n=generator_config['nvertex'],
       m=generator_config['m'],
       p_in=generator_config['c_probs_in'],
-      p_out=generator_config['c_probs_out']
+      p_out=generator_config['c_probs_out'],
+      num_feature_groups=generator_config['num_clusters'],
+      feature_group_match_type=MatchType.RANDOM,
+      feature_center_distance=generator_config['feature_center_distance'],
+      feature_dim=generator_config['feature_dim'],
     )
 
     return {'sample_id': sample_id,
