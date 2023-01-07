@@ -88,11 +88,11 @@ def NetworkxToGraphWorldData(G, node_labels, cabam_data):
   
   return cabam_data
 
-def GenerateAssortativityDict(p_in, p_out):
-    return {0: p_in, 1:p_out}
+def GenerateAssortativityDict(p_in):
+    return {0: p_in, 1: 1-p_in }
 
 def GenerateCABAMGraphWithFeatures(
-    n, m, p_in, p_out,
+    n, m, p_in, pi,
     feature_center_distance=0.0,
     feature_dim=0,
     num_feature_groups=1,
@@ -101,7 +101,7 @@ def GenerateCABAMGraphWithFeatures(
     normalize_features=True):
 
   result = CABAM()
-  G, node_labels = GenerateCABAMGraph(n=n, m=m, c_probs=GenerateAssortativityDict(p_in,p_out) )
+  G, node_labels = GenerateCABAMGraph(n=n, m=m, c=num_feature_groups, native_probs=pi.tolist(), c_probs=GenerateAssortativityDict(p_in) )
   NetworkxToGraphWorldData(G, node_labels, result)
 
 # borrowing node feature generation from SBM

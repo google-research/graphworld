@@ -58,8 +58,7 @@ class SbmGeneratorWrapper(GeneratorConfigSampler):
       pi=MakePi(generator_config['num_clusters'],
                 generator_config['cluster_size_slope']),
       prop_mat=MakePropMat(generator_config['num_clusters'],
-                           generator_config['p_to_q_ratio']),
-                           
+                           generator_config['p_to_q_ratio']),                 
       num_feature_groups=generator_config['num_clusters'],
       feature_group_match_type=MatchType.GROUPED,
       feature_center_distance=generator_config['feature_center_distance'],
@@ -94,10 +93,10 @@ class CABAMGeneratorWrapper(GeneratorConfigSampler):
     self._AddSamplerFn('m', self._SampleUniformInteger)
     self._AddSamplerFn('assortativity_type', self._SampleUniformInteger)
     self._AddSamplerFn('c_probs_in', self._SampleUniformFloat)
-    self._AddSamplerFn('c_probs_out', self._SampleUniformFloat)
     self._AddSamplerFn('feature_center_distance', self._SampleUniformFloat)
     self._AddSamplerFn('feature_dim', self._SampleUniformInteger)
     self._AddSamplerFn('num_clusters', self._SampleUniformInteger)
+    self._AddSamplerFn('cluster_size_slope', self._SampleUniformFloat)
 
 
 
@@ -112,11 +111,12 @@ class CABAMGeneratorWrapper(GeneratorConfigSampler):
       n=generator_config['nvertex'],
       m=generator_config['m'],
       p_in=generator_config['c_probs_in'],
-      p_out=generator_config['c_probs_out'],
       num_feature_groups=generator_config['num_clusters'],
       feature_group_match_type=MatchType.RANDOM,
       feature_center_distance=generator_config['feature_center_distance'],
       feature_dim=generator_config['feature_dim'],
+      pi=MakePi(generator_config['num_clusters'],
+                generator_config['cluster_size_slope'])
     )
 
     return {'sample_id': sample_id,
