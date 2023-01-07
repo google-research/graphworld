@@ -25,7 +25,7 @@ do
     esac
 done
 
-OUTPUT_PATH="tmp/codespaces_logs/mwe"
+OUTPUT_PATH="tmp/mwe"
 
 rm -rf "${OUTPUT_PATH}"
 mkdir -p ${OUTPUT_PATH}

@@ -23,51 +23,37 @@ import dataclasses
 import graph_tool
 import numpy as np
 import networkx as nx
-import logging
 from tqdm.notebook import tqdm
-
 
 from graph_tool.all import *
 from graph_world.generators.sbm_simulator import SimulateFeatures, MatchType
-    #SBM class called within Generate method, we may only need the helper functions to create the features
-    #if we need entire generate method, modify to make this file just use SBM class 
-    #if method needs modifications, extend SBM class 
-
-#from sbm_simulator import StochasticBlockModel
-
-class AssortativityType(enum.Enum):
-  """Indicates type of assortativity to use in graph generation.
-    FIXED: 
-    VARIABLE:  
-  """
-  FIXED = 1
-  VARIABLE = 2
 
 
 @dataclasses.dataclass
 class CABAM:
-    """Stores data for Class Assortative and Attributed graphs via the Barabasi Albert Model.
-    Attributes:
-
-      !!!Identical and equal to all _task_Dataset classes!!!
-
-      graph: graph-tool Graph object.
-      graph_memberships: list of integer node classes.
-      node_features: numpy array of node features.
-      feature_memberships: list of integer node feature classes.
-      edge_features: map from edge tuple to numpy array. Only stores undirected
-        edges, i.e. (0, 1) will be in the map, but (1, 0) will not be.
     """
-    graph: graph_tool.Graph = Ellipsis # ok - converted graph from CABAM
-    graph_memberships: np.ndarray = Ellipsis # ok - node labels from CABAM
-    node_features: np.ndarray = Ellipsis # GENERATE
-    feature_memberships: np.ndarray = Ellipsis # GENERATE
-    edge_features: Dict[Tuple[int, int], np.ndarray] = Ellipsis # LEAVE EMPTY
+    Stores data for Class Assortative and Attributed graphs via the Barabasi Albert Model. Identical to SBM dataclass.
+    """
+    graph: graph_tool.Graph = Ellipsis 
+    graph_memberships: np.ndarray = Ellipsis 
+    node_features: np.ndarray = Ellipsis 
+    feature_memberships: np.ndarray = Ellipsis 
+    edge_features: Dict[Tuple[int, int], np.ndarray] = Ellipsis 
     
-def NetworkxToGraphWorldData(G, node_labels, cabam_data):
-  cabam_data.graph_memberships = list(node_labels) # memberships is integer node class list
 
-  # Manipulate G into cabam_data.graph gt object
+def NetworkxToGraphWorldData(G, node_labels, cabam_data):
+  """
+  Converts NetworkX graph data to GraphWorld CABAM dataclass.
+  Args:
+    G: NetworkX Graph 
+    node_labels: list of integer node labels
+    cabam_data: CABAM dataclass instance to store graph data
+  Returns:
+    cabam_data
+  """  
+  cabam_data.graph_memberships = list(node_labels) # Memberships is integer node class list
+
+  # Manipulate G into cabam_data.graph Graph Tool object
   nx_edges = list(G.edges())
   nx_nodes = list(G.nodes())
   cabam_data.graph = graph_tool.Graph(directed=False)
@@ -83,51 +69,92 @@ def NetworkxToGraphWorldData(G, node_labels, cabam_data):
       # Look up the vertex structs from our vertices mapping and add edge.
       e = cabam_data.graph.add_edge(vertices[src], vertices[dst])
 
-    # null the edge features
+  # Null the edge features
   cabam_data.edge_features = None 
   
   return cabam_data
 
-def GenerateAssortativityDict(p_in):
-    return {0: p_in, 1: 1-p_in }
+
+def GenerateAssortativityDict(p_in, assortativity_type, temperature):
+    """
+    Generates a dictionary representing the Assortativiity Constant in CABAM generation - the parameter named 'c_probs'.
+    Args:
+        p_in: float representing probability of intra-class assignment in CABAM generation with FIXED assortativity
+        assortativity_type: integer representing assortativity type chosen
+        temperature: integer representing temperature of tanh function in CABAM generation with DEGREE DEPENDENT assortativity        
+    """  
+    if assortativity_type==1: # Fixed assortativity 
+      return {0: p_in, 1: 1-p_in }
+    if assortativity_type==2: # Degree dependent assortativity
+      return lambda k: {1: np.tanh(k/temperature), 0: 1 - np.tanh(k/temperature)}
 
 def GenerateCABAMGraphWithFeatures(
-    n, m, p_in, pi,
+    n,
+    m,
+    p_in,
+    pi,
+    assortativity_type,
+    temperature,
     feature_center_distance=0.0,
     feature_dim=0,
     num_feature_groups=1,
     feature_group_match_type=MatchType.RANDOM,
     feature_cluster_variance=1.0,
     normalize_features=True):
+    """
+    Generates Class Assortative Graphs via the Barabasi Albert Model (CABAM) with node features.
+    Args:
+        n: number of nodes in graph
+        m: number of edges to add at each timestep in graph generation
+        p_in: float representing probability of intra-class assignment in CABAM generation with FIXED assortativity
+        pi: class assignment probability vector
+        assortativity_type: integer representing assortativity type chosen
+        temperature: integer representing temperature of tanh function in CABAM generation with DEGREE DEPENDENT assortativity
+        feature_center_distance: distance between feature cluster centers. When this
+            is 0.0, the signal-to-noise ratio is 0.0. When equal to
+            feature_cluster_variance, SNR is 1.0.
+        feature_dim: dimension of node features.
+        num_feature_groups: number of feature clusters.
+        feature_group_match_type: see sbm_simulator.MatchType.
+        feature_cluster_variance: variance of feature clusters around their centers.
+            centers. Increasing this weakens node feature signal.
+    Returns:
+        result: CABAM dataclass instance to store graph data
+    """
+    result = CABAM()
+    G, node_labels = GenerateCABAMGraph(n=n, m=m, c=num_feature_groups, native_probs=pi.tolist(), c_probs=GenerateAssortativityDict(p_in, assortativity_type, temperature) )
+    NetworkxToGraphWorldData(G, node_labels, result)
 
-  result = CABAM()
-  G, node_labels = GenerateCABAMGraph(n=n, m=m, c=num_feature_groups, native_probs=pi.tolist(), c_probs=GenerateAssortativityDict(p_in) )
-  NetworkxToGraphWorldData(G, node_labels, result)
+    # Borrowing node feature generation from SBM
+    SimulateFeatures(result, feature_center_distance,
+                    feature_dim,
+                    num_feature_groups,
+                    feature_group_match_type,
+                    feature_cluster_variance,
+                    normalize_features)
 
-# borrowing node feature generation from SBM
-  SimulateFeatures(result, feature_center_distance,
-                   feature_dim,
-                   num_feature_groups,
-                   feature_group_match_type,
-                   feature_cluster_variance,
-                   normalize_features)
-
-  return result
+    return result
 
 def GenerateCABAMGraph(n, m, c=2, native_probs=[0.5, 0.5], c_probs={1: 0.5, 0: 0.5}, logger=None):
     '''
-    Main function for CABAM graph generation. Taken directly from https://github.com/nshah171/cabam-graph-generation/blob/master/cabam_utils.py
+    CABAM graph generation algorithm from https://github.com/nshah171/cabam-graph-generation/blob/master/cabam_utils.py.
     
-    n: maximum number of nodes
-    m: number of edges to add at each timestep (also the minimum degree)
-    c: number of classes
-    native_probs: c-length vector of native class probabilities (must sum to 1)
-    c_probs: p_c from the paper.  Entry for 1 (0) is the intra-class (inter-class) link strength.  Entries must sum to 1.
-    
-    Supports 3 variants of c_probs:
-    -Callable (degree-dependent). Ex: c_probs = lambda k: {1: np.tanh(k/5), 0: 1 - np.tanh(k/5)}
-    -Precomputed (degree-dependent) dictionary.  Ex: c_probs = {k: {1: np.tanh(k/5), 0: 1 - np.tanh(k/5)} for k in range(100)}
-    -Fixed (constant).  Ex: c_probs = {1: p_c, 0: 1 - p_c}
+    @inproceedings{cabam2020shah,
+     author = {Shah, Neil},
+     title = {Scale-Free, Attributed and Class-Assortative Graph Generation to Facilitate Introspection of Graph Neural Networks},
+     booktitle = {KDD Mining and Learning with Graphs},
+     year = {2020}
+   }
+
+    Args:
+        n: maximum number of nodes
+        m: number of edges to add at each timestep (also the minimum degree)
+        c: number of classes
+        native_probs: c-length vector of native class probabilities (must sum to 1)
+        c_probs: p_c from the paper.  Entry for 1 (0) is the intra-class (inter-class) link strength.  Entries must sum to 1.
+    Returns:
+        G: NetworkX Graph representing CABAM graph
+        node_labels: list of integer node labels
     '''
     
     if m < 1 or n < m:

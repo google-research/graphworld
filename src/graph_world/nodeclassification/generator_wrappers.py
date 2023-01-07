@@ -97,7 +97,7 @@ class CABAMGeneratorWrapper(GeneratorConfigSampler):
     self._AddSamplerFn('feature_dim', self._SampleUniformInteger)
     self._AddSamplerFn('num_clusters', self._SampleUniformInteger)
     self._AddSamplerFn('cluster_size_slope', self._SampleUniformFloat)
-
+    self._AddSamplerFn('temperature', self._SampleUniformInteger)
 
 
   def Generate(self, sample_id):
@@ -116,7 +116,9 @@ class CABAMGeneratorWrapper(GeneratorConfigSampler):
       feature_center_distance=generator_config['feature_center_distance'],
       feature_dim=generator_config['feature_dim'],
       pi=MakePi(generator_config['num_clusters'],
-                generator_config['cluster_size_slope'])
+                generator_config['cluster_size_slope']),
+      assortativity_type=generator_config['assortativity_type'],
+      temperature=generator_config['temperature'],
     )
 
     return {'sample_id': sample_id,
