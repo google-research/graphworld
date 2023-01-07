@@ -145,9 +145,9 @@ class ConvertToTorchGeoDataParDo(beam.DoFn):
         buf = bytes(json.dumps(torchgeo_stats), 'utf-8')
         f.write(buf)
         f.close()
-    except Exception as e:
+    except:
       out['skipped'] = True
-      print(f'failed to convert {sample_id} \n exception : {e}')
+      print(f'failed to convert {sample_id}')
       logging.info(
            ('Failed to convert nodeclassification_data to torchgeo'
             'for sample id %d'), sample_id)
