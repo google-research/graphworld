@@ -17,4 +17,4 @@ NodeClassificationBeamHandler.benchmarker_wrappers = [
 include 'app/configs/nodeclassification_model_tuning_mwe.gin'
 
 # Import the appropriate generator setup file.
-include 'app/configs/nodeclassification_generators/cabam/mwe_setup.gin'
+include 'app/configs/nodeclassification_generators/sbm/mwe_setup.gin'

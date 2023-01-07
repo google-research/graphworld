@@ -58,7 +58,8 @@ class SbmGeneratorWrapper(GeneratorConfigSampler):
       pi=MakePi(generator_config['num_clusters'],
                 generator_config['cluster_size_slope']),
       prop_mat=MakePropMat(generator_config['num_clusters'],
-                           generator_config['p_to_q_ratio']),                 
+                           generator_config['p_to_q_ratio']),
+
       num_feature_groups=generator_config['num_clusters'],
       feature_group_match_type=MatchType.GROUPED,
       feature_center_distance=generator_config['feature_center_distance'],
@@ -69,7 +70,7 @@ class SbmGeneratorWrapper(GeneratorConfigSampler):
                                generator_config['nvertex']),
       normalize_features=self._normalize_features
     )
-
+    
     return {'sample_id': sample_id,
             'marginal_param': marginal_param,
             'fixed_params': fixed_params,
