@@ -415,10 +415,10 @@ def MakePropMat(num_communities: int, p_to_q_ratio: float) -> np.ndarray:
 
 # Helper function to create a degree set that follows a power law for the
 # 'out_degs' parameter in SBM construction.
-def MakeDegrees(power_exponent, num_vertices):
+def MakeDegrees(power_exponent, min_deg, num_vertices):
   degrees = np.zeros(num_vertices)
-  k_min = 0 # ?
-  k_max = 0 # ?
+  k_min = min_deg
+  k_max = num_vertices
   gamma = power_exponent 
   for i in range(num_vertices):
       degrees[i] = int(power_law(k_min, k_max, np.random.uniform(0,1), gamma))
