@@ -93,12 +93,14 @@ class CABAMGeneratorWrapper(GeneratorConfigSampler):
     self._AddSamplerFn('nvertex', self._SampleUniformInteger)
     self._AddSamplerFn('m', self._SampleUniformInteger)
     self._AddSamplerFn('assortativity_type', self._SampleUniformInteger)
-    self._AddSamplerFn('c_probs_in', self._SampleUniformFloat)
+    self._AddSamplerFn('inter_link_strength', self._SampleUniformFloat)
     self._AddSamplerFn('feature_center_distance', self._SampleUniformFloat)
     self._AddSamplerFn('feature_dim', self._SampleUniformInteger)
     self._AddSamplerFn('num_clusters', self._SampleUniformInteger)
     self._AddSamplerFn('cluster_size_slope', self._SampleUniformFloat)
     self._AddSamplerFn('temperature', self._SampleUniformInteger)
+    self._AddSamplerFn('edge_feature_dim', self._SampleUniformInteger)
+    self._AddSamplerFn('edge_center_distance', self._SampleUniformFloat)
 
 
   def Generate(self, sample_id):
@@ -111,7 +113,7 @@ class CABAMGeneratorWrapper(GeneratorConfigSampler):
     cabam_data = GenerateCABAMGraphWithFeatures(
       n=generator_config['nvertex'],
       m=generator_config['m'],
-      p_in=generator_config['c_probs_in'],
+      inter_link_strength=generator_config['inter_link_strength'],
       num_feature_groups=generator_config['num_clusters'],
       feature_group_match_type=MatchType.RANDOM,
       feature_center_distance=generator_config['feature_center_distance'],
@@ -120,6 +122,8 @@ class CABAMGeneratorWrapper(GeneratorConfigSampler):
                 generator_config['cluster_size_slope']),
       assortativity_type=generator_config['assortativity_type'],
       temperature=generator_config['temperature'],
+      edge_center_distance=generator_config['edge_center_distance'],
+      edge_feature_dim=generator_config['edge_feature_dim'],
     )
 
     return {'sample_id': sample_id,

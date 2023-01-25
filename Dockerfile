@@ -66,7 +66,12 @@ RUN pip3 install --upgrade pip \
 COPY ./src/requirements.txt /app/requirements.txt
 RUN pip3 install -U --no-cache-dir -r /app/requirements.txt
 RUN pip3 cache purge
-RUN git clone https://github.com/muzz-yasir/cabam-graph-generation.git ./src/cabam_graph_generation/
+
+# Installing CABAM Graph Generation tools
+RUN git clone https://github.com/snap-research/cabam-graph-generation.git ./src/cabam_graph_generation/
+WORKDIR ./src/cabam_graph_generation/
+RUN pip install .
+WORKDIR /
 
 COPY ./src /app
 

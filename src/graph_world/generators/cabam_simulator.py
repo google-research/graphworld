@@ -24,13 +24,10 @@ import graph_tool
 import numpy as np
 import networkx as nx
 from tqdm.notebook import tqdm
+from cabam import CABAM as CABAM_git
 
 from graph_tool.all import *
-from graph_world.generators.sbm_simulator import SimulateFeatures, MatchType
-
-import sys
-sys.path.append('src/cabam_graph_generation/')
-from src.cabam_graph_generation import cabam_utils
+from graph_world.generators.sbm_simulator import SimulateFeatures, MatchType, SimulateEdgeFeatures
 
 @dataclasses.dataclass
 class CABAM:
@@ -72,8 +69,6 @@ def NetworkxToGraphWorldData(G, node_labels, cabam_data):
       # Look up the vertex structs from our vertices mapping and add edge.
       e = cabam_data.graph.add_edge(vertices[src], vertices[dst])
 
-  # Null the edge features
-  cabam_data.edge_features = None 
   
   return cabam_data
 
@@ -94,7 +89,7 @@ def GenerateAssortativityDict(p_in, assortativity_type, temperature):
 def GenerateCABAMGraphWithFeatures(
     n,
     m,
-    p_in,
+    inter_link_strength,
     pi,
     assortativity_type,
     temperature,
@@ -103,6 +98,9 @@ def GenerateCABAMGraphWithFeatures(
     num_feature_groups=1,
     feature_group_match_type=MatchType.RANDOM,
     feature_cluster_variance=1.0,
+    edge_feature_dim=0,
+    edge_center_distance=0.0,
+    edge_cluster_variance=1.0,
     normalize_features=True):
     """
     Generates Class Assortative Graphs via the Barabasi Albert Model (CABAM) with node features.
@@ -125,15 +123,19 @@ def GenerateCABAMGraphWithFeatures(
         result: CABAM dataclass instance to store graph data
     """
     result = CABAM()
-    G, _, node_labels, _, _, _, _, = cabam_utils.cabam_graph_generation(n=n, m=m, c=num_feature_groups, native_probs=pi.tolist(), c_probs=GenerateAssortativityDict(p_in, assortativity_type, temperature) )
+    CABAM_model = CABAM_git()
+    G, _, node_labels, _, _ = CABAM_model.generate_graph(n=n, m=m, num_classes=num_feature_groups, native_class_probs=pi.tolist(), inter_intra_link_probs=GenerateAssortativityDict(inter_link_strength, assortativity_type, temperature) )
     NetworkxToGraphWorldData(G, node_labels, result)
 
-    # Borrowing node feature generation from SBM
+    # Borrowing node and edge feature generation from SBM
     SimulateFeatures(result, feature_center_distance,
                     feature_dim,
                     num_feature_groups,
                     feature_group_match_type,
                     feature_cluster_variance,
                     normalize_features)
+    SimulateEdgeFeatures(result, edge_feature_dim,
+                       edge_center_distance,
+                       edge_cluster_variance)
 
     return result
