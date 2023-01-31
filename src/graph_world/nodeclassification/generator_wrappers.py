@@ -16,7 +16,7 @@ import gin
 import numpy as np
 
 from ..beam.generator_config_sampler import GeneratorConfigSampler
-from ..generators.sbm_simulator import GenerateStochasticBlockModelWithFeatures, MatchType, MakePi, MakePropMat
+from ..generators.sbm_simulator import GenerateStochasticBlockModelWithFeatures, MatchType, MakePi, MakePropMat, MakeDegrees
 from ..nodeclassification.utils import NodeClassificationDataset
 
 
@@ -38,6 +38,7 @@ class SbmGeneratorWrapper(GeneratorConfigSampler):
     self._AddSamplerFn('num_clusters', self._SampleUniformInteger)
     self._AddSamplerFn('cluster_size_slope', self._SampleUniformFloat)
     self._AddSamplerFn('power_exponent', self._SampleUniformFloat)
+    self._AddSamplerFn('min_deg', self._SampleUniformInteger)
 
   def Generate(self, sample_id):
     """Sample and save SMB outputs given a configuration filepath.
@@ -65,7 +66,8 @@ class SbmGeneratorWrapper(GeneratorConfigSampler):
       feature_dim=generator_config['feature_dim'],
       edge_center_distance=generator_config['edge_center_distance'],
       edge_feature_dim=generator_config['edge_feature_dim'],
-      out_degs=np.random.power(generator_config['power_exponent'],
+      out_degs=MakeDegrees(generator_config['power_exponent'], 
+                               generator_config['min_deg'],
                                generator_config['nvertex']),
       normalize_features=self._normalize_features
     )
