@@ -75,7 +75,7 @@ def NetworkxToGraphWorldData(G, node_labels, cabam_data):
 
 def GenerateAssortativityDict(p_in, assortativity_type, temperature):
     """
-    Generates a dictionary representing the Assortativiity Constant in CABAM generation - the parameter named 'c_probs'.
+    Generates a dictionary representing the Assortativity Constant in CABAM generation - the parameter named 'c_probs'.
     Args:
         p_in: float representing probability of intra-class assignment in CABAM generation with FIXED assortativity
         assortativity_type: integer representing assortativity type chosen
