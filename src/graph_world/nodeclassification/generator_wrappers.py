@@ -16,7 +16,7 @@ import gin
 import numpy as np
 
 from ..beam.generator_config_sampler import GeneratorConfigSampler
-from ..generators.sbm_simulator import GenerateStochasticBlockModelWithFeatures, MatchType, MakePi, MakePropMat
+from ..generators.sbm_simulator import GenerateStochasticBlockModelWithFeatures, MatchType, MakePi, MakePropMat, MakeDegrees
 from ..generators.cabam_simulator import GenerateCABAMGraphWithFeatures
 from ..nodeclassification.utils import NodeClassificationDataset
 
