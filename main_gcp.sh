@@ -58,4 +58,4 @@ ENTRYPOINT="python3 /app/beam_benchmark_main.py \
 
 echo "entrypoint: ${ENTRYPOINT}"
 
-docker-compose run --entrypoint "${ENTRYPOINT}" ${BUILD_NAME}
+docker-compose run --detach --entrypoint "${ENTRYPOINT}" ${BUILD_NAME}
