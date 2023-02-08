@@ -34,12 +34,12 @@ class CABAM:
     """
     Stores data for Class Assortative and Attributed graphs via the Barabasi Albert Model. Identical to SBM dataclass.
     """
-    graph: graph_tool.Graph = Ellipsis 
-    graph_memberships: np.ndarray = Ellipsis 
-    node_features: np.ndarray = Ellipsis 
-    feature_memberships: np.ndarray = Ellipsis 
-    edge_features: Dict[Tuple[int, int], np.ndarray] = Ellipsis 
-    
+    graph: graph_tool.Graph = Ellipsis
+    graph_memberships: np.ndarray = Ellipsis
+    node_features: np.ndarray = Ellipsis
+    feature_memberships: np.ndarray = Ellipsis
+    edge_features: Dict[Tuple[int, int], np.ndarray] = Ellipsis
+
 
 def NetworkxToGraphWorldData(G, node_labels, cabam_data):
   """
@@ -50,14 +50,14 @@ def NetworkxToGraphWorldData(G, node_labels, cabam_data):
     cabam_data: CABAM dataclass instance to store graph data
   Returns:
     cabam_data
-  """  
+  """
   cabam_data.graph_memberships = list(node_labels) # Memberships is integer node class list
 
   # Manipulate G into cabam_data.graph Graph Tool object
   nx_edges = list(G.edges())
   nx_nodes = list(G.nodes())
   cabam_data.graph = graph_tool.Graph(directed=False)
-  
+
   # Add the nodes
   vertices = {} # vertex mapping for tracking edges later
   for node in nx_nodes:
@@ -68,8 +68,6 @@ def NetworkxToGraphWorldData(G, node_labels, cabam_data):
   for src, dst in nx_edges:
       # Look up the vertex structs from our vertices mapping and add edge.
       e = cabam_data.graph.add_edge(vertices[src], vertices[dst])
-
-  
   return cabam_data
 
 
@@ -80,11 +78,12 @@ def GenerateAssortativityDict(p_in, assortativity_type, temperature):
         p_in: float representing probability of intra-class assignment in CABAM generation with FIXED assortativity
         assortativity_type: integer representing assortativity type chosen
         temperature: integer representing temperature of tanh function in CABAM generation with DEGREE DEPENDENT assortativity        
-    """  
+    """
     if assortativity_type==1: # Fixed assortativity 
       return {0: p_in, 1: 1-p_in }
     if assortativity_type==2: # Degree dependent assortativity
       return lambda k: {1: np.tanh(k/temperature), 0: 1 - np.tanh(k/temperature)}
+
 
 def GenerateCABAMGraphWithFeatures(
     n,

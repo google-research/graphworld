@@ -39,7 +39,7 @@ RUN apt-get -y update \
         python3-decorator \
         python3-cairo \
         python3-graph-tool \
-        git 
+        git
 
 
 

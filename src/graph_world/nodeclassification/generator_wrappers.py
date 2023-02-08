@@ -72,7 +72,7 @@ class SbmGeneratorWrapper(GeneratorConfigSampler):
                                generator_config['nvertex']),
       normalize_features=self._normalize_features
     )
-    
+
     return {'sample_id': sample_id,
             'marginal_param': marginal_param,
             'fixed_params': fixed_params,
