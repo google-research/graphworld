@@ -1,8 +1,0 @@
-import graph_world.nodeclassification.generator_wrappers
-
-include 'app/configs/nodeclassification_generators/cabam/mwe_param_ranges.gin'
-
-NodeClassificationBeamHandler.generator_wrapper = @CABAMGeneratorWrapper()
-
-# The assigned value below comes from ./mwe_param_ranges.gin.
-CABAMGeneratorWrapper.param_sampler_specs = %CABAMSamplerSpec
