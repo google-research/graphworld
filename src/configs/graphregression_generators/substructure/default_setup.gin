@@ -1,5 +1,3 @@
-import graph_world.graphregression.generator_wrappers
-
 include 'app/configs/graphregression_generators/substructure/default_param_ranges.gin'
 
 # Include if you are running "marginal" GraphWorld, otherwise comment out.

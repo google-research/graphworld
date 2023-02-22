@@ -1,5 +1,3 @@
-import graph_world.nodeclassification.generator_wrappers
-
 include 'app/configs/nodeclassification_generators/cabam/default_param_ranges.gin'
 
 # Include if you are running "marginal" GraphWorld, otherwise comment out.

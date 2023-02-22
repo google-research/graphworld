@@ -19,22 +19,26 @@
 #
 BUILD_NAME="graphworld"
 TASK="nodeclassification"
-while getopts b:t: flag
+GENERATOR="sbm"
+while getopts b:t:g: flag
 do
     case "${flag}" in
         b) BUILD_NAME=${OPTARG};;
         t) TASK=${OPTARG};;
+        g) GENERATOR=${OPTARG};;
     esac
 done
 
-OUTPUT_PATH="/tmp/${TASK}"
+OUTPUT_PATH="/tmp/${TASK}/${GENERATOR}"
 
 rm -rf "${OUTPUT_PATH}"
 mkdir -p ${OUTPUT_PATH}
 
-docker-compose run \
-  --entrypoint "python3 /app/beam_benchmark_main.py \
-  --output ${OUTPUT_PATH} \
-  --gin_config=/app/configs/${TASK}_test.gin \
-  --runner=DirectRunner" \
-  ${BUILD_NAME}
+ENTRYPOINT="python3 /app/beam_benchmark_main.py \
+  --runner DirectRunner \
+  --gin_files /app/configs/${TASK}_test.gin /app/configs/${TASK}_generators/${GENERATOR}/default_setup.gin \
+  --output "${OUTPUT_PATH}""
+
+echo ${ENTRYPOINT}
+
+docker-compose run --entrypoint "${ENTRYPOINT}" ${BUILD_NAME}

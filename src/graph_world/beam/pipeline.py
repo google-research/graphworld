@@ -15,6 +15,7 @@
 import argparse
 import logging
 import os
+import sys
 
 import apache_beam as beam
 import pandas as pd
@@ -43,10 +44,11 @@ def entry(argv=None):
                       default='/tmp/graph_configs.json',
                       help='Location to write output files.')
 
-  parser.add_argument('--gin_config',
-                      dest='gin_config',
-                      default='',
-                      help='Location of gin config (/app/configs = /src/configs).')
+  parser.add_argument('--gin_files',
+                      dest='gin_files',
+                      nargs='+',
+                      type=str,
+                      help='Paths to config files.')
 
   parser.add_argument('--write_intermediate',
                       dest='write_samples',
@@ -54,8 +56,10 @@ def entry(argv=None):
                       help='Whether to write sampled graph data. Saves CPU and disk if disabled.')
 
   args, pipeline_args = parser.parse_known_args(argv)
-  logging.info(f'Pipeline Args: {pipeline_args}')
-  gin.parse_config_file(args.gin_config)
+  sys.stdout.flush()
+  print(f'Pipeline Args: {pipeline_args}', flush=True)
+  print(f'Binary Args: {args}', flush=True)
+  gin.parse_config_files_and_bindings(args.gin_files, None)
   pipeline_options = PipelineOptions(pipeline_args)
   pipeline_options.view_as(SetupOptions).save_main_session = True
 

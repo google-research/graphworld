@@ -1,4 +1,5 @@
 import graph_world.models.basic_gnn
+import graph_world.noderegression.generator_wrappers
 
 GeneratorBeamHandlerWrapper.handler = @NodeRegressionBeamHandler()
 GeneratorBeamHandlerWrapper.nsamples = 100000
@@ -28,6 +29,3 @@ NodeRegressionBeamHandler.benchmarker_wrappers = [
 ]
 
 include 'app/configs/noderegression_model_tuning.gin'
-
-# Import the appropriate generator setup file.
-include 'app/configs/noderegression_generators/sbm/default_setup.gin'

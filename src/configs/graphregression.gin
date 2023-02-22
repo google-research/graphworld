@@ -1,4 +1,5 @@
 import graph_world.models.basic_gnn
+import graph_world.graphregression.generator_wrappers
 
 GeneratorBeamHandlerWrapper.handler = @GraphRegressionBeamHandler()
 GeneratorBeamHandlerWrapper.nsamples = 400000
@@ -25,6 +26,3 @@ GraphRegressionBeamHandler.benchmarker_wrappers = [
 ]
 
 include 'app/configs/graphregression_model_tuning.gin'
-
-# Import the appropriate generator setup file.
-include 'app/configs/graphregression_generators/substructure/default_setup.gin'

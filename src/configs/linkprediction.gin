@@ -1,4 +1,5 @@
 import graph_world.models.basic_gnn
+import graph_world.linkprediction.generator_wrappers
 
 GeneratorBeamHandlerWrapper.handler = @LinkPredictionBeamHandler()
 GeneratorBeamHandlerWrapper.nsamples = 700000
@@ -28,6 +29,3 @@ LinkPredictionBeamHandler.benchmarker_wrappers = [
 ]
 
 include 'app/configs/linkprediction_model_tuning.gin'
-
-# Import the appropriate generator setup file.
-include 'app/configs/linkprediction_generators/sbm/default_setup.gin'
