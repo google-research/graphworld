@@ -80,7 +80,7 @@ def GenerateAssortativityDict(p_in, assortativity_type, temperature):
         temperature: integer representing temperature of tanh function in CABAM generation with DEGREE DEPENDENT assortativity        
     """
     if assortativity_type==1: # Fixed assortativity 
-      return {0: p_in, 1: 1-p_in }
+      return {1: p_in, 0: 1-p_in }
     if assortativity_type==2: # Degree dependent assortativity
       return lambda k: {1: np.tanh(k/temperature), 0: 1 - np.tanh(k/temperature)}
 
