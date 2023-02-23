@@ -19,18 +19,21 @@ SIM=0
 MACHINE_TYPE="n1-standard-1"
 MAX_NUM_WORKERS=1000
 DATASET_NAME="cora"
-while getopts p:b:m:w: flag
+VERSION="0"
+while getopts p:b:m:w:d:v: flag
 do
     case "${flag}" in
         p) PROJECT_NAME=${OPTARG};;
         b) BUILD_NAME=${OPTARG};;
         m) MACHINE_TYPE=${OPTARG};;
         w) MAX_NUM_WORKERS=${OPTARG};;
+        d) DATASET_NAME=${OPTARG};;
+        v) VERSION=${OPTARG};;
     esac
 done
 
 TIMESTAMP="$(date +"%Y-%m-%d-%H-%M-%S")"
-JOB_NAME="hparam-${DATASET_NAME}-${TIMESTAMP}"
+JOB_NAME="hparam-${DATASET_NAME//_/-}-v${VERSION}"
 OUTPUT_PATH="gs://${BUILD_NAME}/${USER}/sampling/${JOB_NAME}"
 DATASET_PATH="gs://${BUILD_NAME}/npz-datasets"
 TEMP_LOCATION="gs://${BUILD_NAME}/temp"
