@@ -1,0 +1,13 @@
+LRS = [0.01, 0.001]
+WEIGHT_DECAYS = [5e-5]
+HIDDEN_CHANNELS = [4, 16]
+DROPOUTS = [0, 0.5]
+
+enumerate_configs.hidden_channel_values = %HIDDEN_CHANNELS
+enumerate_configs.weight_decay_values = %WEIGHT_DECAYS
+enumerate_configs.dropout_values = %DROPOUTS
+enumerate_configs.learning_rate_values = %LRS
+
+HparamBeamHandler.random_seeds = [42]
+
+HparamBeamHandler.sim_adj_file = "cora-sbm/adj1.0.txt"

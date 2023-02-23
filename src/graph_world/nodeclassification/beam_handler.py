@@ -23,7 +23,7 @@ from ..beam.benchmarker import BenchmarkGNNParDo
 from ..beam.generator_beam_handler import GeneratorBeamHandler
 from ..metrics.graph_metrics import graph_metrics
 from ..metrics.node_label_metrics import NodeLabelMetrics
-from ..nodeclassification.utils import nodeclassification_data_to_torchgeo_data, get_kclass_masks
+from ..nodeclassification.utils import nodeclassification_data_to_torchgeo_data, get_label_masks
 
 
 class SampleNodeClassificationDatasetDoFn(beam.DoFn):
@@ -155,8 +155,7 @@ class ConvertToTorchGeoDataParDo(beam.DoFn):
       return
 
     try:
-      out['masks'] = get_kclass_masks(
-          nodeclassification_data, k_train=self._ktrain, k_val=self._ktuning)
+      out['masks'] = get_label_masks(torch_data.y)
 
       masks_object_name = os.path.join(
           self._output_path, '{0:05}_masks.txt'.format(sample_id))

@@ -37,10 +37,24 @@ def entry(argv=None):
                             'Default behavior downloads data from web. '
                             'GCP runs will need to input GCS dataset path. '))
 
+  parser.add_argument('--dataset_name',
+                      dest='dataset_name',
+                      default='',
+                      help=('Name of the dataset. '
+                            'dataset_name.npz must be in dataset_path. '))
+
   parser.add_argument('--output',
                       dest='output',
                       default='/tmp/graph_configs.json',
                       help='Location to write output files.')
+
+  parser.add_argument('--gcp_pname',
+                      dest='gcp_pname',
+                      default='research-graph')
+
+  parser.add_argument('--gcs_auth',
+                      dest='gcs_auth',
+                      default=None)
 
   parser.add_argument('--sim', dest='sim', action='store_true')
   parser.add_argument('--no-sim', dest='sim', action='store_false')
@@ -58,8 +72,11 @@ def entry(argv=None):
 
   gin.parse_config_file(args.gin_config)
   hparam_handler = HparamBeamHandler(dataset_path=args.dataset_path,
-                                     sim=args.sim)
-
+                                     sim=args.sim,
+                                     dataset_name=args.dataset_name,
+                                     project_name=args.gcp_pname,
+                                     gcs_auth=args.gcs_auth)
+  logging.info("----about to run pipeline")
   with beam.Pipeline(options=pipeline_options) as p:
     dataframe_rows = (
       p | 'Enumerate hyperparameter gridpoints.' >> beam.Create(

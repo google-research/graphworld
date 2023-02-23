@@ -18,14 +18,19 @@
 # as the remote workers.
 #
 BUILD_NAME="graphworld"
-while getopts b: flag
+DATASET_NAME="cora"
+PROJECT_NAME="project"
+GCS_AUTH=""
+while getopts b:a: flag
 do
     case "${flag}" in
         b) BUILD_NAME=${OPTARG};;
+        a) GCS_AUTH=${OPTARG};;
     esac
 done
 
 OUTPUT_PATH="/tmp/hparam"
+DATASET_PATH="gs://${BUILD_NAME}/npz-datasets"
 SIM=0
 
 rm -rf "${OUTPUT_PATH}"
@@ -41,7 +46,11 @@ docker-compose run \
   --entrypoint "python3 /app/hparam_analysis_main.py \
   --output ${OUTPUT_PATH} \
   --${SIM_PREFIX}sim \
-  --gin_config=/app/configs/hparam_config.gin \
+  --gin_config=/app/configs/hparam_config_test.gin \
+  --dataset_path="${DATASET_PATH}" \
+  --dataset_name="${DATASET_NAME}" \
+  --gcp_pname="${PROJECT_NAME}" \
+  --gcs_auth="${GCS_AUTH}" \
   --runner=DirectRunner" \
   ${BUILD_NAME}
 

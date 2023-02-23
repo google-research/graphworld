@@ -15,43 +15,59 @@
 import os
 
 import apache_beam as beam
-
+from ..data_generators.load_npz import NpzDataset
+from ..data_generators.sbm import get_sbm_from_torchgeo_data
 import gin
 import numpy as np
 import torch
-
-from ..data_generators.cora import get_cora
-from ..data_generators.sbm import get_sbm_from_torchgeo_data
-from ..utils.splits import get_random_split
 from ..utils.test_gcn import test_gcn
+
+from graph_world.nodeclassification.utils import get_label_masks
+
 
 class GcnTester(beam.DoFn):
 
-  def __init__(self, random_seeds, sim=False, dataset_path='',
-               sim_adj_file=None):
+  def __init__(self, random_seeds, sim=False, dataset_path='', dataset_name='',
+               sim_adj_file=None, num_train_per_class=20, num_val=500,
+               root='/tmp', project_name="", gcs_auth=None):
     self._random_seeds = random_seeds
     self._dataset_path = dataset_path
+    self._dataset_name = dataset_name
+    self._root = root
     self._sim = sim
     self._sim_adj_file = sim_adj_file
+    self._num_train_per_class = num_train_per_class
+    self._project_name = project_name
+    self._gcs_auth = gcs_auth
+    self._num_val = num_val
 
   def process(self, test_config):
-
     output = test_config
-    data = get_cora(self._dataset_path)
+
+    # Load dataset
+    dataset = NpzDataset(url=self._dataset_path,
+                         root=os.path.join(self._root, self._dataset_name),
+                         name=self._dataset_name,
+                         project_name=self._project_name,
+                         access_token=self._gcs_auth)
+    data = dataset[0]
+
+    # Row-normalize features
+    X = np.squeeze(data.x.numpy())
+    data.x = torch.tensor((X.T / np.sum(X, axis=1)).T)
+
+    # Swap to simulated data if desired
     if self._sim:
       data, _ = get_sbm_from_torchgeo_data(
-        data, os.path.join(self._dataset_path, self._sim_adj_file))
+          data, os.path.join(self._dataset_path, self._sim_adj_file))
 
-    splits = [get_random_split(data, seed) for seed in self._random_seeds]
-
+    # Get metrics for all seeds
     val_accs = []
     test_accs = []
     epochs = []
-
-    for split in splits:
-      data.train_mask = torch.tensor(split[0])
-      data.val_mask = torch.tensor(split[1])
-      data.test_mask = torch.tensor(split[2])
+    for random_seed in self._random_seeds:
+      data.train_mask, data.val_mask, data.test_mask = get_label_masks(
+          data.y, self._num_train_per_class, self._num_val, random_seed)
 
       best_val_acc, best_test_acc, epoch_count = test_gcn(
           data,
@@ -73,6 +89,7 @@ class GcnTester(beam.DoFn):
     output['epoch_std'] = np.std(epochs)
     yield output
 
+
 @gin.configurable
 class HparamBeamHandler:
   """Wrapper for hparam pipeline
@@ -83,13 +100,17 @@ class HparamBeamHandler:
 
   """
 
-  def __init__(self, random_seeds, sim=False, dataset_path='',
-               sim_adj_file=None):
+  def __init__(self, random_seeds, sim=False, dataset_path='', dataset_name='',
+               project_name='', gcs_auth=None, sim_adj_file=None):
     self._random_seeds = random_seeds
     self._dataset_path = dataset_path
+    self._dataset_name = dataset_name
     self._sim = sim
     self._sim_adj_file = sim_adj_file
+    self._project_name = project_name
+    self._gcs_auth = gcs_auth
 
   def GetGcnTester(self):
     return GcnTester(self._random_seeds, self._sim, self._dataset_path,
-                     self._sim_adj_file)
+                     self._dataset_name, self._sim_adj_file,
+                     project_name=self._project_name, gcs_auth=self._gcs_auth)

@@ -145,3 +145,33 @@ def get_kclass_masks(nodeclassification_data: NodeClassificationDataset,
   return (torch.as_tensor(training_mask).reshape(-1),
           torch.as_tensor(validate_mask).reshape(-1),
           torch.as_tensor(test_mask).reshape(-1))
+
+
+def get_label_masks(y: torch.Tensor,
+                    num_train_per_class: int = 20, num_val: int = 500,
+                    random_seed: int = 12345) -> \
+  Tuple[List[bool], List[bool], List[bool]]:
+  random_gen = torch.Generator()
+  random_gen.manual_seed(random_seed)
+  classes = set(y.numpy())
+  num_samples = y.size(0)
+  train_mask = torch.zeros(num_samples, dtype=bool)
+  for c in classes:
+    idx = (y == c).nonzero(as_tuple=False).view(-1)
+    idx = idx[
+        torch.randperm(idx.size(0), generator=random_gen)[:num_train_per_class]]
+    train_mask[idx] = True
+
+  remaining = (~train_mask).nonzero(as_tuple=False).view(-1)
+  remaining = remaining[torch.randperm(remaining.size(0))]
+  if remaining.size(0) < num_val - 10:  # ensure at least 10 in test set
+    num_val = remaining.size(0) - 10
+  if num_val < 10:  # ensure at least 10 in val set
+    raise RuntimeError("set num_val lower, or increase number of nodes")
+
+  val_mask = torch.zeros(num_samples, dtype=bool)
+  val_mask[remaining[:num_val]] = True
+
+  test_mask = torch.zeros(num_samples, dtype=bool)
+  test_mask[remaining[num_val:]] = True
+  return train_mask, val_mask, test_mask
