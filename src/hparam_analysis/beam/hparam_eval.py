@@ -21,6 +21,8 @@ import gin
 import numpy as np
 import torch
 from ..utils.test_gcn import test_gcn
+from graph_world.metrics.graph_metrics import graph_metrics
+from graph_world.metrics.node_label_metrics import NodeLabelMetrics
 
 from graph_world.nodeclassification.utils import get_label_masks
 
@@ -87,6 +89,13 @@ class GcnTester(beam.DoFn):
     output['val_acc_std'] = np.std(val_accs)
     output['test_acc_std'] = np.std(test_accs)
     output['epoch_std'] = np.std(epochs)
+
+    # Compute graph metrics
+    if test_config['index'] == 0:
+      output.update(graph_metrics(dataset.gt_data['gt_graph']))
+      output.update(NodeLabelMetrics(dataset.gt_data['gt_graph'],
+                                     dataset.gt_data['labels'],
+                                     dataset.gt_data['features']))
     yield output
 
 

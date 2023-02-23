@@ -15,7 +15,7 @@
 
 PROJECT_NAME="project"
 BUILD_NAME="graphworld"
-SIM=1
+SIM=0
 MACHINE_TYPE="n1-standard-1"
 MAX_NUM_WORKERS=1000
 DATASET_NAME="cora"

@@ -16,6 +16,8 @@ import os.path as osp
 import re
 from typing import Callable, List, Optional
 
+import graph_tool
+
 from google.cloud import storage
 import google.oauth2.credentials
 import numpy as np
@@ -65,6 +67,14 @@ def _load_npz_to_sparse_graph(file_name):
 
   return adj_matrix, attr_matrix, labels, label_mask
 
+def _get_gt_graph(adj_matrix):
+  gt_graph = graph_tool.Graph()
+  gt_graph.add_edge_list(np.array(adj_matrix.nonzero()).T)
+  # Ensure that all edges reciprocate
+  for e in list(gt_graph.edges()):
+    gt_graph.add_edge(e.target(), e.source())
+  return gt_graph
+
 
 class NpzDataset(InMemoryDataset):
   r"""Modified torch_geometric.datasets.Planetoid for NPZ file reading for GCP.
@@ -102,10 +112,21 @@ class NpzDataset(InMemoryDataset):
       )
     self.gcs_path_regex = re.compile(r'gs:\/\/([^\/]+)\/(.*)')
     self.name = name
+    self.gt_data = None
     self.url = url
     super().__init__(root, transform, pre_transform)
     self.data, self.slices = torch.load(self.processed_paths[0])
     self.data.y = self.data.y.to(torch.long)
+    self._get_gt_data()
+
+  def _get_gt_data(self):
+    with open(osp.join(self.raw_dir, self.raw_file_names[0]), 'rb') as infile:
+      adj_matrix, attr_matrix, labels, label_mask = _load_npz_to_sparse_graph(
+          infile
+      )
+    self.gt_data = {'gt_graph': _get_gt_graph(adj_matrix),
+                    'labels': labels,
+                    'features': attr_matrix}
 
   @property
   def raw_dir(self) -> str:
