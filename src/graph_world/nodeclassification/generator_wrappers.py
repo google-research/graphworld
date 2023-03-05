@@ -119,6 +119,14 @@ class CABAMGeneratorWrapper(GeneratorConfigSampler):
     self._AddSamplerFn('edge_feature_dim', self._SampleUniformInteger)
     self._AddSamplerFn('edge_center_distance', self._SampleUniformFloat)
 
+    # Parameters for CommunitySizeType=POWERLAW
+    self._AddSamplerFn('community_max_size_proportion', self._SampleUniformFloat)
+    self._AddSamplerFn('community_min_size_proportion', self._SampleUniformFloat)
+    self._AddSamplerFn('community_power_exponent', self._SampleUniformFloat)
+    self._AddSamplerFn('lfr_mixing_param', self._SampleUniformFloat)
+    self._AddSamplerFn('lfr_max_degree_proportion', self._SampleUniformFloat)
+    self._AddSamplerFn('lfr_avg_degree', self._SampleUniformInteger)
+
 
   def Generate(self, sample_id):
     """Sample and save CABAM outputs given a configuration filepath.
@@ -135,13 +143,18 @@ class CABAMGeneratorWrapper(GeneratorConfigSampler):
       feature_group_match_type=MatchType.RANDOM,
       feature_center_distance=generator_config['feature_center_distance'],
       feature_dim=generator_config['feature_dim'],
-      pi=MakePi(generator_config['num_clusters'],
-                generator_config['cluster_size_slope']),
+      cluster_size_slope=generator_config['cluster_size_slope'],
       assortativity_type=generator_config['assortativity_type'],
       temperature=generator_config['temperature'],
       edge_center_distance=generator_config['edge_center_distance'],
       edge_feature_dim=generator_config['edge_feature_dim'],
-    )
+      community_sizes_type=CommunitySizesType.ORIGINAL,
+      min_community_size=int(generator_config['community_min_size_proportion']*generator_config['nvertex']),
+      max_community_size=int(generator_config['community_max_size_proportion']*generator_config['nvertex']),
+      community_exponent=generator_config['community_power_exponent'],
+      lfr_mixing_param=generator_config['lfr_mixing_param'],
+      lfr_avg_degree=generator_config['lfr_avg_degree'],
+      lfr_max_degree=int(generator_config['lfr_max_degree_proportion']*generator_config['nvertex']))
 
     return {'sample_id': sample_id,
             'marginal_param': marginal_param,

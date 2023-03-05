@@ -10,6 +10,14 @@ CABAMSamplerSpec = [
   @cluster_size_slope/ParamSamplerSpec(),
   @edge_center_distance/ParamSamplerSpec(),
   @edge_feature_dim/ParamSamplerSpec(),
+
+  # Parameters for CommunitySizeType=POWERLAW
+  @community_min_size_proportion/ParamSamplerSpec(),
+  @community_max_size_proportion/ParamSamplerSpec(),
+  @community_power_exponent/ParamSamplerSpec(),
+  @lfr_mixing_param/ParamSamplerSpec(),
+  @lfr_avg_degree/ParamSamplerSpec(),
+  @lfr_max_degree_proportion/ParamSamplerSpec(),
 ]
 
 nvertex/ParamSamplerSpec.name = "nvertex"
@@ -55,3 +63,27 @@ edge_center_distance/ParamSamplerSpec.max_val = 2.0
 edge_feature_dim/ParamSamplerSpec.name = "edge_feature_dim"
 edge_feature_dim/ParamSamplerSpec.min_val = 2.0
 edge_feature_dim/ParamSamplerSpec.max_val = 2.0
+
+community_power_exponent/ParamSamplerSpec.name = "community_power_exponent"
+community_power_exponent/ParamSamplerSpec.min_val = -1
+community_power_exponent/ParamSamplerSpec.max_val = -1
+
+community_min_size_proportion/ParamSamplerSpec.name = "community_min_size_proportion"
+community_min_size_proportion/ParamSamplerSpec.min_val = 0.0825
+community_min_size_proportion/ParamSamplerSpec.max_val = 0.0825
+
+community_max_size_proportion/ParamSamplerSpec.name = "community_max_size_proportion"
+community_max_size_proportion/ParamSamplerSpec.min_val = 0.33
+community_max_size_proportion/ParamSamplerSpec.max_val = 0.33
+
+lfr_mixing_param/ParamSamplerSpec.name = "lfr_mixing_param"
+lfr_mixing_param/ParamSamplerSpec.min_val = 0.0
+lfr_mixing_param/ParamSamplerSpec.max_val = 1.0
+
+lfr_avg_degree/ParamSamplerSpec.name = "lfr_avg_degree"
+lfr_avg_degree/ParamSamplerSpec.min_val = 15
+lfr_avg_degree/ParamSamplerSpec.max_val = 15
+
+lfr_max_degree_proportion/ParamSamplerSpec.name = "lfr_max_degree_proportion"
+lfr_max_degree_proportion/ParamSamplerSpec.min_val = 0.17
+lfr_max_degree_proportion/ParamSamplerSpec.max_val = 0.17
