@@ -16,7 +16,7 @@ import gin
 import numpy as np
 
 from ..beam.generator_config_sampler import GeneratorConfigSampler
-from ..generators.sbm_simulator import GenerateStochasticBlockModelWithFeatures, MatchType, MakePi, MakePropMat, MakeDegrees
+from ..generators.sbm_simulator import GenerateStochasticBlockModelWithFeatures, MatchType, MakeDegrees, CommunitySizesType, MakePi
 from ..generators.cabam_simulator import GenerateCABAMGraphWithFeatures
 from ..generators.lfr_simulator import GenerateLFRGraphWithFeatures
 from ..nodeclassification.utils import NodeClassificationDataset
@@ -42,6 +42,17 @@ class SbmGeneratorWrapper(GeneratorConfigSampler):
     self._AddSamplerFn('power_exponent', self._SampleUniformFloat)
     self._AddSamplerFn('min_deg', self._SampleUniformInteger)
 
+    # Parameters for CommunitySizeType=POWERLAW
+    self._AddSamplerFn('community_max_size_proportion', self._SampleUniformFloat)
+    self._AddSamplerFn('community_min_size_proportion', self._SampleUniformFloat)
+    self._AddSamplerFn('community_power_exponent', self._SampleUniformFloat)
+    self._AddSamplerFn('lfr_mixing_param', self._SampleUniformFloat)
+    self._AddSamplerFn('lfr_max_degree_proportion', self._SampleUniformFloat)
+    self._AddSamplerFn('lfr_avg_degree', self._SampleUniformInteger)
+
+
+
+
   def Generate(self, sample_id):
     """Sample and save SMB outputs given a configuration filepath.
     """
@@ -57,11 +68,8 @@ class SbmGeneratorWrapper(GeneratorConfigSampler):
     sbm_data = GenerateStochasticBlockModelWithFeatures(
       num_vertices=generator_config['nvertex'],
       num_edges=generator_config['nvertex'] * generator_config['avg_degree'],
-      pi=MakePi(generator_config['num_clusters'],
-                generator_config['cluster_size_slope']),
-      prop_mat=MakePropMat(generator_config['num_clusters'],
-                           generator_config['p_to_q_ratio']),
-
+      cluster_size_slope=generator_config['cluster_size_slope'],
+      p_to_q_ratio=generator_config['p_to_q_ratio'],
       num_feature_groups=generator_config['num_clusters'],
       feature_group_match_type=MatchType.GROUPED,
       feature_center_distance=generator_config['feature_center_distance'],
@@ -69,10 +77,16 @@ class SbmGeneratorWrapper(GeneratorConfigSampler):
       edge_center_distance=generator_config['edge_center_distance'],
       edge_feature_dim=generator_config['edge_feature_dim'],
       out_degs=MakeDegrees(generator_config['power_exponent'], 
-                               generator_config['min_deg'],
-                               generator_config['nvertex']),
-      normalize_features=self._normalize_features
-    )
+                            generator_config['min_deg'],
+                            generator_config['nvertex']),
+      community_sizes_type=CommunitySizesType.ORIGINAL,
+      min_community_size=int(generator_config['community_min_size_proportion']*generator_config['nvertex']),
+      max_community_size=int(generator_config['community_max_size_proportion']*generator_config['nvertex']),
+      community_exponent=generator_config['community_power_exponent'],
+      lfr_mixing_param=generator_config['lfr_mixing_param'],
+      lfr_avg_degree=generator_config['lfr_avg_degree'],
+      lfr_max_degree=int(generator_config['lfr_max_degree_proportion']*generator_config['nvertex']),
+      normalize_features=self._normalize_features)
 
     return {'sample_id': sample_id,
             'marginal_param': marginal_param,

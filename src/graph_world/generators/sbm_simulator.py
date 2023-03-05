@@ -22,6 +22,7 @@ from sklearn.preprocessing import normalize
 import dataclasses
 import graph_tool
 import numpy as np
+import networkit as nk
 
 from graph_tool.all import *
 
@@ -39,6 +40,15 @@ class MatchType(enum.Enum):
   RANDOM = 1
   NESTED = 2
   GROUPED = 3
+
+class CommunitySizesType(enum.Enum):
+  """Indicates type of community sizes to compute.
+  ORIGINAL: Use default methods to generate community sizes.
+  POWERLAW: Use LFR generator to compute community sizes following a powerlaw
+    with shape specified in the parameter specs.
+  """
+  ORIGINAL = 1
+  POWERLAW = 2
 
 
 @dataclasses.dataclass
@@ -58,6 +68,27 @@ class StochasticBlockModel:
   feature_memberships: np.ndarray = Ellipsis
   edge_features: Dict[Tuple[int, int], np.ndarray] = Ellipsis
 
+def _ComputePowerLawCommunitySizes(avg_deg, max_deg, num_vertices, min_community_size, max_community_size, mu, exponent):
+  """
+  Helper function of GenerateNodeMemberships to compute community sizes following a power law
+  for when POWERLAW community size type is specified. Generates an LFR graph on given parameters and extracts the community sizes.
+  Args:
+    avg_deg: average degree to use in LFR generation
+    max_deg: maximum degree to use in LFR generation
+    num_vertices: number of nodes in graph.
+    min_community_size: minimum community size
+    max_community_size: maximum community size
+    mu: mixing parameter
+    exponent: exponent of power law that community sizes should follow
+  Returns:
+    community_sizes: list of community sizes
+  """
+  generator = nk.generators.LFRGenerator(num_vertices)
+  generator.generatePowerlawCommunitySizeSequence(min_community_size, max_community_size, exponent)
+  generator.generatePowerlawDegreeSequence(avg_deg, max_deg, -3) 
+  generator.setMu(mu)
+  generator.run()
+  return generator.getPartition().subsetSizes()
 
 def _GetNestingMap(large_k, small_k):
   """Given two group sizes, computes a "nesting map" between groups.
@@ -104,10 +135,9 @@ def _GenerateFeatureMemberships(
   # Parameter checks
   if num_groups is not None and num_groups == 0:
     raise ValueError("argument num_groups must be None or positive")
-  graph_num_groups = len(set(graph_memberships))
+  graph_num_groups=len(set(graph_memberships))
   if num_groups is None:
     num_groups = graph_num_groups
-
   # Compute memberships
   memberships = []
   if match_type == MatchType.GROUPED:
@@ -137,7 +167,8 @@ def _GenerateFeatureMemberships(
       num_graph_cluster_nodes = np.sum(
         [i == graph_cluster_id for i in graph_memberships])
       sub_memberships = _GenerateNodeMemberships(num_graph_cluster_nodes,
-                                                 feature_pi)
+                                                 feature_pi,
+                                                 community_sizes=None)
       sub_memberships = [sorted_feature_cluster_ids[i] for i in sub_memberships]
       memberships.extend(sub_memberships)
   else:  # MatchType.RANDOM
@@ -189,18 +220,20 @@ def _ComputeCommunitySizes(num_vertices, pi):
 
 
 def _GenerateNodeMemberships(num_vertices,
-                             pi):
+                             pi, community_sizes=None):
   """Gets node memberships for sbm.
   Args:
     num_vertices: number of nodes in graph.
     pi: interable of non-zero community size proportions. Must sum to 1.0, but
       this check is left to the caller of this internal function.
+    community_sizes: list of community sizes, defaults to None in ORIGINAL community sizes type.
   Returns:
     np vector of ints representing community indices.
   """
-  community_sizes = _ComputeCommunitySizes(num_vertices, pi)
   memberships = np.zeros(num_vertices, dtype=int)
   node = 0
+  if community_sizes is None:
+    community_sizes = _ComputeCommunitySizes(num_vertices, pi)
   for i in range(len(pi)):
     memberships[range(node, node + community_sizes[i])] = i
     node += community_sizes[i]
@@ -210,8 +243,16 @@ def _GenerateNodeMemberships(num_vertices,
 def SimulateSbm(sbm_data,
                 num_vertices,
                 num_edges,
-                pi,
-                prop_mat,
+                num_feature_groups,
+                cluster_size_slope,
+                p_to_q_ratio,
+                min_community_size=None, 
+                max_community_size=None, 
+                community_exponent=None,
+                community_sizes_type=CommunitySizesType.ORIGINAL,
+                lfr_avg_degree=None,
+                lfr_max_degree=None,
+                lfr_mixing_param=None,
                 out_degs=None):
   """Generates a stochastic block model, storing data in sbm_data.graph.
   This function uses graph_tool.generate_sbm. Refer to that
@@ -220,18 +261,43 @@ def SimulateSbm(sbm_data,
     sbm_data: StochasticBlockModel dataclass to store result data.
     num_vertices: (int) number of nodes in the graph.
     num_edges: (int) expected number of edges in the graph.
-    pi: iterable of non-zero community size proportions. Must sum to 1.0.
-    prop_mat: square, symmetric matrix of community edge count rates.
+    cluster_size_slope: random float between 0.0 and 1.0 used to compute pi vector
+    p_to_q_ratio: signal to noise ratio
+    community_sizes_type: type of community size generation. See SBM simulator.
+    min_community_size: minimum community size in POWERLAW communities generation
+    max_community_size: maximum community size in POWERLAW communities generation
+    community_exponent: exponent of powerlaw of community sizes
+    lfr_mixing_param: mixing parameter of LFR graph in in POWERLAW communities generation
+    lfr_avg_degree: average degree of LFR graph in POWERLAW communities generation
+    lfr_max_degree: maximum degree of LFR graph in in POWERLAW communities generation
     out_degs: Out-degree propensity for each node. If not provided, a constant
       value will be used. Note that the values will be normalized inside each
       group, if they are not already so.
   Returns: (none)
   """
+  if community_sizes_type == CommunitySizesType.POWERLAW:
+    community_sizes = _ComputePowerLawCommunitySizes(lfr_avg_degree,
+                                                    lfr_max_degree,
+                                                    num_vertices, 
+                                                    min_community_size, 
+                                                    max_community_size, 
+                                                    lfr_mixing_param,
+                                                    community_exponent)  
+    num_communities = len(community_sizes)
+    # Normalize community sizes to get pi vector 
+    pi = np.array(community_sizes) / sum(community_sizes)
+  if community_sizes_type == CommunitySizesType.ORIGINAL:
+    num_communities = num_feature_groups
+    # Community sizes to be computed during node membership generation 
+    community_sizes = None 
+    pi = MakePi(num_communities, cluster_size_slope)
+
+  prop_mat = MakePropMat(num_communities, p_to_q_ratio)
   if round(abs(np.sum(pi) - 1.0), 12) != 0:
     raise ValueError("entries of pi ( must sum to 1.0")
   if prop_mat.shape[0] != len(pi) or prop_mat.shape[1] != len(pi):
     raise ValueError("prop_mat must be k x k where k = len(pi)")
-  sbm_data.graph_memberships = _GenerateNodeMemberships(num_vertices, pi)
+  sbm_data.graph_memberships = _GenerateNodeMemberships(num_vertices, pi, community_sizes)
   edge_counts = _ComputeExpectedEdgeCounts(num_edges, num_vertices, pi,
                                            prop_mat)
   sbm_data.graph = graph_tool.generation.generate_sbm(
@@ -247,7 +313,8 @@ def SimulateFeatures(sbm_data,
                      num_groups,
                      match_type=MatchType.RANDOM,
                      cluster_var=1.0,
-                     normalize_features=True):
+                     normalize_features=True,
+                     community_sizes_type=CommunitySizesType.ORIGINAL):
   """Generates node features using multivate normal mixture model.
   This function does nothing and throws a warning if
   sbm_data.graph_memberships is empty. Run SimulateSbm to fill that field.
@@ -261,12 +328,23 @@ def SimulateFeatures(sbm_data,
      mean zero and covariance matrix cluster_var * I_{feature_dim}.
     match_type: (MatchType) see sbm_simulator.MatchType for details.
     cluster_var: (float) variance of feature clusters around their centers.
+    community_sizes_type: type of community size generation. See SBM simulator.
   Raises:
     RuntimeWarning: if simulator has no graph or a graph with no nodes.
   """
   if sbm_data.graph_memberships is None:
     raise RuntimeWarning("No graph_memberships found: no features generated. "
                          "Run SimulateSbm to generate graph_memberships.")
+  
+  graph_num_groups = len(set(sbm_data.graph_memberships))
+
+  # Correcting number of feature groups for the given MatchType,
+  # due to variance in number of graph groups via power law generation
+  if community_sizes_type==CommunitySizesType.POWERLAW:
+    if match_type==MatchType.GROUPED and num_groups>graph_num_groups:
+      num_groups=graph_num_groups
+    if match_type==MatchType.NESTED and num_groups<graph_num_groups:
+      num_groups=graph_num_groups
 
   # Get memberships
   sbm_data.feature_memberships = _GenerateFeatureMemberships(
@@ -342,8 +420,8 @@ def SimulateEdgeFeatures(sbm_data,
 def GenerateStochasticBlockModelWithFeatures(
     num_vertices,
     num_edges,
-    pi,
-    prop_mat,
+    cluster_size_slope,
+    p_to_q_ratio,
     out_degs=None,
     feature_center_distance=0.0,
     feature_dim=0,
@@ -353,15 +431,20 @@ def GenerateStochasticBlockModelWithFeatures(
     edge_feature_dim=0,
     edge_center_distance=0.0,
     edge_cluster_variance=1.0,
+    community_sizes_type=CommunitySizesType.ORIGINAL,
+    min_community_size=None,
+    max_community_size=None,
+    community_exponent=None,
+    lfr_mixing_param=None,
+    lfr_avg_degree=None,
+    lfr_max_degree=None,
     normalize_features=True):
   """Generates stochastic block model (SBM) with node features.
   Args:
     num_vertices: number of nodes in the graph.
     num_edges: expected number of edges in the graph.
-    pi: interable of non-zero community size proportions. Must sum to 1.0.
-    prop_mat: square, symmetric matrix of community edge count rates. Example:
-      if diagonals are 2.0 and off-diagonals are 1.0, within-community edges are
-      twices as likely as between-community edges.
+    cluster_size_slope: random float between 0.0 and 1.0 used to compute pi vector
+    p_to_q_ratio: signal to noise ratio
     out_degs: Out-degree propensity for each node. If not provided, a constant
       value will be used. Note that the values will be normalized inside each
       group, if they are not already so.
@@ -378,17 +461,38 @@ def GenerateStochasticBlockModelWithFeatures(
       inter-class means. Increasing this strengthens the edge feature signal.
     edge_cluster_variance: variance of edge clusters around their centers.
       Increasing this weakens the edge feature signal.
+    community_sizes_type: type of community size generation. 
+    min_community_size: minimum community size in POWERLAW communities generation
+    max_community_size: maximum community size in POWERLAW communities generation
+    community_exponent: exponent of powerlaw of community sizes
+    lfr_mixing_param: mixing parameter of LFR graph in in POWERLAW communities generation
+    lfr_avg_degree: average degree of LFR graph in POWERLAW communities generation
+    lfr_max_degree: maximum degree of LFR graph in in POWERLAW communities generation
   Returns:
     result: a StochasticBlockModel data class.
   """
   result = StochasticBlockModel()
-  SimulateSbm(result, num_vertices, num_edges, pi, prop_mat, out_degs)
+  SimulateSbm(result,
+              num_vertices,
+              num_edges,
+              num_feature_groups,
+              cluster_size_slope,
+              p_to_q_ratio,
+              min_community_size, 
+              max_community_size, 
+              community_exponent,
+              community_sizes_type,
+              lfr_avg_degree,
+              lfr_max_degree,
+              lfr_mixing_param,
+              out_degs)
   SimulateFeatures(result, feature_center_distance,
                    feature_dim,
                    num_feature_groups,
                    feature_group_match_type,
                    feature_cluster_variance,
-                   normalize_features)
+                   normalize_features,
+                   community_sizes_type)
   SimulateEdgeFeatures(result, edge_feature_dim,
                        edge_center_distance,
                        edge_cluster_variance)
@@ -404,7 +508,6 @@ def MakePi(num_communities: int, community_size_slope: float) -> np.ndarray:
   pi /= np.sum(pi)
   return pi
 
-
 # Helper function to create the "PropMat" matrix for the SBM model (square
 # matrix giving inter-community Poisson means) from the config parameters,
 # particularly `p_to_q_ratio`. See the config proto for details.
@@ -412,7 +515,6 @@ def MakePropMat(num_communities: int, p_to_q_ratio: float) -> np.ndarray:
   prop_mat = np.ones((num_communities, num_communities))
   np.fill_diagonal(prop_mat, p_to_q_ratio)
   return prop_mat
-
 
 # Helper function to create a degree set that follows a power law for the
 # 'out_degs' parameter in SBM construction.
