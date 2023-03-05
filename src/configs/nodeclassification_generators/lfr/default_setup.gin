@@ -1,0 +1,20 @@
+include 'app/configs/nodeclassification_generators/lfr/default_param_ranges.gin'
+
+# Include if you are running "marginal" GraphWorld, otherwise comment out.
+include 'app/configs/nodeclassification_generators/lfr/default_param_values.gin'
+
+NodeClassificationBeamHandler.generator_wrapper = @LFRGeneratorWrapper()
+
+# Set to 'True' if GraphWorld is running in marginal mode (see above include)
+LFRGeneratorWrapper.marginal = True
+
+# The assigned value below comes from ./default_param_ranges.gin.
+# If ./default_param_values.gin is also included, that file sets the default
+# value for each sampler spec, which is used to run "marginal" GraphWorld.
+LFRGeneratorWrapper.param_sampler_specs = %LFRSamplerSpec
+
+# Normalize node features (default true)
+LFRGeneratorWrapper.normalize_features = True
+
+# Include this file if you are running GraphWorld in Mode 2.
+include 'app/configs/nodeclassification_generators/lfr/optimal_model_hparams.gin'
