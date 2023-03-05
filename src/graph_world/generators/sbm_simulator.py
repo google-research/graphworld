@@ -236,8 +236,8 @@ def SimulateSbm(sbm_data,
                                            prop_mat)
   sbm_data.graph = graph_tool.generation.generate_sbm(
     sbm_data.graph_memberships, edge_counts, out_degs)
-  graph_tool.stats.remove_self_loops(sbm_data.graph)
-  graph_tool.stats.remove_parallel_edges(sbm_data.graph)
+  graph_tool.generation.remove_self_loops(sbm_data.graph)
+  graph_tool.generation.remove_parallel_edges(sbm_data.graph)
   sbm_data.graph.reindex_edges()
 
 
