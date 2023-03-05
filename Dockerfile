@@ -61,7 +61,10 @@ ENV PYTHONPATH "/app:$PYTHONPATH"
 RUN pip3 install --upgrade pip \
         && pip install --no-cache-dir torch==1.9.0+cpu -f https://download.pytorch.org/whl/torch_stable.html \
         && pip3 install --no-index --no-cache-dir torch-sparse torch-scatter -f https://pytorch-geometric.com/whl/torch-1.9.0+cpu.html \
-        && pip3 install --no-cache-dir torch-geometric==1.7.2
+        && pip3 install --no-cache-dir torch-geometric==1.7.2 \
+        && pip3 install cmake \
+        && pip3 install cython \
+        && pip3 install networkit
 
 COPY ./src/requirements.txt /app/requirements.txt
 RUN pip3 install -U --no-cache-dir -r /app/requirements.txt
