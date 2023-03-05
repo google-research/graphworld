@@ -42,8 +42,8 @@ community_max_size_proportion/ParamSamplerSpec.min_val = 0.33
 community_max_size_proportion/ParamSamplerSpec.max_val = 0.33
 
 max_degree_proportion/ParamSamplerSpec.name = "max_degree_proportion"
-max_degree_proportion/ParamSamplerSpec.min_val = 0.3135
-max_degree_proportion/ParamSamplerSpec.max_val = 0.3135
+max_degree_proportion/ParamSamplerSpec.min_val = 0.17
+max_degree_proportion/ParamSamplerSpec.max_val = 0.17
 
 feature_dim/ParamSamplerSpec.name = "feature_dim"
 feature_dim/ParamSamplerSpec.min_val = 16
