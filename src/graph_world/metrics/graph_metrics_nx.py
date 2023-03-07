@@ -72,6 +72,12 @@ def _largest_connected_component_size(graph: nx.Graph) -> float:
   return np.max(list(map(len, components))) / graph.number_of_nodes()
 
 
+def _power_law_estimate(degrees: np.ndarray) -> float:
+  degrees = degrees + 1.0
+  n = degrees.shape[0]
+  return 1.0 + n / np.sum(np.log(degrees / np.min(degrees)))
+
+
 def graph_metrics_nx(graph: nx.Graph) -> Dict[str, float]:
   """Computes graph metrics on a networkx graph object.
 
@@ -99,4 +105,5 @@ def graph_metrics_nx(graph: nx.Graph) -> Dict[str, float]:
   result['num_triangles'] = float(
       np.sum(list(nx.triangles(graph).values())) / 3.0)
   result['cc_size'] = float(_largest_connected_component_size(graph))
+  result['power_law_estimate'] = _power_law_estimate(degrees)
   return result
