@@ -76,7 +76,8 @@ class GcnTester(beam.DoFn):
           hidden_channels=test_config['hidden_channels'],
           weight_decay=test_config['weight_decay'],
           lr=test_config['learning_rate'],
-          dropout=test_config['dropout']
+          dropout=test_config['dropout'],
+          num_layers=test_config['num_layers']
       )
 
       val_accs.append(best_val_acc)
