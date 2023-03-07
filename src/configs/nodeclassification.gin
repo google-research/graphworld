@@ -7,8 +7,8 @@ GeneratorBeamHandlerWrapper.nsamples = 700000
 NodeClassificationBeamHandler.num_tuning_rounds = 1
 NodeClassificationBeamHandler.save_tuning_results = False
 NodeClassificationBeamHandler.tuning_metric = "rocauc_ovr"
-NodeClassificationBeamHandler.ktrain = 5
-NodeClassificationBeamHandler.ktuning = 5
+NodeClassificationBeamHandler.num_train_per_class = 20
+NodeClassificationBeamHandler.num_val = 500
 
 NodeClassificationBeamHandler.benchmarker_wrappers = [
   @GCN_/NNNodeBenchmark,
