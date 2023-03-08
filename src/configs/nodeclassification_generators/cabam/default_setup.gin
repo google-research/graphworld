@@ -15,6 +15,3 @@ CABAMGeneratorWrapper.param_sampler_specs = %CABAMSamplerSpec
 
 # Normalize node features (default true)
 CABAMGeneratorWrapper.normalize_features = True
-
-# Include this file if you are running GraphWorld in Mode 2.
-include 'app/configs/nodeclassification_generators/cabam/optimal_model_hparams.gin'

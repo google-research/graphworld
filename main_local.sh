@@ -20,12 +20,14 @@
 BUILD_NAME="graphworld"
 TASK="nodeclassification"
 GENERATOR="sbm"
-while getopts b:t:g: flag
+RUN_MODE2=false
+while getopts b:t:g:m: flag
 do
     case "${flag}" in
         b) BUILD_NAME=${OPTARG};;
         t) TASK=${OPTARG};;
         g) GENERATOR=${OPTARG};;
+        m) RUN_MODE2=${OPTARG};;
     esac
 done
 
@@ -34,9 +36,17 @@ OUTPUT_PATH="/tmp/${TASK}/${GENERATOR}"
 rm -rf "${OUTPUT_PATH}"
 mkdir -p ${OUTPUT_PATH}
 
+# Add gin file string.
+GIN_FILES="/app/configs/${TASK}_test.gin "
+GIN_FILES="${GIN_FILES} /app/configs/${TASK}_generators/${GENERATOR}/default_setup.gin"
+GIN_FILES="${GIN_FILES} /app/configs/common_hparams/${TASK}_test.gin"
+if [ ${RUN_MODE2} = true ]; then
+  GIN_FILES="${GIN_FILES} /app/configs/${TASK}_generators/${GENERATOR}/optimal_model_hparams.gin"
+fi
+
 ENTRYPOINT="python3 /app/beam_benchmark_main.py \
   --runner DirectRunner \
-  --gin_files /app/configs/${TASK}_test.gin /app/configs/${TASK}_generators/${GENERATOR}/default_setup.gin /app/configs/common_hparams/${TASK}_test.gin \
+  --gin_files ${GIN_FILES} \
   --output "${OUTPUT_PATH}""
 
 echo ${ENTRYPOINT}
