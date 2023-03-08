@@ -12,29 +12,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+source launch_script_constants.sh
+source remote_job_setup.sh
 
-PROJECT_NAME="project"
-BUILD_NAME="graphworld"
 TASK="nodeclassification"
 GENERATOR="sbm"
-MACHINE_TYPE="n1-standard-1"
-MAX_NUM_WORKERS=1000
 JOBTAG="taghere"
-RUN_MODE2=false
-while getopts p:b:t:g:j:m:w:m flag
+
+while getopts t:g:j: flag
 do
     case "${flag}" in
-        p) PROJECT_NAME=${OPTARG};;
-        b) BUILD_NAME=${OPTARG};;
         t) TASK=${OPTARG};;
         g) GENERATOR=${OPTARG};;
         j) JOBTAG=${OPTARG};;
-        m) MACHINE_TYPE=${OPTARG};;
-        w) MAX_NUM_WORKERS=${OPTARG};;
-        m) RUN_MODE2=${OPTARG};;
     esac
 done
-
 
 TIMESTAMP="$(date +"%Y-%m-%d-%H-%M-%S")"
 JOB_NAME="${TASK}-${GENERATOR}-${TIMESTAMP}-${JOBTAG}"
@@ -51,6 +43,12 @@ if [ ${RUN_MODE2} = true ]; then
   GIN_FILES="${GIN_FILES} /app/configs/${TASK}_generators/${GENERATOR}/optimal_model_hparams.gin"
 fi
 
+# Add gin param string.
+TASK_CLASS_NAME=$(get_task_class_name ${TASK})
+GIN_PARAMS="GeneratorBeamHandlerWrapper.nsamples=${NUM_SAMPLES}\
+            ${TASK_CLASS_NAME}BeamHandler.num_tuning_rounds=${NUM_TUNING_ROUNDS}\
+            ${TASK_CLASS_NAME}BeamHandler.save_tuning_results=${SAVE_TUNING_RESULTS}"
+
 ENTRYPOINT="python3 /app/beam_benchmark_main.py \
   --runner=DataflowRunner \
   --project=${PROJECT_NAME} \
@@ -58,6 +56,7 @@ ENTRYPOINT="python3 /app/beam_benchmark_main.py \
   --max_num_workers="${MAX_NUM_WORKERS}" \
   --temp_location="${TEMP_LOCATION}" \
   --gin_files "${GIN_FILES}" \
+  --gin_params "${GIN_PARAMS}" \
   --output="${OUTPUT_PATH}" \
   --job_name="${FULL_JOB_NAME}" \
   --no_use_public_ips \

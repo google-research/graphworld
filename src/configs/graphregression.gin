@@ -2,9 +2,7 @@ import graph_world.models.basic_gnn
 import graph_world.graphregression.generator_wrappers
 
 GeneratorBeamHandlerWrapper.handler = @GraphRegressionBeamHandler()
-GeneratorBeamHandlerWrapper.nsamples = 400000
 
-GraphRegressionBeamHandler.num_tuning_rounds = 1
 GraphRegressionBeamHandler.tuning_metric = "mse_scaled"
 GraphRegressionBeamHandler.tuning_metric_is_loss = True
 GraphRegressionBeamHandler.batch_size = 32

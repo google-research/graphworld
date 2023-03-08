@@ -49,6 +49,12 @@ def entry(argv=None):
                       nargs='+',
                       type=str,
                       help='Paths to config files.')
+  
+  parser.add_argument('--gin_params',
+                      dest='gin_params',
+                      nargs='+',
+                      type=str,
+                      help='Gin config bindings.')
 
   parser.add_argument('--write_intermediate',
                       dest='write_samples',
@@ -59,7 +65,7 @@ def entry(argv=None):
   sys.stdout.flush()
   print(f'Pipeline Args: {pipeline_args}', flush=True)
   print(f'Binary Args: {args}', flush=True)
-  gin.parse_config_files_and_bindings(args.gin_files, None)
+  gin.parse_config_files_and_bindings(args.gin_files, args.gin_params)
   pipeline_options = PipelineOptions(pipeline_args)
   pipeline_options.view_as(SetupOptions).save_main_session = True
 
