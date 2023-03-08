@@ -47,7 +47,7 @@ ENTRYPOINT="python3 /app/beam_benchmark_main.py \
   --region=us-east1 \
   --max_num_workers="${MAX_NUM_WORKERS}" \
   --temp_location="${TEMP_LOCATION}" \
-  --gin_files /app/configs/${TASK}.gin /app/configs/${TASK}_generators/${GENERATOR}/default_setup.gin \
+  --gin_files /app/configs/${TASK}.gin /app/configs/${TASK}_generators/${GENERATOR}/default_setup.gin /app/configs/common_hparams/${TASK}.gin \
   --output="${OUTPUT_PATH}" \
   --job_name="${FULL_JOB_NAME}" \
   --no_use_public_ips \

@@ -1,5 +1,3 @@
-include 'app/configs/common_hparams/nodeclassification.gin'
-
 Baseline_/NNNodeBaselineBenchmark.h_params = {
     'alpha' : %ALPHA,
 }

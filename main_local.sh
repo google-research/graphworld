@@ -36,7 +36,7 @@ mkdir -p ${OUTPUT_PATH}
 
 ENTRYPOINT="python3 /app/beam_benchmark_main.py \
   --runner DirectRunner \
-  --gin_files /app/configs/${TASK}_test.gin /app/configs/${TASK}_generators/${GENERATOR}/default_setup.gin \
+  --gin_files /app/configs/${TASK}_test.gin /app/configs/${TASK}_generators/${GENERATOR}/default_setup.gin /app/configs/common_hparams/${TASK}_test.gin \
   --output "${OUTPUT_PATH}""
 
 echo ${ENTRYPOINT}
