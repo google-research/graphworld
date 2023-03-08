@@ -2,10 +2,10 @@ import graph_world.models.basic_gnn
 import graph_world.nodeclassification.generator_wrappers
 
 GeneratorBeamHandlerWrapper.handler = @NodeClassificationBeamHandler()
-GeneratorBeamHandlerWrapper.nsamples = 700000
+GeneratorBeamHandlerWrapper.nsamples = 10000
 
-NodeClassificationBeamHandler.num_tuning_rounds = 1
-NodeClassificationBeamHandler.save_tuning_results = False
+NodeClassificationBeamHandler.num_tuning_rounds = 0
+NodeClassificationBeamHandler.save_tuning_results = True
 NodeClassificationBeamHandler.tuning_metric = "rocauc_ovr"
 NodeClassificationBeamHandler.num_train_per_class = 20
 NodeClassificationBeamHandler.num_val = 500
