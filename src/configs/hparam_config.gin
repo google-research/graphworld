@@ -3,7 +3,8 @@ include 'app/configs/common_hparams/nodeclassification.gin'
 enumerate_configs.hidden_channel_values = %HIDDEN_CHANNELS
 enumerate_configs.weight_decay_values = [1e-5]
 enumerate_configs.dropout_values = %DROPOUT
-enumerate_configs.learning_rate_values = %LR
+enumerate_configs.lr_values = %LR
+enumerate_configs.num_layers_values = %NUM_LAYERS
 
 # Generated from:
 #  random.seed(12345)

@@ -15,6 +15,3 @@ SbmGeneratorWrapper.param_sampler_specs = %SBMSamplerSpec
 
 # Normalize node features (default true)
 SbmGeneratorWrapper.normalize_features = True
-
-# Include this file if you are running GraphWorld in Mode 2.
-include 'app/configs/linkprediction_generators/sbm/optimal_model_hparams.gin'

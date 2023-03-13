@@ -13,30 +13,9 @@
 # limitations under the License.
 
 # Method to get a single val/test result from GCN
+from graph_world.models.basic_gnn import GCN
 import numpy as np
-
 import torch
-from torch_geometric.nn import GCNConv
-
-
-class GCN(torch.nn.Module):
-    def __init__(self,
-                 num_features,
-                 num_classes,
-                 hidden_channels,
-                 dropout=0.5):
-        super().__init__()
-        torch.manual_seed(1234567)
-        self.conv1 = GCNConv(num_features, hidden_channels)
-        self.conv2 = GCNConv(hidden_channels, num_classes)
-        self.dropout = dropout
-
-    def forward(self, x, edge_index):
-        x = self.conv1(x, edge_index)
-        x = x.relu()
-        x = torch.nn.functional.dropout(x, p=self.dropout, training=self.training)
-        x = self.conv2(x, edge_index)
-        return x
 
 
 def test_gcn(data,
@@ -44,11 +23,13 @@ def test_gcn(data,
              weight_decay=5e-4,
              lr=0.01,
              dropout=0.5,
+             num_layers=1,
              decrease_tol=50,
              verbose=False):
-  model = GCN(num_features=np.squeeze(data.x.numpy()).shape[1],
-              num_classes=len(set(data.y.numpy())),
+  model = GCN(in_channels=np.squeeze(data.x.numpy()).shape[1],
               hidden_channels=hidden_channels,
+              num_layers=num_layers,
+              out_channels=len(set(data.y.numpy())),
               dropout=dropout)
   optimizer = torch.optim.Adam(model.parameters(), lr=lr,
                                weight_decay=weight_decay)
@@ -58,6 +39,7 @@ def test_gcn(data,
     model.train()
     optimizer.zero_grad()  # Clear gradients.
     out = model(data.x, data.edge_index)  # Perform a single forward pass.
+    out = out[data.label_mask]
     loss = criterion(out[data.train_mask],
                      data.y[data.train_mask])  # Compute the loss solely based on the training nodes.
     loss.backward()  # Derive gradients.
@@ -67,6 +49,7 @@ def test_gcn(data,
   def test(mask):
     model.eval()
     out = model(data.x, data.edge_index)
+    out = out[data.label_mask]
     pred = out.argmax(dim=1)  # Use the class with highest probability.
     test_correct = pred[mask] == data.y[mask]  # Check against ground-truth labels.
     test_acc = int(test_correct.sum()) / int(mask.sum())  # Derive ratio of correct predictions.

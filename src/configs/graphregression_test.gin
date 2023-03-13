@@ -1,4 +1,0 @@
-include 'app/configs/graphregression.gin'
-
-GeneratorBeamHandlerWrapper.nsamples = 2
-GraphRegressionBeamHandler.num_tuning_rounds = 1

@@ -1,0 +1,11 @@
+# GCN & GNN hyperparameter ranges
+LR = [0.01]
+HIDDEN_CHANNELS = [4]
+NUM_LAYERS = [1, 2]
+DROPOUT = [0] # a hack to make dropout equiprobable
+EPOCHS = 50
+# GNN only
+ALPHA = [0.1]
+ITERATIONS = [5]
+# Multihead model only
+NUM_HEADS = [1]

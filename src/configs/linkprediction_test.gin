@@ -1,6 +1,0 @@
-include 'app/configs/linkprediction.gin'
-
-GeneratorBeamHandlerWrapper.nsamples = 1
-LinkPredictionBeamHandler.num_tuning_rounds = 1
-LinkPredictionBeamHandler.save_tuning_results = False
-LinkPredictionBeamHandler.marginal = True

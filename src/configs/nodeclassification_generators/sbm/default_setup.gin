@@ -6,7 +6,7 @@ include 'app/configs/nodeclassification_generators/sbm/default_param_values.gin'
 NodeClassificationBeamHandler.generator_wrapper = @SbmGeneratorWrapper()
 
 # Set to 'True' if GraphWorld is running in marginal mode (see above include)
-SbmGeneratorWrapper.marginal = True
+SbmGeneratorWrapper.marginal = False
 
 # The assigned value below comes from ./default_param_ranges.gin.
 # If ./default_param_values.gin is also included, that file sets the default
@@ -15,6 +15,3 @@ SbmGeneratorWrapper.param_sampler_specs = %SBMSamplerSpec
 
 # Normalize node features (default true)
 SbmGeneratorWrapper.normalize_features = True
-
-# Include this file if you are running GraphWorld in Mode 2.
-include 'app/configs/nodeclassification_generators/sbm/optimal_model_hparams.gin'

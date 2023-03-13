@@ -2,11 +2,8 @@ import graph_world.models.basic_gnn
 import graph_world.noderegression.generator_wrappers
 
 GeneratorBeamHandlerWrapper.handler = @NodeRegressionBeamHandler()
-GeneratorBeamHandlerWrapper.nsamples = 100000
 
 NodeRegressionBeamHandler.marginal = False
-NodeRegressionBeamHandler.num_tuning_rounds = 0
-NodeRegressionBeamHandler.save_tuning_results = True
 NodeRegressionBeamHandler.training_ratio = 0.8
 NodeRegressionBeamHandler.tuning_ratio = 0.1
 NodeRegressionBeamHandler.tuning_metric = "mse"
