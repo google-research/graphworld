@@ -32,8 +32,8 @@ from ..beam.benchmarker import Benchmarker, BenchmarkerWrapper
 
 
 class NNNodeBenchmarker(Benchmarker):
-  def __init__(self, generator_config, model_class, benchmark_params, h_params):
-    super().__init__(generator_config, model_class, benchmark_params, h_params)
+  def __init__(self, generator_config, model_class, benchmark_params, h_params, torch_data):
+    super().__init__(generator_config, model_class, benchmark_params, h_params, torch_data)
     # remove meta entries from h_params
     self._epochs = benchmark_params['epochs']
 
@@ -47,9 +47,14 @@ class NNNodeBenchmarker(Benchmarker):
     self._val_mask = None
     self._test_mask = None
 
-  def AdjustParams(self, generator_config):
-    if 'num_clusters' in generator_config and self._h_params is not None:
-      self._h_params['out_channels'] = generator_config['num_clusters']
+  def AdjustParams(self, generator_config, torch_data):
+    if self._h_params is not None:
+      # Adjusting num_clusters to correct out channels and analyse results in LFR community size type graphs
+      if generator_config['generator_name']=='LFR' or ('lfr_avg_degree' in generator_config and generator_config['lfr_avg_degree']>0):
+        generator_config['num_clusters'] = int(max(torch_data.y.numpy())+1)
+      if 'num_clusters' in generator_config:
+        self._h_params['out_channels'] = generator_config['num_clusters']
+
 
   def SetMasks(self, train_mask, val_mask, test_mask):
     self._train_mask = train_mask
@@ -161,8 +166,8 @@ class NNNodeBenchmarker(Benchmarker):
 
 class NNNodeBaselineBenchmarker(Benchmarker):
 
-  def __init__(self, generator_config, model_class, benchmark_params, h_params):
-    super().__init__(generator_config, model_class, benchmark_params, h_params)
+  def __init__(self, generator_config, model_class, benchmark_params, h_params, torch_data=None):
+    super().__init__(generator_config, model_class, benchmark_params, h_params, torch_data=None)
     # remove meta entries from h_params
     self._alpha = h_params['alpha']
 
