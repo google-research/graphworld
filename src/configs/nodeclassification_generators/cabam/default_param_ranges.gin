@@ -64,26 +64,27 @@ edge_feature_dim/ParamSamplerSpec.name = "edge_feature_dim"
 edge_feature_dim/ParamSamplerSpec.min_val = 2.0
 edge_feature_dim/ParamSamplerSpec.max_val = 2.0
 
+# Set below params to zero if not using LFR Power Law Community Sizes
+lfr_avg_degree/ParamSamplerSpec.name = "lfr_avg_degree"
+lfr_avg_degree/ParamSamplerSpec.min_val = 0 #15
+lfr_avg_degree/ParamSamplerSpec.max_val = 0 #15
+
 community_power_exponent/ParamSamplerSpec.name = "community_power_exponent"
-community_power_exponent/ParamSamplerSpec.min_val = -1
-community_power_exponent/ParamSamplerSpec.max_val = -1
+community_power_exponent/ParamSamplerSpec.min_val = 0 #-1
+community_power_exponent/ParamSamplerSpec.max_val = 0 #-1
 
 community_min_size_proportion/ParamSamplerSpec.name = "community_min_size_proportion"
-community_min_size_proportion/ParamSamplerSpec.min_val = 0.0825
-community_min_size_proportion/ParamSamplerSpec.max_val = 0.0825
+community_min_size_proportion/ParamSamplerSpec.min_val = 0 #0.0825
+community_min_size_proportion/ParamSamplerSpec.max_val = 0  #0.0825
 
 community_max_size_proportion/ParamSamplerSpec.name = "community_max_size_proportion"
-community_max_size_proportion/ParamSamplerSpec.min_val = 0.33
-community_max_size_proportion/ParamSamplerSpec.max_val = 0.33
+community_max_size_proportion/ParamSamplerSpec.min_val = 0 #0.33
+community_max_size_proportion/ParamSamplerSpec.max_val = 0 #0.33
 
 lfr_mixing_param/ParamSamplerSpec.name = "lfr_mixing_param"
-lfr_mixing_param/ParamSamplerSpec.min_val = 0.0
-lfr_mixing_param/ParamSamplerSpec.max_val = 1.0
-
-lfr_avg_degree/ParamSamplerSpec.name = "lfr_avg_degree"
-lfr_avg_degree/ParamSamplerSpec.min_val = 15
-lfr_avg_degree/ParamSamplerSpec.max_val = 15
+lfr_mixing_param/ParamSamplerSpec.min_val = 0 #0.0
+lfr_mixing_param/ParamSamplerSpec.max_val = 0 #1.0
 
 lfr_max_degree_proportion/ParamSamplerSpec.name = "lfr_max_degree_proportion"
-lfr_max_degree_proportion/ParamSamplerSpec.min_val = 0.17
-lfr_max_degree_proportion/ParamSamplerSpec.max_val = 0.17
+lfr_max_degree_proportion/ParamSamplerSpec.min_val = 0 #0.17
+lfr_max_degree_proportion/ParamSamplerSpec.max_val = 0 #0.17

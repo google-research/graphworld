@@ -9,7 +9,13 @@ SBMSamplerSpec = [
   @num_clusters/ParamSamplerSpec(),
   @cluster_size_slope/ParamSamplerSpec(),
   @power_exponent/ParamSamplerSpec(),
-  @min_deg/ParamSamplerSpec()
+  @min_deg/ParamSamplerSpec(),
+  @community_min_size_proportion/ParamSamplerSpec(),
+  @community_max_size_proportion/ParamSamplerSpec(),
+  @community_power_exponent/ParamSamplerSpec(),
+  @lfr_mixing_param/ParamSamplerSpec(),
+  @lfr_avg_degree/ParamSamplerSpec(),
+  @lfr_max_degree_proportion/ParamSamplerSpec()
 ]
 
 nvertex/ParamSamplerSpec.name = "nvertex"
@@ -58,3 +64,28 @@ power_exponent/ParamSamplerSpec.max_val = 3.0
 min_deg/ParamSamplerSpec.name = "min_deg"
 min_deg/ParamSamplerSpec.min_val = 2
 min_deg/ParamSamplerSpec.max_val = 10
+
+# Set below params to zero if not using LFR Power Law Community Sizes
+lfr_avg_degree/ParamSamplerSpec.name = "lfr_avg_degree"
+lfr_avg_degree/ParamSamplerSpec.min_val = 0 
+lfr_avg_degree/ParamSamplerSpec.max_val = 0 
+
+community_power_exponent/ParamSamplerSpec.name = "community_power_exponent"
+community_power_exponent/ParamSamplerSpec.min_val = 0
+community_power_exponent/ParamSamplerSpec.max_val = 0
+
+community_min_size_proportion/ParamSamplerSpec.name = "community_min_size_proportion"
+community_min_size_proportion/ParamSamplerSpec.min_val = 0
+community_min_size_proportion/ParamSamplerSpec.max_val = 0
+
+community_max_size_proportion/ParamSamplerSpec.name = "community_max_size_proportion"
+community_max_size_proportion/ParamSamplerSpec.min_val = 0
+community_max_size_proportion/ParamSamplerSpec.max_val = 0
+
+lfr_mixing_param/ParamSamplerSpec.name = "lfr_mixing_param"
+lfr_mixing_param/ParamSamplerSpec.min_val = 0
+lfr_mixing_param/ParamSamplerSpec.max_val = 0
+
+lfr_max_degree_proportion/ParamSamplerSpec.name = "lfr_max_degree_proportion"
+lfr_max_degree_proportion/ParamSamplerSpec.min_val = 0
+lfr_max_degree_proportion/ParamSamplerSpec.max_val = 0
