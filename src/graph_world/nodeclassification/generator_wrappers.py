@@ -26,10 +26,12 @@ from ..nodeclassification.utils import NodeClassificationDataset
 class SbmGeneratorWrapper(GeneratorConfigSampler):
 
   def __init__(self, param_sampler_specs, marginal=False,
-               normalize_features=True):
+               normalize_features=True, use_generated_lfr_communities=False, lfr_params=None):
     super(SbmGeneratorWrapper, self).__init__(param_sampler_specs)
     self._marginal = marginal
     self._normalize_features = normalize_features
+    self._use_generated_lfr_communities = use_generated_lfr_communities
+    self._lfr_params = lfr_params
     self._AddSamplerFn('nvertex', self._SampleUniformInteger)
     self._AddSamplerFn('avg_degree', self._SampleUniformFloat)
     self._AddSamplerFn('feature_center_distance', self._SampleUniformFloat)
@@ -54,14 +56,36 @@ class SbmGeneratorWrapper(GeneratorConfigSampler):
         self._marginal)
     generator_config['generator_name'] = 'StochasticBlockModel'
 
+    # Generating LFR graph to copy community sizes and compute pi and prop_mat
+    if self._use_generated_lfr_communities: 
+      _, lfr_model = SimulateLFRWrapper(generator_config['nvertex'], 
+                                        self._lfr_params['avg_degree'],
+                                        int(self._lfr_params['max_degree_proportion']*generator_config['nvertex']),
+                                        self._lfr_params['power_exponent'],
+                                        int(self._lfr_params['community_min_size_proportion']*generator_config['nvertex']), 
+                                        int(self._lfr_params['community_max_size_proportion']*generator_config['nvertex']), 
+                                        self._lfr_params['community_exponent'],
+                                        self._lfr_params['mixing_param'])
+      if lfr_model is None:
+        return {'sample_id': sample_id,
+            'marginal_param': marginal_param,
+            'fixed_params': fixed_params,
+            'generator_config': generator_config,
+            'data': None}
+
+      communities = lfr_model.getPartition().subsetSizes()
+      generator_config['num_clusters'] = len(communities)
+      pi = np.array(communities) / sum(communities)
+      prop_mat = MakePropMat(generator_config['num_clusters'], generator_config['p_to_q_ratio'])
+    else:
+      pi=MakePi(generator_config['num_clusters'],generator_config['cluster_size_slope'])
+      prop_mat=MakePropMat(generator_config['num_clusters'],generator_config['p_to_q_ratio'])
+
     sbm_data = GenerateStochasticBlockModelWithFeatures(
       num_vertices=generator_config['nvertex'],
       num_edges=generator_config['nvertex'] * generator_config['avg_degree'],
-      pi=MakePi(generator_config['num_clusters'],
-                generator_config['cluster_size_slope']),
-      prop_mat=MakePropMat(generator_config['num_clusters'],
-                           generator_config['p_to_q_ratio']),
-
+      pi=pi,
+      prop_mat=prop_mat,
       num_feature_groups=generator_config['num_clusters'],
       feature_group_match_type=MatchType.GROUPED,
       feature_center_distance=generator_config['feature_center_distance'],
@@ -89,10 +113,12 @@ class SbmGeneratorWrapper(GeneratorConfigSampler):
 class CABAMGeneratorWrapper(GeneratorConfigSampler):
 
   def __init__(self, param_sampler_specs, marginal=False,
-               normalize_features=False):
+               normalize_features=False, use_generated_lfr_communities=False, lfr_params=None):
     super(CABAMGeneratorWrapper, self).__init__(param_sampler_specs)
     self._marginal = marginal
     self._normalize_features = normalize_features
+    self._use_generated_lfr_communities = use_generated_lfr_communities
+    self._lfr_params = lfr_params
     self._AddSamplerFn('nvertex', self._SampleUniformInteger)
     self._AddSamplerFn('m', self._SampleUniformInteger)
     self._AddSamplerFn('assortativity_type', self._SampleUniformInteger)
@@ -113,6 +139,28 @@ class CABAMGeneratorWrapper(GeneratorConfigSampler):
         self._marginal)
     generator_config['generator_name'] = 'CABAM'
 
+    if self._use_generated_lfr_communities:
+      _, lfr_model = SimulateLFRWrapper(generator_config['nvertex'], 
+                                        self._lfr_params['avg_degree'],
+                                        int(self._lfr_params['max_degree_proportion']*generator_config['nvertex']),
+                                        self._lfr_params['power_exponent'],
+                                        int(self._lfr_params['community_min_size_proportion']*generator_config['nvertex']), 
+                                        int(self._lfr_params['community_max_size_proportion']*generator_config['nvertex']), 
+                                        self._lfr_params['community_exponent'],
+                                        self._lfr_params['mixing_param'])
+      if lfr_model is None:
+        return {'sample_id': sample_id,
+            'marginal_param': marginal_param,
+            'fixed_params': fixed_params,
+            'generator_config': generator_config,
+            'data': None}
+
+      communities = lfr_model.getPartition().subsetSizes()
+      generator_config['num_clusters'] = len(communities)
+      pi = np.array(communities) / sum(communities)
+    else:
+      pi=MakePi(generator_config['num_clusters'],generator_config['cluster_size_slope'])
+
     cabam_data = GenerateCABAMGraphWithFeatures(
       n=generator_config['nvertex'],
       m=generator_config['m'],
@@ -121,8 +169,7 @@ class CABAMGeneratorWrapper(GeneratorConfigSampler):
       feature_group_match_type=MatchType.RANDOM,
       feature_center_distance=generator_config['feature_center_distance'],
       feature_dim=generator_config['feature_dim'],
-      pi=MakePi(generator_config['num_clusters'],
-                generator_config['cluster_size_slope']),
+      pi=pi,
       assortativity_type=generator_config['assortativity_type'],
       temperature=generator_config['temperature'],
       edge_center_distance=generator_config['edge_center_distance'],
