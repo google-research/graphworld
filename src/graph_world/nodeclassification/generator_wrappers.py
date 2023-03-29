@@ -18,6 +18,7 @@ import numpy as np
 from ..beam.generator_config_sampler import GeneratorConfigSampler
 from ..generators.sbm_simulator import GenerateStochasticBlockModelWithFeatures, MatchType, MakePi, MakePropMat, MakeDegrees
 from ..generators.cabam_simulator import GenerateCABAMGraphWithFeatures
+from ..generators.lfr_simulator import GenerateLFRGraphWithFeatures, SimulateLFRWrapper
 from ..nodeclassification.utils import NodeClassificationDataset
 
 
@@ -138,3 +139,69 @@ class CABAMGeneratorWrapper(GeneratorConfigSampler):
                 node_features=cabam_data.node_features,
                 feature_memberships=cabam_data.feature_memberships,
                 edge_features=cabam_data.edge_features)}
+
+
+@gin.configurable
+class LFRGeneratorWrapper(GeneratorConfigSampler):
+
+  def __init__(self, param_sampler_specs, marginal=False,
+               normalize_features=True, num_tries=20):
+    super(LFRGeneratorWrapper, self).__init__(param_sampler_specs)
+    self._marginal = marginal
+    self._normalize_features = normalize_features
+    self._num_tries = num_tries
+    self._AddSamplerFn('nvertex', self._SampleUniformInteger)
+    self._AddSamplerFn('avg_degree', self._SampleUniformInteger)
+    self._AddSamplerFn('power_exponent', self._SampleUniformFloat)
+    self._AddSamplerFn('mixing_param', self._SampleUniformFloat)
+    self._AddSamplerFn('max_degree_proportion', self._SampleUniformFloat)
+    self._AddSamplerFn('community_max_size_proportion', self._SampleUniformFloat)
+    self._AddSamplerFn('community_min_size_proportion', self._SampleUniformFloat)
+    self._AddSamplerFn('community_power_exponent', self._SampleUniformFloat)
+    self._AddSamplerFn('feature_center_distance', self._SampleUniformFloat)
+    self._AddSamplerFn('feature_dim', self._SampleUniformInteger)
+    self._AddSamplerFn('edge_feature_dim', self._SampleUniformInteger)
+    self._AddSamplerFn('edge_center_distance', self._SampleUniformFloat)
+
+
+  def Generate(self, sample_id):
+    """
+    Sample and save LFR outputs given a configuration filepath.
+    """
+    generator_config, marginal_param, fixed_params = self.SampleConfig(
+        self._marginal)
+    generator_config['generator_name'] = 'LFR'
+
+    lfr_data = GenerateLFRGraphWithFeatures(
+      n=generator_config['nvertex'],
+      avg_deg=generator_config['avg_degree'],
+      max_deg=int(generator_config['max_degree_proportion']*generator_config['nvertex']),
+      exponent=generator_config['power_exponent'],
+      min_community_size=int(generator_config['community_min_size_proportion']*generator_config['nvertex']),
+      max_community_size=int(generator_config['community_max_size_proportion']*generator_config['nvertex']),
+      community_exponent=generator_config['community_power_exponent'],
+      mixing_param=generator_config['mixing_param'],
+      feature_group_match_type=MatchType.GROUPED,
+      feature_center_distance=generator_config['feature_center_distance'],
+      feature_dim=generator_config['feature_dim'],
+      edge_center_distance=generator_config['edge_center_distance'],
+      edge_feature_dim=generator_config['edge_feature_dim'],
+      normalize_features=self._normalize_features,
+      num_tries=self._num_tries
+    )
+
+    if lfr_data:
+      data=NodeClassificationDataset(
+                graph=lfr_data.graph,
+                graph_memberships=lfr_data.graph_memberships,
+                node_features=lfr_data.node_features,
+                feature_memberships=lfr_data.feature_memberships,
+                edge_features=lfr_data.edge_features)
+    else: data=None
+
+    return {'sample_id': sample_id,
+            'marginal_param': marginal_param,
+            'fixed_params': fixed_params,
+            'generator_config': generator_config,
+            'data': data}
+  
