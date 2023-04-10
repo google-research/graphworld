@@ -88,6 +88,18 @@ class GeneratorConfigSampler:
             param_value = spec.default_val
       # If the param val is still None, give it a random value.
       if param_value is None:
-        param_value = spec.sampler_fn(spec)
+        # Allow parameters not being sampled to remain in output as null
+        if spec.sampler_fn is None: 
+          param_value = None
+        else: 
+          param_value = spec.sampler_fn(spec)
       config[param_name] = param_value
     return config, marginal_param, fixed_params
+
+  def _AddParamSamplerSpecs(self, extra_param_sampler_specs, overwrite=False):
+    if extra_param_sampler_specs is not None:
+      # Merging dictionaries values whilst overwritting shared values if needed
+      if overwrite:
+        self._param_sampler_specs = {**self._param_sampler_specs, **{spec.name: spec for spec in extra_param_sampler_specs}}
+      else:
+        self._param_sampler_specs = {**{spec.name: spec for spec in extra_param_sampler_specs}, **self._param_sampler_specs}

@@ -28,6 +28,7 @@ class SbmGeneratorWrapper(GeneratorConfigSampler):
   def __init__(self, param_sampler_specs, marginal=False,
                normalize_features=True, use_generated_lfr_communities=False, lfr_params=None):
     super(SbmGeneratorWrapper, self).__init__(param_sampler_specs)
+    self._AddParamSamplerSpecs(lfr_params, use_generated_lfr_communities) 
     self._marginal = marginal
     self._normalize_features = normalize_features
     self._use_generated_lfr_communities = use_generated_lfr_communities
@@ -44,6 +45,13 @@ class SbmGeneratorWrapper(GeneratorConfigSampler):
     self._AddSamplerFn('power_exponent', self._SampleUniformFloat)
     self._AddSamplerFn('min_deg', self._SampleUniformInteger)
 
+    if use_generated_lfr_communities:
+      self._AddSamplerFn('mixing_param', self._SampleUniformFloat)
+      self._AddSamplerFn('max_degree_proportion', self._SampleUniformFloat)
+      self._AddSamplerFn('community_max_size_proportion', self._SampleUniformFloat)
+      self._AddSamplerFn('community_min_size_proportion', self._SampleUniformFloat)
+      self._AddSamplerFn('community_power_exponent', self._SampleUniformFloat)
+  
   def Generate(self, sample_id):
     """Sample and save SMB outputs given a configuration filepath.
     """
@@ -56,16 +64,16 @@ class SbmGeneratorWrapper(GeneratorConfigSampler):
         self._marginal)
     generator_config['generator_name'] = 'StochasticBlockModel'
 
-    # Generating LFR graph to copy community sizes and compute pi and prop_mat
     if self._use_generated_lfr_communities: 
+      # Generating LFR graph to copy community sizes
       _, lfr_model = SimulateLFRWrapper(generator_config['nvertex'], 
-                                        self._lfr_params['avg_degree'],
-                                        int(self._lfr_params['max_degree_proportion']*generator_config['nvertex']),
-                                        self._lfr_params['power_exponent'],
-                                        int(self._lfr_params['community_min_size_proportion']*generator_config['nvertex']), 
-                                        int(self._lfr_params['community_max_size_proportion']*generator_config['nvertex']), 
-                                        self._lfr_params['community_exponent'],
-                                        self._lfr_params['mixing_param'])
+                                        generator_config['avg_degree'],
+                                        int(generator_config['max_degree_proportion']*generator_config['nvertex']),
+                                        generator_config['power_exponent'],
+                                        int(generator_config['community_min_size_proportion']*generator_config['nvertex']), 
+                                        int(generator_config['community_max_size_proportion']*generator_config['nvertex']), 
+                                        generator_config['community_power_exponent'],
+                                        generator_config['mixing_param'])
       if lfr_model is None:
         return {'sample_id': sample_id,
             'marginal_param': marginal_param,
@@ -115,6 +123,7 @@ class CABAMGeneratorWrapper(GeneratorConfigSampler):
   def __init__(self, param_sampler_specs, marginal=False,
                normalize_features=False, use_generated_lfr_communities=False, lfr_params=None):
     super(CABAMGeneratorWrapper, self).__init__(param_sampler_specs)
+    self._AddParamSamplerSpecs(lfr_params, use_generated_lfr_communities) 
     self._marginal = marginal
     self._normalize_features = normalize_features
     self._use_generated_lfr_communities = use_generated_lfr_communities
@@ -131,6 +140,14 @@ class CABAMGeneratorWrapper(GeneratorConfigSampler):
     self._AddSamplerFn('edge_feature_dim', self._SampleUniformInteger)
     self._AddSamplerFn('edge_center_distance', self._SampleUniformFloat)
 
+    if use_generated_lfr_communities:
+      self._AddSamplerFn('power_exponent', self._SampleUniformFloat)
+      self._AddSamplerFn('avg_degree', self._SampleUniformFloat)
+      self._AddSamplerFn('mixing_param', self._SampleUniformFloat)
+      self._AddSamplerFn('max_degree_proportion', self._SampleUniformFloat)
+      self._AddSamplerFn('community_max_size_proportion', self._SampleUniformFloat)
+      self._AddSamplerFn('community_min_size_proportion', self._SampleUniformFloat)
+      self._AddSamplerFn('community_power_exponent', self._SampleUniformFloat)
 
   def Generate(self, sample_id):
     """Sample and save CABAM outputs given a configuration filepath.
@@ -141,13 +158,14 @@ class CABAMGeneratorWrapper(GeneratorConfigSampler):
 
     if self._use_generated_lfr_communities:
       _, lfr_model = SimulateLFRWrapper(generator_config['nvertex'], 
-                                        self._lfr_params['avg_degree'],
-                                        int(self._lfr_params['max_degree_proportion']*generator_config['nvertex']),
-                                        self._lfr_params['power_exponent'],
-                                        int(self._lfr_params['community_min_size_proportion']*generator_config['nvertex']), 
-                                        int(self._lfr_params['community_max_size_proportion']*generator_config['nvertex']), 
-                                        self._lfr_params['community_exponent'],
-                                        self._lfr_params['mixing_param'])
+                                        generator_config['avg_degree'],
+                                        int(generator_config['max_degree_proportion']*generator_config['nvertex']),
+                                        generator_config['power_exponent'],
+                                        int(generator_config['community_min_size_proportion']*generator_config['nvertex']), 
+                                        int(generator_config['community_max_size_proportion']*generator_config['nvertex']), 
+                                        generator_config['community_power_exponent'],
+                                        generator_config['mixing_param'])
+                                      
       if lfr_model is None:
         return {'sample_id': sample_id,
             'marginal_param': marginal_param,
