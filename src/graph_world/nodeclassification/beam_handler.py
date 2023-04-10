@@ -100,8 +100,8 @@ class ComputeNodeClassificationMetrics(beam.DoFn):
       out = element
       out['metrics'] = graph_metrics(element['data'].graph)
       out['metrics'].update(NodeLabelMetrics(element['data'].graph,
-                                            element['data'].graph_memberships,
-                                            element['data'].node_features))
+                                             element['data'].graph_memberships,
+                                             element['data'].node_features))
     except:
       out['skipped'] = True
       print(f'Failed to compute node classification metrics for sample id {sample_id}')

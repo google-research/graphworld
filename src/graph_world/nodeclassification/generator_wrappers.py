@@ -129,7 +129,7 @@ class CABAMGeneratorWrapper(GeneratorConfigSampler):
     self._use_generated_lfr_communities = use_generated_lfr_communities
     self._lfr_params = lfr_params
     self._AddSamplerFn('nvertex', self._SampleUniformInteger)
-    self._AddSamplerFn('m', self._SampleUniformInteger)
+    self._AddSamplerFn('min_deg', self._SampleUniformInteger)
     self._AddSamplerFn('assortativity_type', self._SampleUniformInteger)
     self._AddSamplerFn('inter_link_strength', self._SampleUniformFloat)
     self._AddSamplerFn('feature_center_distance', self._SampleUniformFloat)
@@ -181,7 +181,7 @@ class CABAMGeneratorWrapper(GeneratorConfigSampler):
 
     cabam_data = GenerateCABAMGraphWithFeatures(
       n=generator_config['nvertex'],
-      m=generator_config['m'],
+      min_deg=generator_config['min_deg'],
       inter_link_strength=generator_config['inter_link_strength'],
       num_feature_groups=generator_config['num_clusters'],
       feature_group_match_type=MatchType.RANDOM,
@@ -216,7 +216,7 @@ class LFRGeneratorWrapper(GeneratorConfigSampler):
     self._normalize_features = normalize_features
     self._num_tries = num_tries
     self._AddSamplerFn('nvertex', self._SampleUniformInteger)
-    self._AddSamplerFn('avg_degree', self._SampleUniformInteger)
+    self._AddSamplerFn('avg_degree', self._SampleUniformFloat)
     self._AddSamplerFn('power_exponent', self._SampleUniformFloat)
     self._AddSamplerFn('mixing_param', self._SampleUniformFloat)
     self._AddSamplerFn('max_degree_proportion', self._SampleUniformFloat)
@@ -227,7 +227,6 @@ class LFRGeneratorWrapper(GeneratorConfigSampler):
     self._AddSamplerFn('feature_dim', self._SampleUniformInteger)
     self._AddSamplerFn('edge_feature_dim', self._SampleUniformInteger)
     self._AddSamplerFn('edge_center_distance', self._SampleUniformFloat)
-
 
   def Generate(self, sample_id):
     """

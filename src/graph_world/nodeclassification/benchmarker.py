@@ -51,9 +51,8 @@ class NNNodeBenchmarker(Benchmarker):
     if self._h_params is not None:
       # Adjusting num_clusters to correct out channels and update config in LFR graphs
       if generator_config['generator_name']=='LFR':
-        generator_config['num_clusters'] = len(set(torch_data.y.numpy())) 
-      if 'num_clusters' in generator_config:
-        self._h_params['out_channels'] = generator_config['num_clusters']
+        generator_config['num_clusters'] = len(set(torch_data.y.numpy()))
+      self._h_params['out_channels'] = generator_config['num_clusters']
 
   def SetMasks(self, train_mask, val_mask, test_mask):
     self._train_mask = train_mask

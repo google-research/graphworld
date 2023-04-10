@@ -40,11 +40,11 @@ class LFR:
 
 def NetworkitToGraphWorldData(G):
   """
-  Converts NetworKit graph data to GraphWorld LFR dataclass, with node memberships.
+  Converts NetworKit graph data to a GraphTool graph.
   Args:
     G: Networkit generated LFR graph
   Returns:
-    lfr_gt: LFR dataclass instance to store graph data
+    lfr_gt: GraphTool representation of the input graph
   """
   nk_edges = list(G.iterEdges())
   nk_nodes = list(G.iterNodes())
@@ -81,26 +81,24 @@ def SimulateLFR(n,
     community_sizes: sequence of community sizes in generated graph
   """
   lfr = nk.generators.LFRGenerator(n)
-  lfr.generatePowerlawDegreeSequence(avg_deg, 
-                                  max_deg, 
-                                  exponent)
+  lfr.generatePowerlawDegreeSequence(avg_deg, max_deg, exponent)
   lfr.generatePowerlawCommunitySizeSequence(min_community_size, 
-                                          max_community_size, 
-                                          exponent_community)
+                                            max_community_size, 
+                                            exponent_community)
   lfr.setMu(mu)
   lfrG = lfr.generate()
   return lfrG, lfr
 
 
 def SimulateLFRWrapper(n, 
-                      avg_deg,
-                      max_deg,
-                      exponent,
-                      min_community_size,
-                      max_community_size,
-                      community_exponent,
-                      mu,
-                      num_tries=20):
+                       avg_deg,
+                       max_deg,
+                       exponent,
+                       min_community_size,
+                       max_community_size,
+                       community_exponent,
+                       mu,
+                       num_tries=20):
   """
   Simulates an LFR Graph using NetworKit and the sampled parameters. 
   Args:
@@ -133,23 +131,24 @@ def SimulateLFRWrapper(n,
   return None, None
 
 
-def GenerateLFRGraphWithFeatures(n,
-                                 avg_deg,
-                                 max_deg,
-                                 exponent,
-                                 min_community_size,
-                                 max_community_size,
-                                 community_exponent,
-                                 mixing_param,
-                                 feature_center_distance=0.0,
-                                 feature_dim=0,
-                                 feature_group_match_type=MatchType.GROUPED,
-                                 feature_cluster_variance=1.0,
-                                 edge_feature_dim=0,
-                                 edge_center_distance=0.0,
-                                 edge_cluster_variance=1.0,
-                                 normalize_features=True,
-                                 num_tries=20):
+def GenerateLFRGraphWithFeatures(
+    n,
+    avg_deg,
+    max_deg,
+    exponent,
+    min_community_size,
+    max_community_size,
+    community_exponent,
+    mixing_param,
+    feature_center_distance=0.0,
+    feature_dim=0,
+    feature_group_match_type=MatchType.GROUPED,
+    feature_cluster_variance=1.0,
+    edge_feature_dim=0,
+    edge_center_distance=0.0,
+    edge_cluster_variance=1.0,
+    normalize_features=True,
+    num_tries=20):
   """
   Generates LFR graph for GraphWorld with node and edge features.
   Args:
@@ -191,14 +190,14 @@ def GenerateLFRGraphWithFeatures(n,
   result.graph = NetworkitToGraphWorldData(lfr_nk)
   result.graph_memberships = lfr_model.getPartition().getVector()
   SimulateFeatures(result, 
-                    feature_center_distance,
-                    feature_dim,
-                    len(set(result.graph_memberships)),
-                    feature_group_match_type,
-                    feature_cluster_variance,
-                    normalize_features)
+                   feature_center_distance,
+                   feature_dim,
+                   len(set(result.graph_memberships)),
+                   feature_group_match_type,
+                   feature_cluster_variance,
+                   normalize_features)
   SimulateEdgeFeatures(result, 
-                        edge_feature_dim,
-                        edge_center_distance,
-                        edge_cluster_variance)
+                       edge_feature_dim,
+                       edge_center_distance,
+                       edge_cluster_variance)
   return result
