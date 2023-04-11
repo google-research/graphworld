@@ -1,0 +1,8 @@
+lfr_avg_degree/ParamSamplerSpec.default_val = 15.0
+lfr_max_degree_proportion/ParamSamplerSpec.default_val = 0.17
+lfr_mixing_param/ParamSamplerSpec.default_val = 0.5
+lfr_power_exponent/ParamSamplerSpec.default_val = -3
+lfr_community_max_size_proportion/ParamSamplerSpec.default_val = 0.0825
+lfr_community_min_size_proportion/ParamSamplerSpec.default_val = 0.33
+lfr_max_degree_proportion/ParamSamplerSpec.default_val = 0.17
+
