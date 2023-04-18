@@ -49,7 +49,7 @@ def NetworkxToGraphWorldData(G, node_labels, cabam_data):
     node_labels: list of integer node labels
     cabam_data: CABAM dataclass instance to store graph data
   Returns:
-    cabam_data
+    cabam_data: CABAM dataclass instance to store graph data
   """
   cabam_data.graph_memberships = list(node_labels) # Memberships is integer node class list
 
@@ -95,7 +95,7 @@ def GenerateCABAMGraphWithFeatures(
     feature_center_distance=0.0,
     feature_dim=0,
     num_feature_groups=1,
-    feature_group_match_type=MatchType.RANDOM,
+    feature_group_match_type=MatchType.GROUPED,
     feature_cluster_variance=1.0,
     edge_feature_dim=0,
     edge_center_distance=0.0,
