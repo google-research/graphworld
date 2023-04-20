@@ -87,7 +87,7 @@ def GenerateAssortativityDict(p_in, assortativity_type, temperature):
 
 def GenerateCABAMGraphWithFeatures(
     n,
-    m,
+    min_deg,
     inter_link_strength,
     pi,
     assortativity_type,
@@ -123,7 +123,7 @@ def GenerateCABAMGraphWithFeatures(
     """
     result = CABAM()
     CABAM_model = CABAM_git()
-    G, _, node_labels, _, _ = CABAM_model.generate_graph(n=n, m=m, num_classes=num_feature_groups, native_class_probs=pi.tolist(), inter_intra_link_probs=GenerateAssortativityDict(inter_link_strength, assortativity_type, temperature) )
+    G, _, node_labels, _, _ = CABAM_model.generate_graph(n=n, m=min_deg, num_classes=num_feature_groups, native_class_probs=pi.tolist(), inter_intra_link_probs=GenerateAssortativityDict(inter_link_strength, assortativity_type, temperature) )
     NetworkxToGraphWorldData(G, node_labels, result)
 
     # Borrowing node and edge feature generation from SBM

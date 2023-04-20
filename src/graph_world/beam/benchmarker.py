@@ -26,16 +26,16 @@ from ..models.utils import ComputeNumPossibleConfigs, SampleModelConfig, GetCart
 class Benchmarker(ABC):
 
   def __init__(self, generator_config,
-               model_class=None, benchmark_params=None, h_params=None):
+               model_class=None, benchmark_params=None, h_params=None, torch_data=None):
     self._model_name = model_class.__name__ if model_class is not None else ''
     self._model_class = model_class
     self._benchmark_params = benchmark_params
     self._h_params = h_params
-    self.AdjustParams(generator_config)
+    self.AdjustParams(generator_config, torch_data)
 
   # Override this function if the input data affects the model architecture.
   # See NNNodeBenchmarker for an example implementation.
-  def AdjustParams(self, generator_config):
+  def AdjustParams(self, generator_config, torch_data):
     pass
 
   def GetModelName(self):
@@ -150,7 +150,8 @@ class BenchmarkGNNParDo(beam.DoFn):
         benchmarker = benchmarker_class(element['generator_config'],
                                         model_class,
                                         benchmark_params_sample,
-                                        h_params_sample)
+                                        h_params_sample,
+                                        element['torch_data'])
         benchmarker_out = benchmarker.Benchmark(element,
                                                 tuning_metric=self._tuning_metric,
                                                 tuning_metric_is_loss=self._tuning_metric_is_loss)
@@ -197,7 +198,8 @@ class BenchmarkGNNParDo(beam.DoFn):
           benchmarker = benchmarker_class(element['generator_config'],
                                           model_class,
                                           benchmark_params_sample,
-                                          h_params_sample)
+                                          h_params_sample,
+                                          element['torch_data'])
           benchmarker_out = benchmarker.Benchmark(element,
                                                   tuning_metric=self._tuning_metric,
                                                   tuning_metric_is_loss=self._tuning_metric_is_loss)

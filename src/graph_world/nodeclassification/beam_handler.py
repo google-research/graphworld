@@ -95,11 +95,19 @@ class WriteNodeClassificationDatasetDoFn(beam.DoFn):
 class ComputeNodeClassificationMetrics(beam.DoFn):
 
   def process(self, element):
-    out = element
-    out['metrics'] = graph_metrics(element['data'].graph)
-    out['metrics'].update(NodeLabelMetrics(element['data'].graph,
-                                           element['data'].graph_memberships,
-                                           element['data'].node_features))
+    try:
+      sample_id = element['sample_id']
+      out = element
+      out['metrics'] = graph_metrics(element['data'].graph)
+      out['metrics'].update(NodeLabelMetrics(element['data'].graph,
+                                             element['data'].graph_memberships,
+                                             element['data'].node_features))
+    except:
+      out['skipped'] = True
+      print(f'Failed to compute node classification metrics for sample id {sample_id}')
+      logging.info(
+           ('Failed to convert node classification metrics for sample id %d'), sample_id)
+      return
     yield out
 
 
@@ -112,7 +120,7 @@ class ConvertToTorchGeoDataParDo(beam.DoFn):
   def process(self, element):
     sample_id = element['sample_id']
     nodeclassification_data = element['data']
-
+    
     out = {
       'sample_id': sample_id,
       'metrics' : element['metrics'],
@@ -123,7 +131,7 @@ class ConvertToTorchGeoDataParDo(beam.DoFn):
       'marginal_param': element['marginal_param'],
       'fixed_params': element['fixed_params']
     }
-
+    
     try:
       torch_data = nodeclassification_data_to_torchgeo_data(
           nodeclassification_data)
