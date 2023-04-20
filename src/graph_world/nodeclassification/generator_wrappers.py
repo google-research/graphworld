@@ -183,7 +183,7 @@ class CABAMGeneratorWrapper(GeneratorConfigSampler):
       min_deg=generator_config['min_deg'],
       inter_link_strength=generator_config['inter_link_strength'],
       num_feature_groups=generator_config['num_clusters'],
-      feature_group_match_type=MatchType.RANDOM,
+      feature_group_match_type=MatchType.GROUPED,
       feature_center_distance=generator_config['feature_center_distance'],
       feature_dim=generator_config['feature_dim'],
       pi=pi,
