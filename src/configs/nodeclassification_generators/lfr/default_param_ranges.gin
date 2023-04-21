@@ -18,20 +18,20 @@ lfr_nvertex/ParamSamplerSpec.min_val = 1024
 lfr_nvertex/ParamSamplerSpec.max_val = 4096
 
 lfr_avg_degree/ParamSamplerSpec.name = "avg_degree"
-lfr_avg_degree/ParamSamplerSpec.min_val = 15.0
-lfr_avg_degree/ParamSamplerSpec.max_val = 15.0
+lfr_avg_degree/ParamSamplerSpec.min_val = 5.0
+lfr_avg_degree/ParamSamplerSpec.max_val = 32.0
 
 lfr_mixing_param/ParamSamplerSpec.name = "mixing_param"
 lfr_mixing_param/ParamSamplerSpec.min_val = 0.0
 lfr_mixing_param/ParamSamplerSpec.max_val = 1.0
 
 lfr_power_exponent/ParamSamplerSpec.name = "power_exponent"
-lfr_power_exponent/ParamSamplerSpec.min_val = -3
+lfr_power_exponent/ParamSamplerSpec.min_val = -2
 lfr_power_exponent/ParamSamplerSpec.max_val = -3
 
 lfr_community_power_exponent/ParamSamplerSpec.name = "community_power_exponent"
 lfr_community_power_exponent/ParamSamplerSpec.min_val = -1
-lfr_community_power_exponent/ParamSamplerSpec.max_val = -1
+lfr_community_power_exponent/ParamSamplerSpec.max_val = -2
 
 lfr_community_min_size_proportion/ParamSamplerSpec.name = "community_min_size_proportion"
 lfr_community_min_size_proportion/ParamSamplerSpec.min_val = 0.05
@@ -42,16 +42,16 @@ lfr_community_max_size_proportion/ParamSamplerSpec.min_val = 0.25
 lfr_community_max_size_proportion/ParamSamplerSpec.max_val = 0.33
 
 lfr_max_degree_proportion/ParamSamplerSpec.name = "max_degree_proportion"
-lfr_max_degree_proportion/ParamSamplerSpec.min_val = 0.17
-lfr_max_degree_proportion/ParamSamplerSpec.max_val = 0.17
+lfr_max_degree_proportion/ParamSamplerSpec.min_val = 0.1
+lfr_max_degree_proportion/ParamSamplerSpec.max_val = 0.2
 
 lfr_feature_dim/ParamSamplerSpec.name = "feature_dim"
 lfr_feature_dim/ParamSamplerSpec.min_val = 16
 lfr_feature_dim/ParamSamplerSpec.max_val = 16
 
 lfr_feature_center_distance/ParamSamplerSpec.name = "feature_center_distance"
-lfr_feature_center_distance/ParamSamplerSpec.min_val = 1.0
-lfr_feature_center_distance/ParamSamplerSpec.max_val = 5.0
+lfr_feature_center_distance/ParamSamplerSpec.min_val = 0.0
+lfr_feature_center_distance/ParamSamplerSpec.max_val = 2.0
 
 lfr_edge_center_distance/ParamSamplerSpec.name = "edge_center_distance"
 lfr_edge_center_distance/ParamSamplerSpec.min_val = 2.0
