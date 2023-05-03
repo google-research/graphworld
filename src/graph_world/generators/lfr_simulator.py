@@ -188,7 +188,7 @@ def GenerateLFRGraphWithFeatures(
                                          num_tries)
   if lfr_model is None: return None
   result.graph = NetworkitToGraphWorldData(lfr_nk)
-  result.graph_memberships = lfr_model.getPartition().getVector()
+  result.graph_memberships = np.array(lfr_model.getPartition().getVector())
   SimulateFeatures(result, 
                    feature_center_distance,
                    feature_dim,

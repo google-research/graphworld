@@ -142,7 +142,7 @@ def _GenerateFeatureMemberships(
       memberships.extend(sub_memberships)
   else:  # MatchType.RANDOM
     memberships = random.choices(range(num_groups), k=len(graph_memberships))
-  return np.array(sorted(memberships))
+  return np.array(memberships)
 
 
 def _ComputeExpectedEdgeCounts(num_edges, num_vertices,
